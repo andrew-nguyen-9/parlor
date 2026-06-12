@@ -5,6 +5,7 @@ Checks:
 1. forge recipes produce valid questions from synthetic facts
 2. the committed seed bank parses and every question is renderable
 3. daily board determinism (same date ⇒ same board)
+4. bronze compaction dedupes and keeps stable timestamps (repo-as-database mode)
 """
 
 from __future__ import annotations
@@ -92,6 +93,25 @@ def main() -> None:
     d = date(2026, 6, 12)
     b1, b2 = build_daily_board(qs, d), build_daily_board(qs, d)
     check("daily board is deterministic", b1 == b2)
+
+    # bronze compaction (DB-less serving depends on this not bloating the repo)
+    import tempfile
+
+    from common import compact_jsonl
+
+    with tempfile.TemporaryDirectory() as tmp:
+        p = Path(tmp) / "test.jsonl"
+        p.write_text(
+            '{"_ingested_at": "t1", "content_hash": "a", "fact_text": "same"}\n'
+            '{"_ingested_at": "t2", "content_hash": "a", "fact_text": "same"}\n'
+            '{"_ingested_at": "t3", "content_hash": "b", "fact_text": "other"}\n'
+        )
+        n = compact_jsonl(p)
+        lines = [json.loads(l) for l in p.read_text().splitlines()]
+        check("bronze compaction dedupes by content_hash", n == 2 and len(lines) == 2)
+        row_a = next(r for r in lines if r["content_hash"] == "a")
+        check("compaction keeps original timestamp for unchanged facts",
+              row_a["_ingested_at"] == "t1")
 
     seed_path = REPO_ROOT / "frontend" / "public" / "seed-questions.json"
     if seed_path.exists():

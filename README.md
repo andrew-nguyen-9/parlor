@@ -27,9 +27,10 @@ npm install
 npm run dev          # playable immediately on the committed seed bank
 ```
 
-With no Supabase env vars the app runs in **house-deck mode** off
-`frontend/public/seed-questions.json`. Set `NEXT_PUBLIC_SUPABASE_URL` +
-`NEXT_PUBLIC_SUPABASE_ANON_KEY` and it reads the live bank instead.
+With no Supabase env vars the app serves `frontend/public/seed-questions.json` —
+which the nightly pipeline **refreshes and commits** (see below), so this is the
+default production mode, not a demo mode. Set `NEXT_PUBLIC_SUPABASE_URL` +
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` and it reads a live Supabase bank instead.
 
 ## Pipeline (facts in, questions out)
 
@@ -48,8 +49,12 @@ python export_seed.py              # refresh the offline seed bank
 python selftest.py                 # offline sanity checks (no network needed)
 ```
 
-Each ingest also appends to `data/raw/*.jsonl` — the **bronze layer**. The dbt
-project in `transform/` builds the silver/gold layers with schema tests:
+Each ingest also appends to `data/raw/*.jsonl` — the **bronze layer**, which is
+**committed to the repo** and compacted by `content_hash` (unchanged facts keep
+their original lines, so nightly re-runs produce minimal diffs). In DB-less mode
+the repo is the database: bronze accumulates facts, the forge derives questions
+from it, and the committed seed bank is the serving layer. The dbt project in
+`transform/` builds the silver/gold layers with schema tests:
 
 ```bash
 cd transform
@@ -61,9 +66,20 @@ dbt build --profiles-dir .         # staging views + marts + tests on DuckDB
 
 ## Setup
 
-1. Create a Supabase project → run `db/schema.sql` in the SQL editor.
-2. Repo secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `TMDB_API_KEY`.
-3. Deploy `frontend/` to Vercel with the two `NEXT_PUBLIC_SUPABASE_*` vars.
+### DB-less mode (default — zero backend accounts)
+
+1. Repo Settings → Actions → General → Workflow permissions → **Read and write**
+   (the nightly job commits bronze + the refreshed seed bank).
+2. Optional repo secret: `TMDB_API_KEY` (the screen ingest is skipped without it).
+3. Deploy `frontend/` to Vercel with **no env vars**. Done — the bank refreshes
+   nightly via the committed seed file.
+
+### Live-DB mode (optional upgrade, e.g. for Phase-3 multiplayer)
+
+1. Create a Supabase project → run `db/schema.sql` + `db/migrations/*` in the SQL editor.
+2. Add repo secrets `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — the same
+   workflow starts upserting facts/questions/daily boards automatically.
+3. Add the two `NEXT_PUBLIC_SUPABASE_*` vars in Vercel to read the live bank.
 
 ## Docs
 

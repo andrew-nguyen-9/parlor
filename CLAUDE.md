@@ -36,8 +36,9 @@ the Phase-2 Delta Lake mirror lab (never the serving path).
 ### Python pipeline
 - argparse flags for targeted runs; tenacity retries (3, exponential); rich console;
   dotenv secrets; **idempotent upserts on `content_hash`**
-- every ingest ALSO appends to `data/raw/*.jsonl` (bronze) — never skip this,
-  dbt and the offline forge read it
+- every ingest ALSO appends to `data/raw/*.jsonl` (bronze, **committed** and
+  compacted by `content_hash` — the repo is the database in DB-less mode); never
+  skip this, dbt and the forge read it; never hand-edit these files
 - scrape **facts**, not questions; only `question_forge.py` creates questions
 
 ### TypeScript / Next.js

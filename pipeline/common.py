@@ -82,15 +82,46 @@ def make_fact(
     }
 
 
+def compact_jsonl(path: Path) -> int:
+    """Dedupe a bronze file by content_hash — the repo IS the database in
+    DB-less mode, so files must not grow with daily re-ingests.
+
+    Rules for git-friendly diffs:
+    - unchanged payloads keep their ORIGINAL line (and _ingested_at), so a
+      re-ingested identical fact produces zero diff
+    - changed payloads take the newest line
+    - output sorted by content_hash (stable ordering)
+    """
+    rows: dict[str, dict] = {}
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        key = row.get("content_hash") or json.dumps(row, sort_keys=True, default=str)
+        prev = rows.get(key)
+        if prev is not None:
+            a = {k: v for k, v in prev.items() if k != "_ingested_at"}
+            b = {k: v for k, v in row.items() if k != "_ingested_at"}
+            if a == b:
+                continue
+        rows[key] = row
+    path.write_text("".join(json.dumps(rows[k], default=str) + "\n" for k in sorted(rows)))
+    return len(rows)
+
+
 def dump_raw(name: str, rows: list[dict]) -> Path:
-    """Append rows to the bronze layer (data/raw/{name}.jsonl)."""
+    """Append rows to the bronze layer (data/raw/{name}.jsonl), then compact."""
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     path = RAW_DIR / f"{name}.jsonl"
     stamp = datetime.now(timezone.utc).isoformat()
     with path.open("a") as f:
         for row in rows:
             f.write(json.dumps({"_ingested_at": stamp, **row}, default=str) + "\n")
-    console.print(f"[dim]bronze ▸ appended {len(rows)} rows to {path.relative_to(REPO_ROOT)}[/dim]")
+    total = compact_jsonl(path)
+    console.print(
+        f"[dim]bronze ▸ appended {len(rows)} rows to {path.relative_to(REPO_ROOT)} "
+        f"({total} after compaction)[/dim]"
+    )
     return path
 
 

@@ -1,5 +1,13 @@
 # Daily ETL — written as an explicit DAG (extract → transform/test → publish)
 # so the shape maps 1:1 onto Airflow/Dagster later (see docs/RESEARCH_DATA_PLATFORM.md).
+#
+# Runs in two modes with zero config changes:
+# - DB-less (default): no Supabase secrets → ingests accumulate in the COMMITTED
+#   bronze layer (data/raw/*.jsonl, compacted by content_hash), the forge runs
+#   from bronze, and publish commits bronze + the refreshed seed bank. The repo
+#   is the database; the app serves the seed bank.
+# - Live-DB: add SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY secrets and the same
+#   steps also upsert facts/questions/daily_sets to Supabase.
 name: etl_daily
 
 on:
@@ -19,27 +27,35 @@ jobs:
       - run: pip install -r pipeline/requirements.txt
       - name: Selftest (offline gates first)
         run: python pipeline/selftest.py
+      # ingests are continue-on-error: one flaky API must not kill the nightly
+      # refresh — decay shows up in the transform job's category health report
       - name: Ingest Wikipedia
+        continue-on-error: true
         run: python pipeline/wikipedia_ingest.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       - name: Ingest Deezer
+        continue-on-error: true
         run: python pipeline/music_ingest.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       - name: Ingest Sleeper + ESPN
+        continue-on-error: true
         run: python pipeline/sports_ingest.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       - name: Ingest restcountries
+        continue-on-error: true
         run: python pipeline/geo_ingest.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      - name: Ingest TMDB
+      - name: Ingest TMDB (skipped without TMDB_API_KEY)
+        continue-on-error: true
+        if: ${{ secrets.TMDB_API_KEY != '' }}
         run: python pipeline/screen_ingest.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -103,10 +119,10 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      - name: Commit refreshed seed bank
+      - name: Commit bronze layer + refreshed seed bank
         run: |
           git config user.name "parlor-etl"
           git config user.email "actions@users.noreply.github.com"
-          git add frontend/public/seed-questions.json
-          git diff --cached --quiet || git commit -m "chore: refresh seed question bank [skip ci]"
+          git add data/raw frontend/public/seed-questions.json
+          git diff --cached --quiet || git commit -m "chore: nightly bank refresh [skip ci]"
           git push

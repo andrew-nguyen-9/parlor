@@ -13,8 +13,9 @@ node_modules/
 .next/
 out/
 
-# data artifacts (bronze travels as CI artifacts, not commits)
-data/raw/*.jsonl
+# data artifacts — bronze JSONL is COMMITTED on purpose (repo-as-database
+# mode: data/raw/*.jsonl is the accumulating fact store, compacted by
+# content_hash). Only the local DuckDB build artifact stays out.
 data/*.duckdb
 
 # dbt

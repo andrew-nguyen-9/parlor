@@ -123,7 +123,13 @@ claims, which is exactly the gap most career-switch resumes have.
 
 ## 3. Decision record
 
-1. **Serving stays Supabase** — proven house pattern, free, RLS conventions intact.
+1. **Serving is the committed seed bank (repo-as-database) by default** — the
+   Supabase free-project quota ran out, and at this scale (a few thousand
+   read-only rows, refreshed nightly) a committed, compacted JSONL bronze layer
+   plus a committed seed JSON is the *right* architecture, not a fallback. The
+   pipeline auto-upgrades to Supabase upserts the moment secrets appear (a free
+   slot opens by pausing an off-season project, e.g. the fantasy tool), which
+   Phase-3 multiplayer/leaderboards will require.
 2. **dbt Core + DuckDB added in `transform/`** — the deliberate skill investment;
    runs free in CI; transferable to Snowflake/Databricks/BigQuery interviews.
 3. **Bronze layer is files** (`data/raw/*.jsonl` as CI artifacts) — makes the

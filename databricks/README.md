@@ -16,9 +16,9 @@ explain that equivalence (dbt/DuckDB ↔ PySpark/Delta) is the interview move.
 
 1. **Account** — sign up for Databricks **Free Edition** (free, non-expiring;
    serverless compute included): databricks.com/learn/free-edition.
-2. **Get bronze data** — run any ingest locally (`python pipeline/wikipedia_ingest.py`)
-   or download the `bronze` artifact from a recent `etl_daily` Actions run. You'll
-   have one or more `data/raw/*.jsonl` files.
+2. **Get bronze data** — it's committed: `git pull` and grab `data/raw/*.jsonl`
+   (the nightly job keeps them fresh). Or generate locally with any ingest,
+   e.g. `python pipeline/wikipedia_ingest.py`.
 3. **Upload** — in the workspace: Catalog → create schema `parlor` → create a
    **Volume** `raw` → upload the `.jsonl` files into it
    (path becomes `/Volumes/workspace/parlor/raw/`).

@@ -66,7 +66,7 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <span className="microlabel">an after-dark house of trivia games</span>
           <span className="microlabel">
-            {isSupabaseConfigured() ? "live bank" : "house deck"}
+            {isSupabaseConfigured() ? "live bank" : "nightly deck"}
           </span>
         </div>
         <h1 className="display mt-auto text-[clamp(4rem,18vw,14rem)]">Parlor</h1>

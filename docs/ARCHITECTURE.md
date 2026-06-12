@@ -2,15 +2,17 @@
 
 ## The one-paragraph mental model
 
-A Python pipeline (GitHub Actions cron) pulls **facts** from four free APIs —
-Wikipedia (history), Deezer (music), Sleeper/ESPN (sports), TMDB (screen) — and dumps
-them as raw JSONL (bronze). A **dbt Core + DuckDB** project cleans and tests them into
-a question-bank mart (silver→gold), the **question forge** derives typed questions
-(clue / year_guess / multiple_choice / higher_lower) with difficulty scores and
-distractors, and everything is upserted into **Supabase**. The Next.js frontend reads
-anon/read-only and renders four game *rooms* — Board, Clock, Wedges, Streak — each a
-thin renderer over the same bank. With no Supabase env vars the app silently falls
-back to a committed seed bank, so the repo is playable from `git clone`.
+A Python pipeline (GitHub Actions cron) pulls **facts** from five free APIs —
+Wikipedia (history), Deezer (music), Sleeper/ESPN (sports), TMDB (screen),
+restcountries (geography) — and accumulates them as **committed** raw JSONL
+(bronze, compacted on `content_hash`). A **dbt Core + DuckDB** project cleans and
+tests them into a question-bank mart (silver→gold), the **question forge** derives
+typed questions (clue / year_guess / multiple_choice / higher_lower / where) with
+difficulty scores and distractors, and the nightly job commits the refreshed seed
+bank that the Next.js frontend serves — six game *rooms*, each a thin renderer over
+the same bank. **The repo is the database** in the default DB-less mode; adding
+Supabase secrets upgrades the same pipeline to also upsert into a live Postgres
+bank with zero config changes.
 
 ```
 SOURCES              PIPELINE (Python, Actions cron)        TRANSFORM            SUPABASE         FRONTEND (Next.js)
@@ -54,7 +56,7 @@ to the DB. Adding a game touches zero pipeline code.
 
 | Layer | Where | What |
 |---|---|---|
-| Bronze | `data/raw/*.jsonl` (CI artifact) | raw API payload slices, append-only |
+| Bronze | `data/raw/*.jsonl` (**committed**, compacted on `content_hash`) | raw API payload slices — the accumulating fact store; in DB-less mode the repo is the database |
 | Silver | `transform/models/staging/` | typed/renamed/deduped staging views |
 | Gold | `transform/models/marts/` | `mart_question_bank`, `mart_category_stats` |
 | Tests | `transform/models/**/schema.yml` | not_null / unique / accepted_values |
