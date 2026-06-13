@@ -9,10 +9,11 @@ import {
   type Category,
   type Question,
 } from "@/lib/types";
+import { usePractice } from "@/lib/usePractice";
+import PracticeBar from "@/components/PracticeBar";
 
 const MAX_QUESTIONS = 20;
 
-/** Six-segment ring; earned wedges fill in category color (UI_SPEC: WedgeRing). */
 function WedgeRing({ earned }: { earned: Set<Category> }) {
   const R = 54;
   const C = 60;
@@ -40,7 +41,14 @@ function WedgeRing({ earned }: { earned: Set<Category> }) {
         );
       })}
       <circle cx={C} cy={C} r={20} fill="#0a0a0f" stroke="#26263a" />
-      <text x={C} y={C + 4} textAnchor="middle" fill="#f5f3ee" fontSize="11" fontWeight="900">
+      <text
+        x={C}
+        y={C + 4}
+        textAnchor="middle"
+        fill="#f5f3ee"
+        fontSize="11"
+        fontWeight="900"
+      >
         {earned.size}/6
       </text>
     </svg>
@@ -48,6 +56,8 @@ function WedgeRing({ earned }: { earned: Set<Category> }) {
 }
 
 export default function WedgesGame({ pool }: { pool: Question[] }) {
+  const { practiceMode, togglePractice, saved, saveQ, removeQ, isSaved } = usePractice();
+
   const byCat = useMemo(() => {
     const m = new Map<Category, Question[]>();
     for (const q of pool) m.set(q.category, [...(m.get(q.category) ?? []), q]);
@@ -61,7 +71,6 @@ export default function WedgesGame({ pool }: { pool: Question[] }) {
   const [picked, setPicked] = useState<string | null>(null);
   const [order, setOrder] = useState<string[]>([]);
 
-  // shuffles happen on click (client event) — SSR markup never disagrees
   function start() {
     const qs = [...pool].sort(() => Math.random() - 0.5);
     setQueue(qs);
@@ -86,7 +95,9 @@ export default function WedgesGame({ pool }: { pool: Question[] }) {
     setQueue(rest);
     setAsked((n) => n + 1);
     setPicked(null);
-    setOrder(rest.length ? [...(rest[0].choices ?? [])].sort(() => Math.random() - 0.5) : []);
+    setOrder(
+      rest.length ? [...(rest[0].choices ?? [])].sort(() => Math.random() - 0.5) : [],
+    );
   }
 
   const q = queue[0];
@@ -95,41 +106,57 @@ export default function WedgesGame({ pool }: { pool: Question[] }) {
 
   if (!started || pool.length === 0) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-        <h1 className="display text-5xl sm:text-6xl">The Wedges</h1>
-        <p className="mt-3 max-w-md text-muted">
-          Fill all six wedges in {MAX_QUESTIONS} questions or fewer. A correct answer
-          earns its category's wedge.
-        </p>
-        {pool.length === 0 ? (
-          <p className="mt-6 text-muted">The bank is still warming up.</p>
-        ) : (
-          <button
-            onClick={start}
-            className="microlabel mt-8 rounded-full border border-sports px-8 py-3 text-sports transition hover:bg-sports hover:text-bg"
-          >
-            deal me in
-          </button>
-        )}
-      </div>
+      <>
+        <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+          <h1 className="display text-5xl sm:text-6xl">The Wedges</h1>
+          <p className="mt-3 max-w-md text-muted">
+            Fill all six wedges in {MAX_QUESTIONS} questions or fewer. A correct
+            answer earns its category&apos;s wedge.
+          </p>
+          {pool.length === 0 ? (
+            <p className="mt-6 text-muted">The bank is still warming up.</p>
+          ) : (
+            <button
+              onClick={start}
+              className="microlabel mt-8 rounded-full border border-sports px-8 py-3 text-sports transition hover:bg-sports hover:text-bg"
+            >
+              deal me in
+            </button>
+          )}
+        </div>
+        <PracticeBar
+          practiceMode={practiceMode}
+          onToggle={togglePractice}
+          saved={saved}
+          onRemove={removeQ}
+        />
+      </>
     );
   }
 
   if (over) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-        <WedgeRing earned={earned} />
-        <p className="display mt-6 text-4xl">
-          {won ? "Ring complete!" : `${earned.size} of 6 wedges`}
-        </p>
-        <p className="mt-2 text-muted">{asked} questions played</p>
-        <button
-          onClick={start}
-          className="microlabel mt-8 rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg"
-        >
-          play again
-        </button>
-      </div>
+      <>
+        <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+          <WedgeRing earned={earned} />
+          <p className="display mt-6 text-4xl">
+            {won ? "Ring complete!" : `${earned.size} of 6 wedges`}
+          </p>
+          <p className="mt-2 text-muted">{asked} questions played</p>
+          <button
+            onClick={start}
+            className="microlabel mt-8 rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg"
+          >
+            play again
+          </button>
+        </div>
+        <PracticeBar
+          practiceMode={practiceMode}
+          onToggle={togglePractice}
+          saved={saved}
+          onRemove={removeQ}
+        />
+      </>
     );
   }
 
@@ -138,19 +165,15 @@ export default function WedgesGame({ pool }: { pool: Question[] }) {
       <div className="flex w-full items-start justify-between">
         <div>
           <h1 className="display text-4xl sm:text-5xl">The Wedges</h1>
-          <p className="microlabel mt-1">
-            question {asked + 1}/{MAX_QUESTIONS}
-          </p>
+          <p className="microlabel mt-1">question {asked + 1}/{MAX_QUESTIONS}</p>
         </div>
         <WedgeRing earned={earned} />
       </div>
 
       <div className="mt-4 w-full rounded-2xl border border-line bg-surface p-6 sm:p-8">
-        <span
-          className="microlabel"
-          style={{ color: CATEGORY_HEX[q.category] }}
-        >
-          {CATEGORY_LABEL[q.category]} wedge{earned.has(q.category) ? " · already earned" : ""}
+        <span className="microlabel" style={{ color: CATEGORY_HEX[q.category] }}>
+          {CATEGORY_LABEL[q.category]} wedge
+          {earned.has(q.category) ? " · already earned" : ""}
         </span>
         <p className="display mt-3 text-2xl leading-tight sm:text-3xl">{q.prompt}</p>
 
@@ -188,13 +211,39 @@ export default function WedgesGame({ pool }: { pool: Question[] }) {
             >
               next →
             </button>
+            {practiceMode && (
+              <button
+                onClick={() => (isSaved(q) ? removeQ(q.prompt) : saveQ(q))}
+                className={`microlabel rounded-full border px-4 py-2 transition ${
+                  isSaved(q)
+                    ? "border-history text-history"
+                    : "border-line text-muted hover:border-history hover:text-history"
+                }`}
+              >
+                {isSaved(q) ? "★ saved" : "☆ save"}
+              </button>
+            )}
             {q.source_url && (
-              <a href={q.source_url} target="_blank" rel="noreferrer" className="microlabel underline">
+              <a
+                href={q.source_url}
+                target="_blank"
+                rel="noreferrer"
+                className="microlabel underline"
+              >
                 source
               </a>
             )}
           </div>
         )}
+      </div>
+
+      <div className="w-full">
+        <PracticeBar
+          practiceMode={practiceMode}
+          onToggle={togglePractice}
+          saved={saved}
+          onRemove={removeQ}
+        />
       </div>
     </div>
   );

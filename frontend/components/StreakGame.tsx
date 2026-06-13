@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { CATEGORY_HEX, type Question } from "@/lib/types";
+import { usePractice } from "@/lib/usePractice";
+import PracticeBar from "@/components/PracticeBar";
 
 const BEST_KEY = "parlor:streak:best";
 
 const fmt = (n: number) =>
   n >= 10000 ? n.toLocaleString() : Number.isInteger(n) ? String(n) : n.toFixed(1);
 
-/** Count-up reveal for the hidden value (UI_SPEC: number reveals). */
 function CountUp({ to }: { to: number }) {
   const [v, setV] = useState(0);
   useEffect(() => {
@@ -27,10 +28,14 @@ function CountUp({ to }: { to: number }) {
 }
 
 export default function StreakGame({ pool }: { pool: Question[] }) {
+  const { practiceMode, togglePractice, saved, saveQ, removeQ, isSaved } = usePractice();
+
   const [deck, setDeck] = useState<Question[]>([]);
   const [streak, setStreak] = useState(0);
   const [best, setBest] = useState(0);
-  const [phase, setPhase] = useState<"idle" | "guessing" | "reveal-win" | "reveal-loss">("idle");
+  const [phase, setPhase] = useState<"idle" | "guessing" | "reveal-win" | "reveal-loss">(
+    "idle",
+  );
 
   useEffect(() => {
     setBest(Number(localStorage.getItem(BEST_KEY) ?? 0));
@@ -64,34 +69,55 @@ export default function StreakGame({ pool }: { pool: Question[] }) {
 
   if (phase === "idle" || pool.length === 0) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-        <h1 className="display text-5xl sm:text-6xl">The Streak</h1>
-        <p className="mt-3 max-w-md text-muted">
-          Higher or lower? One wrong call ends the run. Best so far:{" "}
-          <span className="font-black text-ink">{best}</span>
-        </p>
-        {pool.length === 0 ? (
-          <p className="mt-6 text-muted">The bank is still warming up.</p>
-        ) : (
-          <button
-            onClick={start}
-            className="microlabel mt-8 rounded-full border border-screen px-8 py-3 text-screen transition hover:bg-screen hover:text-bg"
-          >
-            start the run
-          </button>
-        )}
-      </div>
+      <>
+        <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+          <h1 className="display text-5xl sm:text-6xl">The Streak</h1>
+          <p className="mt-3 max-w-md text-muted">
+            Higher or lower? One wrong call ends the run. Best so far:{" "}
+            <span className="font-black text-ink">{best}</span>
+          </p>
+          {pool.length === 0 ? (
+            <p className="mt-6 text-muted">The bank is still warming up.</p>
+          ) : (
+            <button
+              onClick={start}
+              className="microlabel mt-8 rounded-full border border-screen px-8 py-3 text-screen transition hover:bg-screen hover:text-bg"
+            >
+              start the run
+            </button>
+          )}
+        </div>
+        <PracticeBar
+          practiceMode={practiceMode}
+          onToggle={togglePractice}
+          saved={saved}
+          onRemove={removeQ}
+        />
+      </>
     );
   }
 
   if (!q) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-        <p className="display text-4xl text-screen">Deck exhausted — streak {streak}!</p>
-        <button onClick={start} className="microlabel mt-8 rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg">
-          reshuffle
-        </button>
-      </div>
+      <>
+        <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+          <p className="display text-4xl text-screen">
+            Deck exhausted — streak {streak}!
+          </p>
+          <button
+            onClick={start}
+            className="microlabel mt-8 rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg"
+          >
+            reshuffle
+          </button>
+        </div>
+        <PracticeBar
+          practiceMode={practiceMode}
+          onToggle={togglePractice}
+          saved={saved}
+          onRemove={removeQ}
+        />
+      </>
     );
   }
 
@@ -115,12 +141,18 @@ export default function StreakGame({ pool }: { pool: Question[] }) {
         <div className="rounded-2xl border border-line bg-surface p-6">
           <p className="microlabel">{q.unit}</p>
           <p className="display mt-2 text-3xl">{q.subject_a}</p>
-          <p className="tabular mt-4 text-4xl font-black" style={{ color: hex }}>
+          <p
+            className="tabular mt-4 text-4xl font-black"
+            style={{ color: hex }}
+          >
             {fmt(q.value_a!)}
           </p>
         </div>
 
-        <div className="rounded-2xl border p-6" style={{ borderColor: hex, background: `${hex}10` }}>
+        <div
+          className="rounded-2xl border p-6"
+          style={{ borderColor: hex, background: `${hex}10` }}
+        >
           <p className="microlabel">{q.unit}</p>
           <p className="display mt-2 text-3xl">{q.subject_b}</p>
           <p className="mt-4 text-4xl font-black" style={{ color: hex }}>
@@ -171,15 +203,41 @@ export default function StreakGame({ pool }: { pool: Question[] }) {
               </button>
             </>
           )}
+          {practiceMode && (
+            <div className="mt-3">
+              <button
+                onClick={() => (isSaved(q) ? removeQ(q.prompt) : saveQ(q))}
+                className={`microlabel rounded-full border px-4 py-2 transition ${
+                  isSaved(q)
+                    ? "border-history text-history"
+                    : "border-line text-muted hover:border-history hover:text-history"
+                }`}
+              >
+                {isSaved(q) ? "★ saved" : "☆ save question"}
+              </button>
+            </div>
+          )}
           {q.source_url && (
             <div className="mt-3">
-              <a href={q.source_url} target="_blank" rel="noreferrer" className="microlabel underline">
+              <a
+                href={q.source_url}
+                target="_blank"
+                rel="noreferrer"
+                className="microlabel underline"
+              >
                 source
               </a>
             </div>
           )}
         </motion.div>
       )}
+
+      <PracticeBar
+        practiceMode={practiceMode}
+        onToggle={togglePractice}
+        saved={saved}
+        onRemove={removeQ}
+      />
     </div>
   );
 }
