@@ -112,11 +112,19 @@ clue       year_guess multiple_choice higher_lower
   DB); with no backend it keeps a local per-device top-10. See `lib/leaderboard.ts`
   and `supabase/functions/submit-score/`.
 
-## Phase 4 rooms (designed, not yet built)
+## Room 11 — THE LOBBY (multiplayer buzzer) — `/lobby` ✦ Phase 4, built
 
-| Room | Mechanic | Unblocked by |
-|---|---|---|
-| THE LOBBY (multiplayer) | live buzzer rooms | Supabase Realtime channels |
+- Host creates a room → 4-letter code. Others join by typing the code.
+- Questions are streamed one at a time from the MC bank. Everyone sees the
+  prompt; first to click **⚡ Buzz In!** gets the answer window.
+- Correct answer = +1,000 pts. Miss = 0. Timer bar counts down (8s to buzz,
+  10s to answer); host moves to the next question at their own pace.
+- Live score sidebar updates after each reveal. Podium at the end.
+- **Offline fallback**: degrades gracefully to a "requires backend" notice when
+  `NEXT_PUBLIC_SUPABASE_URL` is absent — all other rooms stay playable.
+- **Transport**: Supabase Realtime **Broadcast** (ephemeral, no DB rows written).
+  Host drives the state machine; players mirror host broadcasts. Presence tracks
+  connected player names for the lobby screen.
 
 ## Scoring & persistence philosophy
 

@@ -86,6 +86,13 @@ const ROOMS = [
     blurb:
       "One round from every room, once a day, same gauntlet for everyone. Share your line of squares.",
   },
+  {
+    href: "/lobby",
+    name: "The Lobby",
+    accent: "wildcard" as const,
+    blurb:
+      "Live multiplayer. First to buzz in answers the question. Create a room, share the code, play together.",
+  },
 ];
 
 export default function Home() {
@@ -111,7 +118,7 @@ export default function Home() {
         </div>
         <h1 className="display mt-auto text-[clamp(4rem,18vw,14rem)]">Parlor</h1>
         <p className="max-w-xl text-sm text-muted sm:text-base">
-          Ten rooms. One question bank, forged nightly from Wikipedia, Deezer,
+          Eleven rooms. One question bank, forged nightly from Wikipedia, Deezer,
           Sleeper/ESPN and TMDB. Pick a door.
         </p>
       </section>
