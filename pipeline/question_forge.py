@@ -29,6 +29,7 @@ import argparse
 import json
 import math
 import random
+import re
 from datetime import date
 from pathlib import Path
 
@@ -189,14 +190,9 @@ def forge_clues(facts: list[dict]) -> list[dict]:
     out = []
     for f in facts:
         subject = f["subject"]
-        text = f["fact_text"]
-        if subject.lower() in text.lower():
-            clue = text.replace(subject, "this " + _subject_class(f))
-            # crude leak check after substitution
-            if subject.lower() in clue.lower():
-                continue
-        else:
-            clue = text
+        clue = mask_subject(f["fact_text"], subject, f)
+        if clue is None:
+            continue
         out.append(
             {
                 "content_hash": content_hash("clue", f["content_hash"]),
@@ -240,14 +236,10 @@ def forge_seance(facts: list[dict]) -> list[dict]:
 
         clues: list[str] = []
         for f in ordered:
-            text = f["fact_text"]
-            if subject.lower() in text.lower():
-                masked = text.replace(subject, "this " + _subject_class(f))
-                if subject.lower() in masked.lower():
-                    continue  # substitution didn't fully mask — skip
-                clues.append(masked)
-            else:
-                clues.append(text)
+            masked = mask_subject(f["fact_text"], subject, f)
+            if masked is None:
+                continue  # couldn't fully mask the subject — skip
+            clues.append(masked)
 
         if len(clues) < MIN_SEANCE_CLUES:
             continue
@@ -351,6 +343,83 @@ def _subject_class(f: dict) -> str:
         "geography": "place",
         "wildcard": "subject",
     }[f["category"]]
+
+
+# Generic type/descriptor nouns: kept in a name for natural-reading replacement
+# runs ("the Sylvanus Thayer House" → "this subject"), but never themselves
+# treated as a leak (so a stray standalone "station" elsewhere in the text isn't
+# blanked out) and never a single-word match target.
+_GENERIC_TYPE_WORDS = {
+    "station", "line", "system", "house", "park", "building", "museum",
+    "monument", "airport", "district", "village", "municipality", "diocese",
+    "club", "team", "band", "song", "film", "movie", "book", "novel",
+    "county", "square", "street", "road", "avenue", "bridge", "lighthouse",
+    "church", "school", "college", "university", "hospital", "stadium",
+    "channel", "metro", "tram", "trolleybus", "trolleybuses", "plass",
+    "railway", "thoroughfare", "region", "voivodeship", "town", "city",
+    "state", "province", "organisation", "organization", "award", "medal",
+}
+_STOPWORDS = {
+    "the", "a", "an", "of", "in", "at", "on", "and", "or", "for", "to",
+    "is", "are", "was", "were", "de", "la", "van", "der", "von", "da",
+    "do", "das", "des", "el", "los", "las", "also",
+}
+
+
+def _name_words(subject: str) -> list[str]:
+    """Subject words after stripping a trailing parenthetical/comma disambiguator
+    ("X (Y)" / "X, Y"), in original order — the phrase a fact's prose is most
+    likely to actually use when naming the subject."""
+    core = re.sub(r"\s*\([^)]*\)\s*$", "", subject).strip()
+    core = re.sub(r",\s*[^,]+$", "", core).strip()
+    return re.findall(r"[^\d\W]+", core)
+
+
+def mask_subject(text: str, subject: str, fact: dict) -> str | None:
+    """Scrub every mention of `subject`'s identifying name from `text`.
+
+    A plain `text.replace(subject, ...)` (the old approach) only catches the
+    rare case where the fact's prose repeats the subject string verbatim. Wiki
+    lead sentences routinely phrase it differently — different word order, a
+    repeated alias, or a suffix the running text drops — so this instead masks
+    every contiguous run of subject words that appears in the text (longest
+    first, so a full phrase like "Sylvanus Thayer House" reads naturally as one
+    "this subject", while a later standalone alias like "simply Krzewina" still
+    gets caught). Runs made up only of generic type words ("railway station")
+    are never replaced on their own, so unrelated mentions of common nouns
+    elsewhere in the text survive untouched.
+
+    Returns None if a real (non-generic) identifying word still survives the
+    mask — callers should skip the fact rather than ship a leaking clue.
+    """
+    words = _name_words(subject)
+    if not words:
+        return text  # nothing distinctive to leak (e.g. a single short word)
+
+    leak_words = {
+        w.lower() for w in words
+        if len(w) >= 4 and w.lower() not in _STOPWORDS and w.lower() not in _GENERIC_TYPE_WORDS
+    }
+    leak_idx = {i for i, w in enumerate(words) if w.lower() in leak_words}
+
+    placeholder = "this " + _subject_class(fact)
+    masked = text
+    for n in range(len(words), 0, -1):
+        for i in range(len(words) - n + 1):
+            if not (set(range(i, i + n)) & leak_idx):
+                continue  # purely generic run — don't touch unrelated text
+            run = re.escape(" ".join(words[i : i + n]))
+            masked = re.sub(rf"\b{run}\b", placeholder, masked, flags=re.IGNORECASE)
+
+    # collapse a leftover article right before the placeholder ("The this X" → "this X")
+    masked = re.sub(rf"\b(?:the|a|an)\s+({re.escape(placeholder)})\b", r"\1", masked, flags=re.IGNORECASE)
+    if masked:
+        masked = masked[0].upper() + masked[1:]
+
+    remaining = {w.lower() for w in re.findall(r"[^\d\W]+", masked)}
+    if leak_words & remaining:
+        return None
+    return masked
 
 
 # ── daily board (deterministic, shared) ─────────────────────────────────────

@@ -26,7 +26,11 @@ jobs:
           cache: pip
       - run: pip install -r pipeline/requirements.txt
       - name: Selftest (offline gates first)
-        run: python pipeline/selftest.py
+        # --core-only: test the forge/recipe code with synthetic facts, not the
+        # currently-committed seed bank. Gating ingestion on the latter creates a
+        # deadlock — a thin/regressed bank (e.g. from a bad wiki_hard export)
+        # would block the very ingestion run that refreshes it.
+        run: python pipeline/selftest.py --core-only
       # ingests are continue-on-error: one flaky API must not kill the nightly
       # refresh — decay shows up in the transform job's category health report
       - name: Ingest Wikipedia
@@ -112,6 +116,8 @@ jobs:
         run: python pipeline/export_seed.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Verify exported seed bank before committing
+        run: python pipeline/selftest.py
       - name: Commit bronze layer + refreshed seed bank
         run: |
           git config user.name "parlor-etl"

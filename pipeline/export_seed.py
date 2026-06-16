@@ -57,6 +57,27 @@ def main() -> None:
     if len(flat) < 20:
         raise SystemExit(f"refusing to export a thin seed bank ({len(flat)} questions) — keeping the committed one")
 
+    # Never let a single-source bronze (e.g. a wikipedia-only hard sweep) clobber
+    # a richer, already-committed bank with a regressed one. Same bar selftest.py
+    # holds the bank to: ≥3 categories with a board-ready (≥3 tier) difficulty spread.
+    clues = [q for q in flat if q["qtype"] == "clue"]
+    new_spread = sum(
+        1 for c in {q["category"] for q in clues}
+        if len({q["difficulty"] for q in clues if q["category"] == c}) >= 3
+    )
+    if SEED_PATH.exists():
+        old_clues = [q for q in json.loads(SEED_PATH.read_text())["questions"] if q["qtype"] == "clue"]
+        old_spread = sum(
+            1 for c in {q["category"] for q in old_clues}
+            if len({q["difficulty"] for q in old_clues if q["category"] == c}) >= 3
+        )
+        if new_spread < min(3, old_spread):
+            raise SystemExit(
+                f"refusing to export — new bank has board-ready spread in {new_spread} "
+                f"categories, committed bank has {old_spread}. Likely a thin/single-source "
+                f"bronze (e.g. DB-less export with only one ingest's facts) — keeping the committed one."
+            )
+
     SEED_PATH.parent.mkdir(parents=True, exist_ok=True)
     SEED_PATH.write_text(json.dumps({"questions": flat}, indent=1))
     console.print(f"[green]✓ exported {len(flat)} questions → {SEED_PATH.relative_to(REPO_ROOT)}[/green]")

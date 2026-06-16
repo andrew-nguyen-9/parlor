@@ -222,7 +222,13 @@ def get_json(url: str, params: dict | None = None, headers: dict | None = None) 
         raise
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=8))
+@retry(
+    stop=stop_after_attempt(8),
+    wait=wait_exponential(multiplier=2, min=1, max=60),
+    retry=retry_if_exception(_is_retryable_error),
+    after=_after_retry_log,
+    reraise=True,
+)
 def get_json_conditional(
     url: str,
     cache_path: Path,
@@ -233,6 +239,11 @@ def get_json_conditional(
 
     Stores {etag, last_modified, timestamp, data} in cache_path as JSON.
     Falls back to unconditional GET if the cache file is missing or unreadable.
+
+    Shares get_json()'s per-domain throttle and 429/503/504-aware retry —
+    CI runners start with an empty data/cache/ (it's gitignored and not
+    persisted between workflow runs), so every run does a full fetch; this
+    must be just as resilient to rate limiting as get_json().
     """
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache: dict = {}
@@ -249,23 +260,38 @@ def get_json_conditional(
         console.print(f"[dim]cache hit → {cache_path.name} (age {int(now - cached_at)}s)[/dim]")
         return cache["data"]
 
+    _rate_limiter._enforce_interval(url)
+
     h = {"User-Agent": USER_AGENT}
     if cache.get("etag"):
         h["If-None-Match"] = cache["etag"]
     if cache.get("last_modified"):
         h["If-Modified-Since"] = cache["last_modified"]
 
-    resp = requests.get(url, params=params, headers=h, timeout=30)
+    try:
+        resp = requests.get(url, params=params, headers=h, timeout=30)
+        _tracker.log_call(resp.status_code, wait_seconds=0)
 
-    if resp.status_code == 304 and cache.get("data"):
-        console.print(f"[dim]304 Not Modified → reusing {cache_path.name}[/dim]")
-        cache["timestamp"] = now
-        cache_path.write_text(json.dumps(cache))
-        return cache["data"]
+        if resp.status_code == 304 and cache.get("data"):
+            console.print(f"[dim]304 Not Modified → reusing {cache_path.name}[/dim]")
+            cache["timestamp"] = now
+            cache_path.write_text(json.dumps(cache))
+            return cache["data"]
 
-    resp.raise_for_status()
+        resp.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        console.print(
+            f"[red][{_tracker.session_id}] HTTP {e.response.status_code}: {e.response.reason} "
+            f"@ {url}[/red]"
+        )
+        raise
+    except Exception as e:
+        console.print(
+            f"[red][{_tracker.session_id}] Request failed: {type(e).__name__} @ {url}[/red]"
+        )
+        raise
+
     data = resp.json()
-
     cache = {
         "etag": resp.headers.get("ETag"),
         "last_modified": resp.headers.get("Last-Modified"),

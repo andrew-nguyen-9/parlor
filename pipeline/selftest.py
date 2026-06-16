@@ -10,6 +10,7 @@ Checks:
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from datetime import date
@@ -81,6 +82,20 @@ def synthetic_facts() -> list[dict]:
 
 
 def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--core-only", action="store_true",
+        help=(
+            "skip checks against the currently-committed seed bank (size/category-"
+            "spread). Use this as a pre-ingestion gate: it tests the pipeline code "
+            "itself with synthetic facts, not a downstream artifact that a previous "
+            "CI run may have left in a bad state — gating ingestion on the latter "
+            "creates a deadlock where a thin/regressed bank blocks the very run "
+            "that would refresh it."
+        ),
+    )
+    args = ap.parse_args()
+
     facts = synthetic_facts()
     qs = forge_all(facts)
     types = {q["qtype"] for q in qs}
@@ -162,6 +177,13 @@ def main() -> None:
         row_a = next(r for r in lines if r["content_hash"] == "a")
         check("compaction keeps original timestamp for unchanged facts",
               row_a["_ingested_at"] == "t1")
+
+    if args.core_only:
+        if FAILURES:
+            print(f"\n{len(FAILURES)} failure(s)")
+            sys.exit(1)
+        print("\nall good (core checks only — seed bank not checked)")
+        return
 
     seed_path = REPO_ROOT / "frontend" / "public" / "seed-questions.json"
     if seed_path.exists():
