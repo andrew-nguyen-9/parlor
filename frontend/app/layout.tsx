@@ -12,9 +12,18 @@ const cinzel = Cinzel({
 });
 
 export const metadata: Metadata = {
-  title: "PARLOR — an after-dark house of trivia games",
+  title: "PARLOR — a secret order of the curious",
   description:
-    "Eleven trivia rooms — forged nightly from Wikipedia, Deezer, Sleeper/ESPN and TMDB. Pick a door.",
+    "Ten rooms behind one velvet door — trivia forged nightly and a new murder mystery every dusk. Light a candle and pick a door.",
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "PARLOR — a secret order of the curious",
+    description: "Ten rooms. A nightly question bank and a daily mystery.",
+    images: ["/logo-512.png"],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

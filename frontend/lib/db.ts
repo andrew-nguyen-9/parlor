@@ -12,7 +12,12 @@
 // ─────────────────────────────────────────────────────────────
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 
-const dsn = process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL;
+// Accept all three naming conventions so root .env (CONNECTION_STRING),
+// Vercel dashboard (DATABASE_URL), and Neon CLI (NEON_DATABASE_URL) all work.
+const dsn =
+  process.env.DATABASE_URL ??
+  process.env.NEON_DATABASE_URL ??
+  process.env.CONNECTION_STRING;
 
 let sql: NeonQueryFunction<false, false> | null = null;
 

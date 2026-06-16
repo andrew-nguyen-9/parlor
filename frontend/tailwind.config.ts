@@ -5,17 +5,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Speakeasy / magic-mansion base palette
-        bg: "#06060a",
-        surface: "#0d0d18",
-        line: "#1a1a2e",
-        ink: "#f0ede6",
-        muted: "#6b6b82",
-        brass: "#b8902e",
-        gold: "#d4af37",
-        candle: "#f5c518",
-        smoke: "#4a4a6a",
-        ember: "#b22b2b",
+        // PARLOR — magic-mansion / secret-order palette (drawn from the logo:
+        // oxblood ground, brass-gold filigree, candle flame, wine-burgundy eye).
+        bg: "#150409", // deep oxblood, near-black
+        surface: "#24101a", // lifted burgundy velvet
+        line: "#4a2233", // brass-burgundy hairline
+        ink: "#f0e6cf", // parchment cream
+        muted: "#9a7a78", // dusty mauve
+        brass: "#a87a2e", // antiqued brass
+        gold: "#c9a24a", // logo gold
+        goldlite: "#e6c878", // gilt highlight
+        candle: "#f5c542", // flame core
+        smoke: "#5a4452",
+        ember: "#d4431e", // flame / danger
+        burgundy: "#6e1f2b", // the all-seeing eye
+        parchment: "#efe8c0",
         // Category jewel tones — mirrored in lib/types.ts CATEGORY_HEX
         history: "#c8852a",
         music: "#b83468",

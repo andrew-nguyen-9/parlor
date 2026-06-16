@@ -95,8 +95,22 @@ clue       year_guess multiple_choice higher_lower
   every 5-in-a-row buys +3s, a miss costs 2s and breaks the combo with a screen
   shake. Keyboard-first (keys 1–4) and a deck + difficulty picker (`lib/decks.ts`).
 
-## Room 10 — THE CONNECTIONS (grouping puzzle) — `/connections` ✦ Phase 3, built
+## Room 10 — THE MYSTERY (daily social-deduction) — `/mystery` ✦ Phase 8, built
 
+- A new "Case #N" every night, generated **deterministically from the date** —
+  no LLM, no API, zero tokens (`lib/mystery.ts`). 8-guest cast drawn from a
+  20-strong roster, one victim, 1–3 culprits (60/30/10 weighting), a relationship
+  graph, hour-by-hour alibis, and four staged clues (witness → physical evidence
+  → broken alibi → motive). Innocents never lie about the murder hour, so the
+  clue set singles out the culprits uniquely (`verifySolvable`).
+- Read the dossiers, reveal clues at your own pace, accuse up to three. One
+  attempt per day, stored in `localStorage` (frontend never writes the DB).
+- **Replaces The Connections** as the house deduction room.
+
+## Room 10b — THE CONNECTIONS (grouping puzzle, retired) — `/connections` ✦ Phase 3
+
+- Retired from the members' grid in favour of The Mystery; the route still works
+  for anyone with the link, but it is no longer featured.
 - 16 tiles, four hidden groups of four, four mistakes allowed (NYT Connections).
   Date-seeded tile order for a shared daily puzzle; "one away" hint; the four
   groups colour-ramp yellow→purple by difficulty. Curated seed puzzles, plus a

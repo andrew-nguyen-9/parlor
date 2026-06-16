@@ -41,9 +41,18 @@ export default function RoomShell({
           </span>
           <span className="microlabel">{label}</span>
         </div>
-        <span className="microlabel" style={{ color: `${hex}99` }}>
-          parlor
-        </span>
+        <Link href="/" className="flex items-center gap-2 transition hover:opacity-80">
+          <span className="microlabel" style={{ color: `${hex}99` }}>
+            parlor
+          </span>
+          <img
+            src="/logo-96.png"
+            alt="The Parlor"
+            width={28}
+            height={31}
+            className="h-7 w-auto drop-shadow-[0_2px_8px_rgba(110,31,43,0.5)]"
+          />
+        </Link>
       </header>
 
       {/* Thin brass accent rule under header */}

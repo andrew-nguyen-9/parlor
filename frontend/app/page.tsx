@@ -78,12 +78,19 @@ const ROOMS = [
     blurb:
       "Pick the closest match. Hints reveal shared attributes — category, region, magnitude. Climb the ladder.",
   },
+  {
+    href: "/mystery",
+    name: "The Mystery",
+    accent: "history" as const,
+    blurb:
+      "A new case every night. Read the dossiers, follow four clues, and name the culprit before the candle gutters out.",
+  },
 ];
 
 export default function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden">
-      <div className="glow" style={{ background: "#7040a8" }} aria-hidden />
+      <div className="glow" style={{ background: "#6e1f2b" }} aria-hidden />
 
       {/* Members' entrance hero */}
       <section className="relative z-10 flex min-h-[82vh] flex-col justify-end px-4 pb-10 pt-12 sm:px-8">
@@ -92,19 +99,27 @@ export default function Home() {
 
         <div className="flex items-center justify-between">
           <span className="microlabel">members' entrance · after dark</span>
-          <span className="microlabel" style={{ color: "#b8902e99" }}>
+          <span className="microlabel" style={{ color: "#a87a2e99" }}>
             {isDbConfigured() ? "♦ live bank" : "♦ nightly deck"}
           </span>
         </div>
 
         <div className="mt-auto">
+          {/* Order seal — the flaming spade & all-seeing eye */}
+          <img
+            src="/logo-256.png"
+            alt="The Parlor — a secret order"
+            width={120}
+            height={132}
+            className="eye-glow mb-4 h-28 w-auto drop-shadow-[0_6px_30px_rgba(110,31,43,0.5)] sm:h-32"
+          />
           <p className="microlabel mb-3 tracking-[0.3em] text-brass">
-            ✦ &nbsp; the parlor &nbsp; ✦
+            ✦ &nbsp; a secret order of the curious &nbsp; ✦
           </p>
           <h1
             className="display text-[clamp(4.5rem,20vw,15rem)] leading-none"
             style={{
-              background: "linear-gradient(135deg, #d4af37 0%, #f0ede6 50%, #b8902e 100%)",
+              background: "linear-gradient(135deg, #c9a24a 0%, #f0dca0 48%, #a87a2e 78%, #6e1f2b 120%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
@@ -115,13 +130,13 @@ export default function Home() {
         </div>
 
         <p className="mt-4 max-w-lg text-sm text-muted sm:text-base">
-          Nine rooms. One question bank, forged nightly. Pick a door —
-          the house always has a question.
+          Ten rooms behind one velvet door. A question bank forged nightly, a new
+          mystery every dusk. Light a candle — the house always has a secret.
         </p>
 
         {/* Decorative suit row */}
         <div className="mt-6 flex gap-4 text-lg text-brass opacity-30" aria-hidden>
-          <span>♦</span><span>♣</span><span>♥</span><span>♠</span><span>✦</span>
+          <span>♠</span><span>♦</span><span>☾</span><span>♣</span><span>♥</span><span>✦</span>
         </div>
       </section>
 
