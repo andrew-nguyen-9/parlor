@@ -33,16 +33,22 @@ USER_AGENT = "parlor-trivia/1.0 (https://github.com/andrew-nguyen-9/trivia-gener
 
 CATEGORIES = ("history", "music", "sports", "screen", "geography", "wildcard")
 
+import time
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=8))
-def get_json(url: str, params: dict | None = None, headers: dict | None = None) -> dict | list:
+RATE_LIMIT_DELAY = 1  # seconds between Wikipedia API calls
+
+def _rate_limited_get(url: str, params: dict | None = None, headers: dict | None = None) -> requests.Response:
+    time.sleep(RATE_LIMIT_DELAY)
     h = {"User-Agent": USER_AGENT}
     if headers:
         h.update(headers)
-    resp = requests.get(url, params=params, headers=h, timeout=20)
+    return requests.get(url, params=params, headers=h, timeout=20)
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=60))
+def get_json(url: str, params: dict | None = None, headers: dict | None = None) -> dict | list:
+    resp = _rate_limited_get(url, params, headers)
     resp.raise_for_status()
     return resp.json()
-
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=8))
 def get_json_conditional(
