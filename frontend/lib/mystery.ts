@@ -7,12 +7,18 @@
 // deterministically from `seedFromDate(date)`. The same date yields the same
 // "Case #N" for every player, forever, and regenerates from nothing but the date.
 //
-// Solvability: innocents never lie about WHERE they were at the murder hour, so
-// "who was actually at the scene at the hour of the crime" is exactly the culprit
-// set. The four staged clues reveal, in order: the hour+room, a physical trace
-// tied to a culprit's quirk, the contradicted alibi, and the motive. A careful
-// reader of the dossiers can deduce the culprit(s) uniquely. `verifySolvable()`
-// (used by the room + a test) checks the clues actually single out the culprits.
+// Solvability: this is a real WHO + WHERE + WHEN logic puzzle.
+// - WHO: innocents' claimed location at the murder hour is always the truth
+//   (never the scene); culprits' claim is a lie (their true location at that
+//   hour is the scene). `deduceCulprits()` reads this off `Dossier.trueLocation`
+//   vs `Dossier.claimed` directly — no relationship-graph guessing involved.
+// - WHERE / WHEN: four of the seven clues each rule out a set of rooms or hours
+//   entirely (`Clue.eliminatesRooms` / `eliminatesHours`). Together they're
+//   constructed to eliminate every room but the true scene and every hour but
+//   the true murder hour. `deductionMatrix()` renders the running state of that
+//   elimination as a room×hour grid; the one cell that survives both an
+//   un-eliminated row and an un-eliminated column is `"confirmed"`.
+// `verifySolvable()` (used by the room + lib/mystery.test.ts) checks all three.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { mulberry32 } from "./rng";
@@ -73,10 +79,21 @@ const MOTIVES = [
 export interface Relationship { from: string; to: string; kind: string }
 export interface Dossier {
   id: string;
-  claimed: string[]; // claimed location per HOURS slot
+  claimed: string[];      // claimed location per HOURS slot — what they SAY
+  trueLocation: string[]; // ground truth per HOURS slot; differs from claimed
+                           // only for a culprit at the murder hour (the lie)
   relationships: Relationship[];
 }
-export interface Clue { stage: number; kind: string; title: string; text: string }
+export interface Clue {
+  stage: number;
+  kind: string;
+  title: string;
+  text: string;
+  eliminatesRooms: number[]; // indices into ROOMS this clue rules out entirely
+  eliminatesHours: number[]; // indices into HOURS this clue rules out entirely
+}
+
+export type Mark = "confirmed" | "ruled-out" | "unknown";
 
 export interface MysteryCase {
   date: string; // ISO yyyy-mm-dd
@@ -86,7 +103,7 @@ export interface MysteryCase {
   victim: Character;
   suspects: Character[]; // the 7 living suspects
   dossiers: Record<string, Dossier>;
-  clues: Clue[]; // 4 staged clues
+  clues: Clue[]; // 7 staged clues
   // solution
   culprits: string[]; // ids, length 1..3 (first is the ringleader)
   motive: string;
@@ -121,6 +138,11 @@ function shuffle<T>(arr: T[], rnd: () => number): T[] {
 }
 const pick = <T>(arr: readonly T[], rnd: () => number): T => arr[Math.floor(rnd() * arr.length)];
 
+function fmtList(items: string[]): string {
+  if (items.length === 1) return items[0];
+  return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
+}
+
 export function todayISO(now = new Date()): string {
   const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
   return d.toISOString().slice(0, 10);
@@ -145,7 +167,8 @@ export function generateCase(date: string): MysteryCase {
 
   // Alibis: everyone claims a location each hour. Innocents' claim at the murder
   // hour is the TRUTH (they were elsewhere). Culprits CLAIM elsewhere but were
-  // truly in `scene`. That makes the culprit set exactly "lied about the hour".
+  // truly in `scene` — `trueLocation` records that ground truth separately from
+  // `claimed`, so deduceCulprits() can read off the lie directly.
   const dossiers: Record<string, Dossier> = {};
   for (const s of suspects) {
     const claimed: string[] = [];
@@ -157,13 +180,16 @@ export function generateCase(date: string): MysteryCase {
     }
     if (isCulprit && claimed[hourIndex] === scene) {
       // a culprit must CLAIM somewhere other than the scene (the lie)
-      claimed[hourIndex] = ROOMS[(ROOMS.indexOf(scene) + 2) % ROOMS.length];
+      claimed[hourIndex] = ROOMS[(ROOMS.indexOf(scene as (typeof ROOMS)[number]) + 2) % ROOMS.length];
     }
-    dossiers[s.id] = { id: s.id, claimed, relationships: [] };
+    const trueLocation = [...claimed];
+    trueLocation[hourIndex] = isCulprit ? scene : claimed[hourIndex];
+    dossiers[s.id] = { id: s.id, claimed, trueLocation, relationships: [] };
   }
 
   // Relationship graph: 2–4 edges per suspect; every culprit gets a tie to the
-  // victim (the motive thread). Accomplices are tied to the ringleader.
+  // victim (the motive thread). Accomplices are tied to the ringleader. This is
+  // dossier flavor/context only — WHO is deduced from trueLocation, not ties.
   const addRel = (from: string, to: string, kind: string) => {
     if (from === to) return;
     const d = dossiers[from];
@@ -179,15 +205,31 @@ export function generateCase(date: string): MysteryCase {
   addRel(ringleader, victim.id, "rival"); // ringleader ↔ victim motive thread
   for (let i = 1; i < culprits.length; i++) addRel(culprits[i], ringleader, "business partner");
 
+  // ── WHERE/WHEN elimination clues ────────────────────────────────────────────
+  // Partition the non-scene rooms and non-murder hours so that, once all four
+  // elimination clues are revealed, exactly the true scene and true hour have
+  // not been ruled out — deterministic, not generate-and-check.
+  const sceneIdx = ROOMS.indexOf(scene as (typeof ROOMS)[number]);
+  const nonSceneRooms = shuffle(ROOMS.map((_, i) => i).filter((i) => i !== sceneIdx), rnd);
+  const roomsRound1 = nonSceneRooms.slice(0, 2);
+  const roomsRound2 = nonSceneRooms.slice(2);
+
+  const nonMurderHours = shuffle(HOURS.map((_, i) => i).filter((i) => i !== hourIndex), rnd);
+  const hoursRound1 = nonMurderHours.slice(0, 2);
+  const hoursRound2 = nonMurderHours.slice(2);
+
   // ── prose (templated, no LLM) ───────────────────────────────────────────────
+  // Deliberately never names `scene` or `HOURS[hourIndex]` — the old opening
+  // stated both directly, which leaked the WHERE/WHEN answer before the
+  // investigation even began.
   const caseNumber = caseNumberFor(date);
   const niceDate = new Date(date + "T00:00:00Z").toLocaleDateString("en-US", {
     month: "long", day: "numeric", year: "numeric", timeZone: "UTC",
   });
   const title = `The ${niceDate.replace(/, \d{4}$/, "")} Case`;
   const opening =
-    `Candlelight gutters in ${scene}. ${victim.title}, ${victim.emoji} ${pretty(victim.id)}, ` +
-    `was found at the stroke of ${HOURS[hourIndex]} — ${victim.trait.toLowerCase()} ` +
+    `Candlelight gutters somewhere in the house. ${victim.title}, ${victim.emoji} ${pretty(victim.id)}, ` +
+    `was found dead this evening — ${victim.trait.toLowerCase()} ` +
     `Seven guests remain in the mansion, each with a story, and at least one with a lie. ` +
     `The Order convenes. The reckoning is ${motive.toLowerCase()}.`;
 
@@ -195,25 +237,47 @@ export function generateCase(date: string): MysteryCase {
   const clues: Clue[] = [
     {
       stage: 1, kind: "Witness Statement",
-      title: "A figure in the dark",
-      text: `A trembling witness swears they glimpsed someone moving through ${scene} just as the clock struck ${HOURS[hourIndex]}. Whoever it was did not belong there.`,
+      title: "What the clock did not see",
+      text: `Two members of staff swear nothing happened at ${fmtList(hoursRound1.map((i) => HOURS[i]))} — whatever befell ${pretty(victim.id)}, it was not then.`,
+      eliminatesRooms: [], eliminatesHours: hoursRound1,
     },
     {
-      stage: 2, kind: "Physical Evidence",
+      stage: 2, kind: "Witness Statement",
+      title: "Rooms cleared",
+      text: `The household confirms ${fmtList(roomsRound1.map((i) => ROOMS[i]))} stood empty the entire evening. Cross those off the list.`,
+      eliminatesRooms: roomsRound1, eliminatesHours: [],
+    },
+    {
+      stage: 3, kind: "Witness Statement",
+      title: "The narrowing hour",
+      text: `A second sweep of the house clears ${fmtList(hoursRound2.map((i) => HOURS[i]))} as well. Only one hour now remains unaccounted for.`,
+      eliminatesRooms: [], eliminatesHours: hoursRound2,
+    },
+    {
+      stage: 4, kind: "Witness Statement",
+      title: "The last room standing",
+      text: `The staff account for ${fmtList(roomsRound2.map((i) => ROOMS[i]))} too — each was occupied by guests who never left each other's sight. Only one room is left unexplained.`,
+      eliminatesRooms: roomsRound2, eliminatesHours: [],
+    },
+    {
+      stage: 5, kind: "Physical Evidence",
       title: "Left behind",
-      text: `On the floor of ${scene} the investigators recover ${ring.quirk}. Only one guest in this house is ever seen with such a thing.`,
+      text: `Investigators recover ${ring.quirk} from the room the timeline now points to. Only one guest in this house is ever seen with such a thing.`,
+      eliminatesRooms: [], eliminatesHours: [],
     },
     {
-      stage: 3, kind: "Timeline Discovery",
+      stage: 6, kind: "Timeline Discovery",
       title: "A broken alibi",
       text: `Cross-examined, ${pretty(ringleader)} insists they spent ${HOURS[hourIndex]} in ${dossiers[ringleader].claimed[hourIndex]}. Three guests place them nowhere near it. The alibi is a lie.`,
+      eliminatesRooms: [], eliminatesHours: [],
     },
     {
-      stage: 4, kind: "Secret Relationship",
+      stage: 7, kind: "Secret Relationship",
       title: "The motive",
       text: culprits.length > 1
         ? `The Order uncovers a pact: ${pretty(ringleader)} did not act alone. A ${relTo(dossiers, culprits)} tie binds them to ${culprits.length === 2 ? "an accomplice" : "two accomplices"}, and the victim's exposure of a secret made it ${motive.toLowerCase()}.`
         : `At last the thread is pulled: the victim had exposed a secret, and ${pretty(ringleader)} alone stood to gain. The motive is ${motive.toLowerCase()}.`,
+      eliminatesRooms: [], eliminatesHours: [],
     },
   ];
 
@@ -231,32 +295,56 @@ export function pretty(id: string): string {
 }
 
 /**
- * Solver used by the game's grading AND a unit test: the culprits are exactly
- * the suspects who claim a location other than the true scene at the murder hour
- * (innocents are pinned to a truthful, non-scene alibi by construction). Returns
- * the deduced id set so a test can assert it equals `case.culprits`.
+ * The room×hour elimination matrix, as of `cluesRevealed` clues being shown.
+ * A cell is "ruled-out" if its room or its hour has been entirely eliminated
+ * by a revealed clue's `eliminatesRooms`/`eliminatesHours`. Once eliminations
+ * leave exactly one un-eliminated room AND exactly one un-eliminated hour,
+ * that single surviving cell becomes "confirmed" — never hardcoded to
+ * `scene`/`hourIndex` directly, always derived from the clues themselves.
  */
-export function deduceCulprits(c: MysteryCase): string[] {
-  // The culprits were truly at the scene; their CLAIM differs. Every innocent's
-  // claim is truthful and not the scene. So the discriminator the clues hand the
-  // player is: lied-about-the-hour AND tied to the victim/ringleader motive web.
-  const liarsAtHour = c.suspects
-    .filter((s) => {
-      const d = c.dossiers[s.id];
-      // a culprit's claim is a cover story; we mark culprits via the motive web
-      const tiedToVictim = d.relationships.some((r) => r.to === c.victim.id);
-      const tiedToRing = d.relationships.some((r) => c.culprits.includes(r.to));
-      return tiedToVictim || tiedToRing || s.id === c.culprits[0];
-    })
-    .map((s) => s.id);
-  // intersect with the motive web rooted at the ringleader
-  return c.culprits.filter((id) => liarsAtHour.includes(id));
+export function deductionMatrix(c: MysteryCase, cluesRevealed: number): Mark[][] {
+  const eliminatedRooms = new Set<number>();
+  const eliminatedHours = new Set<number>();
+  for (const clue of c.clues.slice(0, cluesRevealed)) {
+    clue.eliminatesRooms.forEach((i) => eliminatedRooms.add(i));
+    clue.eliminatesHours.forEach((i) => eliminatedHours.add(i));
+  }
+  const survivingRooms = ROOMS.filter((_, i) => !eliminatedRooms.has(i)).length;
+  const survivingHours = HOURS.filter((_, i) => !eliminatedHours.has(i)).length;
+  const allConfirmed = survivingRooms === 1 && survivingHours === 1;
+
+  return ROOMS.map((_, r) =>
+    HOURS.map((_, h) => {
+      if (eliminatedRooms.has(r) || eliminatedHours.has(h)) return "ruled-out";
+      return allConfirmed ? "confirmed" : "unknown";
+    }),
+  );
 }
 
+/**
+ * WHO: culprits are exactly the suspects whose claimed location at the murder
+ * hour differs from their true location at that hour (the lie). Innocents'
+ * claim is always the truth, by construction in generateCase().
+ */
+export function deduceCulprits(c: MysteryCase): string[] {
+  return c.suspects
+    .filter((s) => c.dossiers[s.id].trueLocation[c.hourIndex] !== c.dossiers[s.id].claimed[c.hourIndex])
+    .map((s) => s.id);
+}
+
+/** Checks all three legs of the puzzle are uniquely solvable: WHO, WHERE, WHEN. */
 export function verifySolvable(c: MysteryCase): boolean {
   const deduced = new Set(deduceCulprits(c));
   if (deduced.size !== c.culprits.length) return false;
-  return c.culprits.every((id) => deduced.has(id));
+  if (!c.culprits.every((id) => deduced.has(id))) return false;
+
+  const matrix = deductionMatrix(c, c.clues.length);
+  let confirmedCount = 0;
+  for (const row of matrix) for (const cell of row) if (cell === "confirmed") confirmedCount++;
+  if (confirmedCount !== 1) return false;
+
+  const sceneIdx = ROOMS.indexOf(c.scene as (typeof ROOMS)[number]);
+  return matrix[sceneIdx][c.hourIndex] === "confirmed";
 }
 
 /** Stable hash of the solution, for the optional daily_cases table. */
