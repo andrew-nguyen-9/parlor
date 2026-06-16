@@ -32,6 +32,11 @@ from datetime import date, timedelta
 
 from common import console, dump_raw, get_json, get_db, make_fact, upsert_facts
 
+import time
+
+# Between each API call to Wikipedia:
+time.sleep(2)  # or higher if needed
+
 API = "https://en.wikipedia.org/api/rest_v1"
 PAGEVIEWS = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article"
 
