@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { sfxCorrect, sfxGlassClink, sfxPianoChord, sfxWrong } from "@/lib/sound";
 import { haptic } from "@/lib/haptics";
 import { useProfile, type Achievement } from "@/lib/profile";
@@ -16,6 +17,8 @@ import MysteryMapView from "./MysteryMapView";
 import MysteryRelationshipMap from "./MysteryRelationshipMap";
 import { nextTag, type SuspectTag } from "./MysteryStatusPill";
 import AchievementToast from "./AchievementToast";
+
+type LayoutMode = "single" | "stacked" | "split";
 
 export interface StoredMysteryAttempt {
   attempt: MysteryAttempt;
@@ -50,6 +53,10 @@ export default function MysteryInvestigate({
   const [context, setContext] = useState<MysteryContext>({ byCharacter: {}, loaded: false });
   const [autoMarkUsed, setAutoMarkUsed] = useState(false);
   const [notesMap, setNotesMap] = useState<Record<string, string>>({});
+  const [leftOpen, setLeftOpen] = useState(false);
+  const [rightOpen, setRightOpen] = useState(false);
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>("single");
+  const [splitBottom, setSplitBottom] = useState<MainTab>("map-view");
   const startedAt = useRef(Date.now());
 
   function handleNoteChange(key: string, val: string) {
@@ -191,71 +198,165 @@ export default function MysteryInvestigate({
     );
   }
 
-  const evidencePanel = (
-    <>
-      <MysteryEvidenceLog
-        mystery={mystery}
-        cluesRevealed={cluesRevealed}
-        onRevealNext={revealNext}
-      />
-      <MysteryAccusationForm
-        mystery={mystery}
-        whoGuess={whoGuess}
-        whereGuess={whereGuess}
-        whenGuess={whenGuess}
-        onWhereChange={setWhereGuess}
-        onWhenChange={setWhenGuess}
-        onSubmit={submit}
-      />
-    </>
-  );
-
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="flex items-baseline justify-between">
+    <div className="w-full">
+      {/* Floating toggle buttons */}
+      <button
+        onClick={() => setLeftOpen(true)}
+        className="fixed left-4 top-1/2 z-40 -translate-y-1/2 hidden lg:flex items-center justify-center h-10 w-10 rounded-full border border-line bg-surface/80 text-gold hover:border-gold/40 shadow-lg"
+        title="Evidence Log"
+      >
+        📋
+      </button>
+      <button
+        onClick={() => setRightOpen(true)}
+        className="fixed right-4 top-1/2 z-40 -translate-y-1/2 hidden lg:flex items-center justify-center h-10 w-10 rounded-full border border-line bg-surface/80 text-gold hover:border-gold/40 shadow-lg"
+        title="Submit Accusation"
+      >
+        ⚖️
+      </button>
+
+      {/* Left drawer — Evidence */}
+      <AnimatePresence>
+        {leftOpen && (
+          <>
+            <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setLeftOpen(false)} />
+            <motion.div
+              initial={{ x: -340 }} animate={{ x: 0 }} exit={{ x: -340 }}
+              transition={{ type: "tween", duration: 0.22 }}
+              className="fixed left-0 top-0 z-50 h-full w-80 overflow-y-auto border-r border-line/40 bg-[#100c08]/95 p-5"
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <p className="microlabel text-gold">Evidence Log</p>
+                <button onClick={() => setLeftOpen(false)} className="text-muted hover:text-ink">✕</button>
+              </div>
+              <MysteryEvidenceLog mystery={mystery} cluesRevealed={cluesRevealed} onRevealNext={revealNext} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Right drawer — Accusation */}
+      <AnimatePresence>
+        {rightOpen && (
+          <>
+            <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setRightOpen(false)} />
+            <motion.div
+              initial={{ x: 320 }} animate={{ x: 0 }} exit={{ x: 320 }}
+              transition={{ type: "tween", duration: 0.22 }}
+              className="fixed right-0 top-0 z-50 h-full w-72 overflow-y-auto border-l border-line/40 bg-[#100c08]/95 p-5"
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <button onClick={() => setRightOpen(false)} className="text-muted hover:text-ink">✕</button>
+                <p className="microlabel text-gold">Submit Accusation</p>
+              </div>
+              <MysteryAccusationForm
+                mystery={mystery} whoGuess={whoGuess}
+                whereGuess={whereGuess} whenGuess={whenGuess}
+                onWhereChange={setWhereGuess} onWhenChange={setWhenGuess}
+                onSubmit={submit}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Header */}
+      <div className="flex items-baseline justify-between px-4 pt-4">
         <h2 className="display gilt text-3xl">{mystery.title}</h2>
         <span className="microlabel text-brass">case #{mystery.caseNumber}</span>
       </div>
 
-      {/* Desktop layout: full-width tab panel + right sidebar */}
-      <div className="mt-6 hidden lg:flex lg:gap-6">
-        <div className="min-w-0 flex-1">
-          {/* Tab bar */}
-          <div className="mb-4 flex gap-2">
-            {MAIN_TABS.map((t) => (
+      {/* Desktop investigation area */}
+      <div className="mt-6 hidden lg:block px-4">
+        {/* Layout mode + tab bar row */}
+        <div className="mb-4 flex flex-wrap items-center gap-4">
+          {layoutMode !== "stacked" && (
+            <div className="flex gap-2">
+              {MAIN_TABS.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setMainTab(t.key)}
+                  className={`microlabel rounded-full border px-4 py-1.5 transition ${
+                    mainTab === t.key
+                      ? "border-gold text-gold"
+                      : "border-line text-muted hover:border-gold/40 hover:text-gold/60"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="ml-auto flex items-center gap-0.5 rounded-full border border-line p-0.5">
+            {(["single", "stacked", "split"] as LayoutMode[]).map((mode) => (
               <button
-                key={t.key}
-                onClick={() => setMainTab(t.key)}
-                className={`microlabel rounded-full border px-4 py-1.5 transition ${
-                  mainTab === t.key
-                    ? "border-gold text-gold"
-                    : "border-line text-muted hover:border-gold/40 hover:text-gold/60"
+                key={mode}
+                onClick={() => setLayoutMode(mode)}
+                className={`microlabel rounded-full px-3 py-1 transition ${
+                  layoutMode === mode ? "bg-gold/20 text-gold" : "text-muted hover:text-gold/60"
                 }`}
               >
-                {t.label}
+                {mode === "single" ? "⊡ Single" : mode === "stacked" ? "☰ Stacked" : "⊟ Split"}
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Panels */}
+        {layoutMode === "single" && (
           <div className="gilt-frame rounded-2xl bg-surface/60 p-5">
             {renderMainTab(mainTab)}
           </div>
-        </div>
-        <div className="w-72 flex-shrink-0">
-          <div className="flex flex-col gap-6">{evidencePanel}</div>
-        </div>
+        )}
+
+        {layoutMode === "stacked" && (
+          <div className="space-y-6">
+            {MAIN_TABS.map((t) => (
+              <div key={t.key} className="gilt-frame rounded-2xl bg-surface/60 p-5">
+                <p className="microlabel mb-3 text-muted">{t.label}</p>
+                {renderMainTab(t.key)}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {layoutMode === "split" && (
+          <div className="space-y-4">
+            <div className="gilt-frame rounded-2xl bg-surface/60 p-5">
+              {renderMainTab(mainTab)}
+            </div>
+            <div className="flex gap-2">
+              {MAIN_TABS.filter((t) => t.key !== mainTab).map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setSplitBottom(t.key)}
+                  className={`microlabel rounded-full border px-4 py-1.5 transition ${
+                    splitBottom === t.key
+                      ? "border-gold text-gold"
+                      : "border-line text-muted hover:border-gold/40 hover:text-gold/60"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <div className="gilt-frame rounded-2xl bg-surface/60 p-5">
+              {renderMainTab(splitBottom)}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Mobile: tabs including evidence */}
-      <div className="mt-6 lg:hidden">
+      {/* Mobile layout — unchanged from before */}
+      <div className="mt-6 px-4 lg:hidden">
         <div className="mb-4 flex gap-1 overflow-x-auto pb-1">
           {([...MAIN_TABS, { key: "evidence" as const, label: "Evidence" }]).map((t) => (
             <button
               key={t.key}
               onClick={() => setMobileTab(t.key as MobileTab)}
               className={`microlabel flex-shrink-0 rounded-full border px-3 py-2 ${
-                mobileTab === t.key
-                  ? "border-gold text-gold"
-                  : "border-line text-muted"
+                mobileTab === t.key ? "border-gold text-gold" : "border-line text-muted"
               }`}
             >
               {t.label}
@@ -263,7 +364,15 @@ export default function MysteryInvestigate({
           ))}
         </div>
         {mobileTab === "evidence" ? (
-          <div className="flex flex-col gap-6">{evidencePanel}</div>
+          <div className="flex flex-col gap-6">
+            <MysteryEvidenceLog mystery={mystery} cluesRevealed={cluesRevealed} onRevealNext={revealNext} />
+            <MysteryAccusationForm
+              mystery={mystery} whoGuess={whoGuess}
+              whereGuess={whereGuess} whenGuess={whenGuess}
+              onWhereChange={setWhereGuess} onWhenChange={setWhenGuess}
+              onSubmit={submit}
+            />
+          </div>
         ) : (
           <div className="gilt-frame rounded-2xl bg-surface/60 p-4">
             {renderMainTab(mobileTab as MainTab)}
