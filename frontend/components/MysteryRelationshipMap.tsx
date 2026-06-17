@@ -178,7 +178,8 @@ export default function MysteryRelationshipMap({
 
         {/* Suspects on circumference */}
         {nodePos.map((pos) => {
-          const suspect = suspects.find((s) => s.id === pos.id)!;
+          const suspect = suspects.find((s) => s.id === pos.id);
+          if (!suspect) return null;
           const xPct = (pos.x / SVG_SIZE) * 100;
           const yPct = (pos.y / SVG_SIZE) * 100;
           return (

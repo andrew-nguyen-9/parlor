@@ -95,7 +95,7 @@ export async function enrichCase(
           characterId: r.character_id,
           clue: r.clue,
           roomFound: r.room_found,
-          misleading: r.misleading === "true",
+          misleading: Boolean(r.misleading),
         }));
       const clues = pickN(allClues, 2, rng);
 

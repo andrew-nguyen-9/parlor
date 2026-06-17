@@ -20,7 +20,6 @@ export function TooltipWrapper({
   const [visible, setVisible] = useState(false);
   const [xOffset, setXOffset] = useState(0);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!visible || !tooltipRef.current) return;
@@ -40,7 +39,6 @@ export function TooltipWrapper({
 
   return (
     <div
-      ref={wrapperRef}
       className="relative inline-block"
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => { setVisible(false); setXOffset(0); }}
