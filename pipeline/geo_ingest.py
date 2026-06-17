@@ -1,17 +1,23 @@
 """
 geo_ingest.py
 -------------
-restcountries.com → facts (geography). Zero auth.
+restcountries (GitHub mirror) → facts (geography). Zero auth.
+
+Uses the restcountries v3 dataset published in their open-source GitHub repo
+as a static JSON file. The restcountries.com hosted API was deprecated and
+now requires a paid API key; the GitHub mirror is functionally identical and
+freely available.
 
 One API sweep yields three kinds of game fuel per country:
 - population / area      → higher_lower (THE STREAK)
 - capital (answer_field) → multiple_choice (THE WEDGES)
-- capital coordinates    → where (THE MAP)
+- country centroid       → where (THE MAP)
 
-API efficiency (Phase 6): restcountries is essentially static data (country
-populations and capitals change rarely). The response is cached with ETag/
-If-Modified-Since, refreshed at most once per week. This eliminates ~364
-redundant network calls/year.
+Note: the GitHub mirror omits capitalInfo.latlng; we use the country's own
+latlng centroid instead — equally valid for "which country is this?" questions.
+
+API efficiency: restcountries is essentially static data. The response is
+cached with ETag/If-Modified-Since, refreshed at most once per week.
 
 Run:
     python geo_ingest.py
@@ -27,9 +33,9 @@ import math
 
 from common import CACHE_DIR, console, dump_raw, get_json_conditional, get_db, make_fact, upsert_facts
 
-API = "https://restcountries.com/v3.1/all"
-FIELDS = "name,capital,capitalInfo,population,area,region,flags,maps"
-_GEO_CACHE = CACHE_DIR / "restcountries_cache.json"
+# restcountries v3 data published in their open-source GitHub repo — zero auth.
+API = "https://raw.githubusercontent.com/restcountries/restcountries/master/src/main/resources/countriesV3.json"
+_GEO_CACHE = CACHE_DIR / "restcountries_github_cache.json"
 
 
 def _popularity(population: int) -> float:
@@ -44,8 +50,11 @@ def facts_for_country(c: dict) -> list[dict]:
     population = c.get("population") or 0
     area = c.get("area") or 0
     capital = (c.get("capital") or [None])[0]
-    latlng = (c.get("capitalInfo") or {}).get("latlng") or []
-    flag = (c.get("flags") or {}).get("svg")
+    # GitHub mirror omits capitalInfo; use country centroid — valid for map questions.
+    latlng = c.get("latlng") or []
+    # flags is a list [svg_url, png_url] in the GitHub mirror (not a dict).
+    flags = c.get("flags") or []
+    flag = flags[0] if isinstance(flags, list) else flags.get("svg")
     url = (c.get("maps") or {}).get("openStreetMaps")
     pop_score = _popularity(population)
     region = c.get("region")
@@ -85,13 +94,18 @@ def main() -> None:
                     help="skip microstates below this population (distractor quality)")
     args = ap.parse_args()
 
-    console.rule("[bold]Geography ingest — restcountries")
+    console.rule("[bold]Geography ingest — restcountries (GitHub mirror)")
     countries = get_json_conditional(
         API,
         cache_path=_GEO_CACHE,
-        params={"fields": FIELDS},
         max_age_seconds=7 * 86400,  # static dataset; weekly refresh is plenty
     )
+
+    if not isinstance(countries, list):
+        raise RuntimeError(
+            f"Expected a list of country objects but got {type(countries).__name__}. "
+            "Check that the API URL is still valid and returning the correct response."
+        )
 
     facts: list[dict] = []
     for c in countries:

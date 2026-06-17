@@ -9,12 +9,14 @@ export interface MysteryAttempt {
   cluesRevealed: number;
   elapsedSeconds: number;
   tableTags: Record<string, SuspectTag>;
+  autoMarkUsed: boolean;
 }
 
 export interface MysteryScoreBreakdown {
   base: number;
   cluePenalty: number;
   timePenalty: number;
+  autoMarkPenalty: number;
   tableBonus: number;
 }
 
@@ -43,7 +45,8 @@ export function score(c: MysteryCase, a: MysteryAttempt): MysteryScoreResult {
   }
   const tableBonus = TABLE_BONUS * correctTags;
 
-  const afterPenalties = Math.max(0, base - cluePenalty - timePenalty);
+  const autoMarkPenalty = a.autoMarkUsed ? 150 : 0;
+  const afterPenalties = Math.max(0, base - cluePenalty - timePenalty - autoMarkPenalty);
   const total = afterPenalties + tableBonus;
 
   const whoGuessSet = new Set(a.whoGuess);
@@ -52,7 +55,7 @@ export function score(c: MysteryCase, a: MysteryAttempt): MysteryScoreResult {
     [...whoGuessSet].every((id) => culpritSet.has(id));
   const won = whoCorrect && a.whereGuess === c.scene && a.whenGuess === c.hourIndex;
 
-  return { total, won, breakdown: { base, cluePenalty, timePenalty, tableBonus } };
+  return { total, won, breakdown: { base, cluePenalty, timePenalty, autoMarkPenalty, tableBonus } };
 }
 
 function formatClock(totalSeconds: number): string {
