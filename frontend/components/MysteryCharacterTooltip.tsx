@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Character, MysteryCase } from "@/lib/mystery";
 import { pretty } from "@/lib/mystery";
@@ -18,6 +18,21 @@ export function TooltipWrapper({
   children: React.ReactNode;
 }) {
   const [visible, setVisible] = useState(false);
+  const [xOffset, setXOffset] = useState(0);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!visible || !tooltipRef.current) return;
+    const rect = tooltipRef.current.getBoundingClientRect();
+    if (rect.left < 8) {
+      setXOffset(8 - rect.left);
+    } else if (rect.right > window.innerWidth - 8) {
+      setXOffset(window.innerWidth - 8 - rect.right);
+    } else {
+      setXOffset(0);
+    }
+  }, [visible]);
 
   const dossier = mystery.dossiers[character.id];
   const rel = dossier?.relationships.find((r) => r.to === mystery.victim.id);
@@ -25,18 +40,21 @@ export function TooltipWrapper({
 
   return (
     <div
+      ref={wrapperRef}
       className="relative inline-block"
       onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
+      onMouseLeave={() => { setVisible(false); setXOffset(0); }}
     >
       {children}
       <AnimatePresence>
         {visible && (
           <motion.div
+            ref={tooltipRef}
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.15 }}
+            style={{ translateX: xOffset }}
             className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-52 -translate-x-1/2 rounded-xl border border-line bg-surface p-3 text-left shadow-xl"
           >
             <div className="flex items-center gap-2">

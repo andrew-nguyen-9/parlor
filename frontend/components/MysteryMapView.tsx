@@ -18,6 +18,15 @@ const ROOM_CENTERS: Record<string, { cx: number; cy: number }> = {
   "the Wine Cellar":    { cx: 87, cy: 67 },
 };
 
+export const DOORS: [string, string][] = [
+  ["the Observatory",    "the Grand Ballroom"],
+  ["the Smoking Lounge", "the Grand Ballroom"],
+  ["the Conservatory",   "the Grand Ballroom"],
+  ["the Velvet Library", "the Grand Ballroom"],
+  ["the Wine Cellar",    "the Grand Ballroom"],
+  ["the Conservatory",   "the Wine Cellar"],
+];
+
 function polygonPositions(
   n: number,
   cx: number,
