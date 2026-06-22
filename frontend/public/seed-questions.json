@@ -7,10 +7,10 @@
    "prompt": "_____ is the capital of India.",
    "correct": "New Delhi",
    "choices": [
-    "Islamabad",
+    "Manila",
     "New Delhi",
-    "Mexico City",
-    "Washington, D.C."
+    "Washington, D.C.",
+    "Abuja"
    ],
    "image_url": "https://flagcdn.com/in.svg",
    "source_url": "https://www.openstreetmap.org/relation/304716"
@@ -22,9 +22,9 @@
    "prompt": "_____ is the capital of China.",
    "correct": "Beijing",
    "choices": [
-    "Manila",
-    "Addis Ababa",
-    "Abuja",
+    "Cairo",
+    "Islamabad",
+    "Jakarta",
     "Beijing"
    ],
    "image_url": "https://flagcdn.com/cn.svg",
@@ -38,9 +38,9 @@
    "correct": "Washington, D.C.",
    "choices": [
     "Washington, D.C.",
-    "Abuja",
-    "Manila",
-    "Dhaka"
+    "Jakarta",
+    "Cairo",
+    "Addis Ababa"
    ],
    "image_url": "https://flagcdn.com/us.svg",
    "source_url": "https://www.openstreetmap.org/relation/148838#map=2/20.6/-85.8"
@@ -52,10 +52,10 @@
    "prompt": "_____ is the capital of Indonesia.",
    "correct": "Jakarta",
    "choices": [
-    "Abuja",
-    "Mexico City",
+    "Dhaka",
+    "Washington, D.C.",
     "Jakarta",
-    "Islamabad"
+    "Abuja"
    ],
    "image_url": "https://flagcdn.com/id.svg",
    "source_url": "https://www.openstreetmap.org/relation/21335"
@@ -68,9 +68,9 @@
    "correct": "Islamabad",
    "choices": [
     "Islamabad",
-    "Addis Ababa",
+    "Bras\u00edlia",
     "New Delhi",
-    "Washington, D.C."
+    "Manila"
    ],
    "image_url": "https://flagcdn.com/pk.svg",
    "source_url": "https://www.openstreetmap.org/relation/307573"
@@ -83,7 +83,7 @@
    "correct": "Bras\u00edlia",
    "choices": [
     "Bras\u00edlia",
-    "Mexico City",
+    "Washington, D.C.",
     "Beijing",
     "New Delhi"
    ],
@@ -97,10 +97,10 @@
    "prompt": "_____ is the capital of Bangladesh.",
    "correct": "Dhaka",
    "choices": [
-    "Washington, D.C.",
+    "Abuja",
     "Beijing",
     "Dhaka",
-    "Cairo"
+    "Bras\u00edlia"
    ],
    "image_url": "https://flagcdn.com/bd.svg",
    "source_url": "https://www.openstreetmap.org/relation/184640"
@@ -113,9 +113,9 @@
    "correct": "Abuja",
    "choices": [
     "Abuja",
-    "Manila",
-    "Moscow",
-    "Jakarta"
+    "Cairo",
+    "Mexico City",
+    "Tokyo"
    ],
    "image_url": "https://flagcdn.com/ng.svg",
    "source_url": "https://www.openstreetmap.org/relation/192787"
@@ -127,10 +127,10 @@
    "prompt": "_____ is the capital of Japan.",
    "correct": "Tokyo",
    "choices": [
+    "Mexico City",
     "Moscow",
-    "Jakarta",
     "Tokyo",
-    "Addis Ababa"
+    "Islamabad"
    ],
    "image_url": "https://flagcdn.com/jp.svg",
    "source_url": "https://www.openstreetmap.org/relation/382313"
@@ -142,9 +142,9 @@
    "prompt": "_____ is the capital of Mexico.",
    "correct": "Mexico City",
    "choices": [
-    "Addis Ababa",
-    "Abuja",
-    "Jakarta",
+    "New Delhi",
+    "Dhaka",
+    "Moscow",
     "Mexico City"
    ],
    "image_url": "https://flagcdn.com/mx.svg",
@@ -158,9 +158,9 @@
    "correct": "Moscow",
    "choices": [
     "Moscow",
-    "Mexico City",
-    "Addis Ababa",
-    "Jakarta"
+    "Washington, D.C.",
+    "Bras\u00edlia",
+    "Beijing"
    ],
    "image_url": "https://flagcdn.com/ru.svg",
    "source_url": "https://www.openstreetmap.org/relation/60189#map=3/65.15/105.29"
@@ -174,8 +174,8 @@
    "choices": [
     "New Delhi",
     "Cairo",
-    "Bras\u00edlia",
-    "Addis Ababa"
+    "Manila",
+    "Islamabad"
    ],
    "image_url": "https://flagcdn.com/eg.svg",
    "source_url": "https://www.openstreetmap.org/relation/1473947"
@@ -188,9 +188,9 @@
    "correct": "Manila",
    "choices": [
     "Manila",
-    "Tokyo",
-    "Cairo",
-    "Moscow"
+    "Moscow",
+    "Bras\u00edlia",
+    "Mexico City"
    ],
    "image_url": "https://flagcdn.com/ph.svg",
    "source_url": "https://www.openstreetmap.org/relation/443174"
@@ -202,9 +202,9 @@
    "prompt": "_____ is the capital of Ethiopia.",
    "correct": "Addis Ababa",
    "choices": [
-    "Tokyo",
+    "Moscow",
     "New Delhi",
-    "Jakarta",
+    "Tokyo",
     "Addis Ababa"
    ],
    "image_url": "https://flagcdn.com/et.svg",
@@ -351,6 +351,15 @@
    "correct": "Glutamine N-acyltransferase",
    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/L-glutamine-skeletal.png/330px-L-glutamine-skeletal.png",
    "source_url": "https://en.wikipedia.org/wiki/Glutamine%20N-acyltransferase"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 1,
+   "prompt": "This subject is an American retired pair skater.",
+   "correct": "Tiffany Vise",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/2011_Skate_America_Tiffany_VISE_Don_BALDWIN.jpg/330px-2011_Skate_America_Tiffany_VISE_Don_BALDWIN.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Tiffany_Vise"
   },
   {
    "qtype": "clue",
@@ -516,9 +525,36 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 1,
+   "prompt": "The Gen.",
+   "correct": "Gen. Sylvanus Thayer House",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Gen._Sylvanus_Thayer_House%2C_Braintree_MA.jpg/330px-Gen._Sylvanus_Thayer_House%2C_Braintree_MA.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Gen._Sylvanus_Thayer_House"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 1,
    "prompt": "This article is rated Start-Class.",
    "correct": "Arada\u2013Montemuro Wind Farm",
    "source_url": "https://en.wikipedia.org/wiki/Arada%E2%80%93Montemuro%20Wind%20Farm"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 1,
+   "prompt": "This subject is a family of moths in the superfamily Noctuoidea.",
+   "correct": "Euteliidae",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Paectes_tumida_male1.jpg/330px-Paectes_tumida_male1.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Euteliidae"
+  },
+  {
+   "qtype": "clue",
+   "category": "history",
+   "difficulty": 1,
+   "prompt": "This subject is a German politician from the Alternative for Germany party.",
+   "correct": "Markus Wagner",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Markus_Wagner%2C_Spitzenkandidat.jpg/330px-Markus_Wagner%2C_Spitzenkandidat.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Markus_Wagner"
   },
   {
    "qtype": "clue",
@@ -596,6 +632,15 @@
    "prompt": "The 2015 this subject was a professional tennis tournament played on hard courts.",
    "correct": "2015 China International Guangzhou",
    "source_url": "https://en.wikipedia.org/wiki/2015%20China%20International%20Guangzhou"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 1,
+   "prompt": "This subject (AK-75) was a Crater-class cargo ship in the service of the US Navy in World War II.",
+   "correct": "USS Cassiopeia",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/USS_Cassiopeia_%28AK-75%29.jpg/330px-USS_Cassiopeia_%28AK-75%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/USS_Cassiopeia"
   },
   {
    "qtype": "clue",
@@ -725,6 +770,24 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
+   "prompt": "This subject is a 1927 American silent drama film directed by Emory Johnson and based on the short story \"this subject\" by Emilie Johnson.",
+   "correct": "The Fourth Commandment (1927 film)",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Fourth_Commandment_lobby_card.jpg/330px-Fourth_Commandment_lobby_card.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/The_Fourth_Commandment_(1927_film)"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 2,
+   "prompt": "This subject is a civil parish in West Northamptonshire, England.",
+   "correct": "Catesby, Northamptonshire",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Charwelton-Catesby_Tunnel_-_geograph.org.uk_-_924136.jpg/330px-Charwelton-Catesby_Tunnel_-_geograph.org.uk_-_924136.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Catesby%2C_Northamptonshire"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 2,
    "prompt": "This subject!, released on 8 September 2012, was the 2012\u20132013 robotics competition for FIRST Tech Challenge.",
    "correct": "Ring It Up!",
    "image_url": "https://upload.wikimedia.org/wikipedia/en/f/ff/FTC_Ring_It_Up_2012-2013_3D_Logo.png",
@@ -770,15 +833,6 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "This subject is an American retired pair skater.",
-   "correct": "Tiffany Vise",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/2011_Skate_America_Tiffany_VISE_Don_BALDWIN.jpg/330px-2011_Skate_America_Tiffany_VISE_Don_BALDWIN.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Tiffany_Vise"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 2,
    "prompt": "2-this subject, also known as estra-1,3,5(10)-triene-2,3,16\u03b1,17\u03b2-tetrol, is an endogenous catechol estrogen and metabolite of estriol.",
    "correct": "2-Hydroxyestriol",
    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/2-Hydroxyestriol.svg/330px-2-Hydroxyestriol.svg.png",
@@ -801,6 +855,15 @@
    "correct": "Bansk\u00e1 Bel\u00e1",
    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Banska_Bela_001.jpg/330px-Banska_Bela_001.jpg",
    "source_url": "https://en.wikipedia.org/wiki/Bansk%C3%A1_Bel%C3%A1"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 2,
+   "prompt": "This subject is a bicycle road race held annually in the Belgian region of this subject.",
+   "correct": "Omloop van het Waasland",
+   "image_url": "https://upload.wikimedia.org/wikipedia/en/d/d8/Omloop_van_het_Waasland-2023_poster.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Omloop_van_het_Waasland"
   },
   {
    "qtype": "clue",
@@ -896,10 +959,19 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "The Gen.",
-   "correct": "Gen. Sylvanus Thayer House",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Gen._Sylvanus_Thayer_House%2C_Braintree_MA.jpg/330px-Gen._Sylvanus_Thayer_House%2C_Braintree_MA.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Gen._Sylvanus_Thayer_House"
+   "prompt": "This subject! is the debut studio album by South African rock band Rabbitt, released in 1975 on Jo'Burg Records.",
+   "correct": "Boys Will Be Boys!",
+   "image_url": "https://upload.wikimedia.org/wikipedia/en/6/6a/Boys_Will_Be_Boys.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Boys_Will_Be_Boys!"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 2,
+   "prompt": "Monica (this subject) Ulrika this subject-this subject was a Swedish designer and glass artist, best known for her Ventana series of vases.",
+   "correct": "Mona Morales-Schildt",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Mona_Morales-Schildt.jpg/330px-Mona_Morales-Schildt.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Mona_Morales-Schildt"
   },
   {
    "qtype": "clue",
@@ -914,19 +986,10 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "This subject is a family of moths in the superfamily Noctuoidea.",
-   "correct": "Euteliidae",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Paectes_tumida_male1.jpg/330px-Paectes_tumida_male1.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Euteliidae"
-  },
-  {
-   "qtype": "clue",
-   "category": "history",
-   "difficulty": 2,
-   "prompt": "This subject is a German politician from the Alternative for Germany party.",
-   "correct": "Markus Wagner",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Markus_Wagner%2C_Spitzenkandidat.jpg/330px-Markus_Wagner%2C_Spitzenkandidat.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Markus_Wagner"
+   "prompt": "This subject is a soluble guanylate cyclase activator developed by Bayer for non-proliferative diabetic retinopathy and chronic kidney disease..",
+   "correct": "Runcaciguat",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Runcaciguat.svg/330px-Runcaciguat.svg.png",
+   "source_url": "https://en.wikipedia.org/wiki/Runcaciguat"
   },
   {
    "qtype": "clue",
@@ -977,6 +1040,15 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
+   "prompt": "This subject is the title of three works by the Italian artist Francesco Hayez, all showing the outbreak of this subject..",
+   "correct": "The Sicilian Vespers (painting)",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Francesco_Hayez_022.jpg/330px-Francesco_Hayez_022.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/The_Sicilian_Vespers_(painting)"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 2,
    "prompt": "This subject is a species of sea snail, a marine gastropod mollusk in the family Cancellariidae, the nutmeg snails..",
    "correct": "Scalptia contabulata",
    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Naturalis_Biodiversity_Center_-_RMNH.MOL.217954_-_Scalptia_contabulata_%28Sowerby%2C_1832%29_-_Cancellariidae_-_Mollusc_shell.jpeg/330px-Naturalis_Biodiversity_Center_-_RMNH.MOL.217954_-_Scalptia_contabulata_%28Sowerby%2C_1832%29_-_Cancellariidae_-_Mollusc_shell.jpeg",
@@ -1004,6 +1076,15 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
+   "prompt": "This subject is a county park located in Montclair, New Jersey, United States.",
+   "correct": "Anderson Park (New Jersey)",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Anderson_Park%2C_Essex_County_Park_Sign_IMG_20140830_135647.jpg/330px-Anderson_Park%2C_Essex_County_Park_Sign_IMG_20140830_135647.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Anderson_Park_(New_Jersey)"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 2,
    "prompt": "This subject is an unincorporated community in Buchanan County, Virginia, United States.",
    "correct": "Whitewood, Virginia",
    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Whitewood_virginia.jpg/330px-Whitewood_virginia.jpg",
@@ -1013,19 +1094,19 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "This subject (AK-75) was a Crater-class cargo ship in the service of the US Navy in World War II.",
-   "correct": "USS Cassiopeia",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/USS_Cassiopeia_%28AK-75%29.jpg/330px-USS_Cassiopeia_%28AK-75%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/USS_Cassiopeia"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 2,
    "prompt": "This subject is a small genus of distinctive striped crabs, known as zebra crabs, that live in association with sea urchins in the Indo-Pacific..",
    "correct": "Zebrida",
    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Lembeh_Dec1809.jpg/330px-Lembeh_Dec1809.jpg",
    "source_url": "https://en.wikipedia.org/wiki/Zebrida"
+  },
+  {
+   "qtype": "clue",
+   "category": "history",
+   "difficulty": 2,
+   "prompt": "This subject was an Attic black-figure vase this subject.",
+   "correct": "Gela Painter",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Olpe_olive_gathering_Louvre_F334.jpg/330px-Olpe_olive_gathering_Louvre_F334.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Gela_Painter"
   },
   {
    "qtype": "clue",
@@ -1044,6 +1125,15 @@
    "correct": "Abhisit cabinet",
    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Abhisit_Vejjajiva_2010.jpg/330px-Abhisit_Vejjajiva_2010.jpg",
    "source_url": "https://en.wikipedia.org/wiki/Abhisit_cabinet"
+  },
+  {
+   "qtype": "clue",
+   "category": "wildcard",
+   "difficulty": 2,
+   "prompt": "The Seventy-Fifth this subject convened from January 11, 1961, to January 9, 1963, in regular session.",
+   "correct": "75th Wisconsin Legislature",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Wis-capitol.jpg/330px-Wis-capitol.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/75th_Wisconsin_Legislature"
   },
   {
    "qtype": "clue",
@@ -1157,10 +1247,10 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 3,
-   "prompt": "This subject is a civil parish in West Northamptonshire, England.",
-   "correct": "Catesby, Northamptonshire",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Charwelton-Catesby_Tunnel_-_geograph.org.uk_-_924136.jpg/330px-Charwelton-Catesby_Tunnel_-_geograph.org.uk_-_924136.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Catesby%2C_Northamptonshire"
+   "prompt": "This subject is an American silent drama film released in 1920.",
+   "correct": "The Golden Trail (1920 film)",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/The_Golden_Trail_%281920%29_-_1.jpg/330px-The_Golden_Trail_%281920%29_-_1.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/The_Golden_Trail_(1920_film)"
   },
   {
    "qtype": "clue",
@@ -1179,96 +1269,6 @@
    "correct": "HMS Wolverine (1805)",
    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/HM_Brig_Wolverene_beating_the_Squadron_RMG_PU6064.jpg/330px-HM_Brig_Wolverene_beating_the_Squadron_RMG_PU6064.jpg",
    "source_url": "https://en.wikipedia.org/wiki/HMS_Wolverine_(1805)"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 3,
-   "prompt": "This subject is an island in Bod\u00f8 Municipality in Nordland county, Norway.",
-   "correct": "Straum\u00f8ya",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Straum%C3%B8y_just_south_of_Bod%C3%B8_seen_from_the_air.jpg/330px-Straum%C3%B8y_just_south_of_Bod%C3%B8_seen_from_the_air.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Straum%C3%B8ya"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 3,
-   "prompt": "This subject was an anti-religious magazine in the Buryat-Mongolian language in the Mongolian script.",
-   "correct": "Erdem ba Shazhan",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/%D0%AD%D1%80%D0%B4%D1%8D%D0%BC_%D0%B1%D0%B0_%D1%88%D0%B0%D0%B6%D0%B0%D0%BD.jpg/330px-%D0%AD%D1%80%D0%B4%D1%8D%D0%BC_%D0%B1%D0%B0_%D1%88%D0%B0%D0%B6%D0%B0%D0%BD.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Erdem_ba_Shazhan"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 3,
-   "prompt": "This subject, also Ostritz or simply this subject is a railway station near the village of this subject, Zgorzelec County, within the Lower Silesian Voivodeship in south-western Poland.",
-   "correct": "Krzewina Zgorzelecka railway station",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Bahnhof_Krzewina_Zgorzelecka.jpg/330px-Bahnhof_Krzewina_Zgorzelecka.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Krzewina_Zgorzelecka_railway_station"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 3,
-   "prompt": "This subject is a DVD release by rock band Therapy? on Eagle Vision, a subsidiary of Eagle Rock Entertainment, on 27 October 2003.",
-   "correct": "Scopophobia (video)",
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/5/56/Scopophobia_%28video%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Scopophobia_(video)"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 3,
-   "prompt": "This subject is a bicycle road race held annually in the Belgian region of this subject.",
-   "correct": "Omloop van het Waasland",
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/d/d8/Omloop_van_het_Waasland-2023_poster.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Omloop_van_het_Waasland"
-  },
-  {
-   "qtype": "clue",
-   "category": "history",
-   "difficulty": 3,
-   "prompt": "This subject  are a type of bronze this subject that was popular in the late Han dynasty in China.",
-   "correct": "Mirror with linked arcs",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Naikoukamon-kyo_Tokyo_National_Museum.jpg/330px-Naikoukamon-kyo_Tokyo_National_Museum.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Mirror_with_linked_arcs"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 3,
-   "prompt": "This subject is a Czech ski jumper who has competed since 2002.",
-   "correct": "Luk\u00e1\u0161 Hlava",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/FIS_Ski_Jumping_World_Cup_2014_-_Engelberg_-_20141221_-_Lukas_Hlava.jpg/330px-FIS_Ski_Jumping_World_Cup_2014_-_Engelberg_-_20141221_-_Lukas_Hlava.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Luk%C3%A1%C5%A1_Hlava"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 3,
-   "prompt": "Stephen George this subject was an American right-handed pitcher in Major League Baseball who played for five teams from 1950 to 1966, primarily the Philadelphia Phillies and Washington Senators..",
-   "correct": "Steve Ridzik",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/da/Steve_Ridzik.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Steve_Ridzik"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 3,
-   "prompt": "This subject Etete S.D.B.",
-   "correct": "Miguel Angel Nguema Bee",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Coat_of_arms_of_Miguel_Angel_Nguema_Bee.svg/330px-Coat_of_arms_of_Miguel_Angel_Nguema_Bee.svg.png",
-   "source_url": "https://en.wikipedia.org/wiki/Miguel_Angel_Nguema_Bee"
-  },
-  {
-   "qtype": "clue",
-   "category": "wildcard",
-   "difficulty": 3,
-   "prompt": "Diplomatic this subject between this subject and this subject were established in 1956 under the leadership of prime minister S.",
-   "correct": "Soviet Union\u2013Sri Lanka relations",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Soviet_Union_Sri_Lanka_Locator.png/330px-Soviet_Union_Sri_Lanka_Locator.png",
-   "source_url": "https://en.wikipedia.org/wiki/Soviet_Union%E2%80%93Sri_Lanka_relations"
   },
   {
    "qtype": "where",
