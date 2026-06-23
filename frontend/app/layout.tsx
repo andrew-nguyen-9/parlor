@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cinzel } from "next/font/google";
+import GoldSheen from "@/components/GoldSheen";
 import "./globals.css";
 
 // Art-deco display face: Roman inscriptions / engraved-signage feel.
@@ -29,7 +30,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={cinzel.variable}>
-      <body className="noise min-h-screen">{children}</body>
+      <body className="noise min-h-screen">
+        <GoldSheen />
+        {children}
+      </body>
     </html>
   );
 }
