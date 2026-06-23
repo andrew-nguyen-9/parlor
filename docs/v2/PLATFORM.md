@@ -70,6 +70,22 @@ week. Make it reliable, observable, and self-documenting.
   `data/raw` + `frontend/public/seed-questions.json`.
 - Deliberately break a step on a scratch branch to confirm the failure issue opens.
 
+### As built (2.1)
+
+Concrete knobs the runbook above refers to:
+- **Shared concurrency group** `bank-writer` (`cancel-in-progress: false`) on *both*
+  `etl_daily.yml` and `wiki_hard.yml` — serializes every bank writer.
+- **Rebase before push**: `git pull --rebase --autostash origin <branch>` precedes
+  `git push` in both (no `|| true` — a failed rebase surfaces).
+- **Permissions**: `contents: write` on the publish job (etl) and scrape-hard
+  (wiki_hard); `issues: write` where the failure issue is opened.
+- **Health floor**: `question_forge.py --min-questions 100` (baseline ≈335) exits
+  non-zero on a starved forge; the transform job's category step fails below 3
+  categories. `export_seed.py` already hard-exits ("refusing to export…").
+- **Observability**: an `if: failure()` path (the `notify-failure` job in etl, an
+  inline step in wiki_hard) opens — or comments on the existing — issue labelled
+  `pipeline-failure`, so repeat failures don't spam.
+
 ### Done-when
 
 A `workflow_dispatch` run goes green and commits a fresh bank; a deliberately broken
