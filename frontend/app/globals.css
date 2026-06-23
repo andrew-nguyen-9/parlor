@@ -172,32 +172,105 @@ body {
   display: flex;
   flex-direction: column;
   border-radius: 0.9rem;
-  padding: 1.1rem 1.15rem;
+  padding: 0.85rem 0.9rem;
   overflow: hidden;
-  /* parchment-on-oxblood with a brass hairline, like an inlaid plate */
-  background:
-    radial-gradient(130% 90% at 50% -10%, rgba(201, 162, 74, 0.1), transparent 58%),
-    #24101a;
-  border: 1px solid rgba(201, 162, 74, 0.22);
-  box-shadow:
-    inset 0 1px 0 rgba(240, 220, 160, 0.07),
-    inset 0 0 26px rgba(0, 0, 0, 0.5);
 }
-.deck-back {
-  transform: rotateY(180deg);
-}
-/* engraved cross-hatch corner flourish (CSS only, no images) */
+/* engraved inner frame, drawn on both faces */
 .deck-face::before {
   content: "";
   position: absolute;
-  inset: 6px;
-  border-radius: 0.65rem;
-  border: 1px solid rgba(201, 162, 74, 0.12);
+  inset: 7px;
+  border-radius: 0.6rem;
   pointer-events: none;
 }
+
+/* FRONT — a parchment playing-card face: gold pips, corner indices, a cartouche. */
+.deck-front {
+  background:
+    radial-gradient(125% 95% at 50% 0%, #f7f1da 0%, #ece0bd 62%, #ddcfa0 100%);
+  color: #43141f;
+  border: 1px solid rgba(168, 122, 46, 0.55);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+.deck-front::before {
+  border: 1px solid rgba(168, 122, 46, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(168, 122, 46, 0.18);
+}
+
+/* BACK — the seal on an intricate, tessellated gold-on-oxblood pattern. */
+.deck-back-art {
+  transform: rotateY(180deg);
+  align-items: center;
+  justify-content: center;
+  background-color: #1c0b14;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(201, 162, 74, 0.14) 0 1px, transparent 1px 10px),
+    repeating-linear-gradient(-45deg, rgba(201, 162, 74, 0.14) 0 1px, transparent 1px 10px),
+    repeating-linear-gradient(45deg, rgba(110, 31, 43, 0.35) 0 1px, transparent 1px 20px),
+    radial-gradient(circle at 50% 50%, rgba(110, 31, 43, 0.55), transparent 62%);
+  border: 1px solid rgba(201, 162, 74, 0.45);
+}
+.deck-back-art::before {
+  border: 1px solid rgba(201, 162, 74, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 74, 0.15);
+}
+.deck-back-seal {
+  width: 46%;
+  height: auto;
+  filter: drop-shadow(0 0 10px rgba(110, 31, 43, 0.7));
+}
+.deck-back-ring {
+  position: absolute;
+  inset: 16px;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(201, 162, 74, 0.3);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+/* Pip field: emblems placed at canonical playing-card coordinates (set inline). */
+.deck-pips {
+  position: absolute;
+  inset: 1.6rem 0.9rem;
+  pointer-events: none;
+}
+.deck-pip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+  font-size: clamp(1.1rem, 3.2vw, 1.7rem);
+  /* Deeper, near-solid antique gold so pips read on parchment, plus the same
+     cursor highlight as the rest of the gilt. */
+  background-image:
+    radial-gradient(
+      circle at var(--mx, 50%) var(--my, 28%),
+      rgba(255, 248, 214, 0.95),
+      rgba(255, 248, 214, 0) 11%
+    ),
+    linear-gradient(175deg, #b9862c 0%, #9a6a22 55%, #7c4f1a 100%);
+  background-attachment: fixed, scroll;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+/* The Ace / feature emblem and corner indices share the big-emblem sizing. */
 .deck-emblem {
   font-size: clamp(2.75rem, 7vw, 4rem);
   line-height: 1;
+}
+
+/* Central nameplate cartouche sits above the pips. */
+.deck-cartouche {
+  position: relative;
+  z-index: 1;
+  margin: auto;
+  padding: 0.35rem 0.7rem;
+  text-align: center;
+  background: rgba(247, 241, 218, 0.82);
+  border-top: 1px solid rgba(168, 122, 46, 0.55);
+  border-bottom: 1px solid rgba(168, 122, 46, 0.55);
+  backdrop-filter: blur(1px);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -210,12 +283,24 @@ body {
 
 /* ── Secret-order flourishes ─────────────────────────────────────────────── */
 
-/* Gilt foil: static gold leaf for headings/seals (no animation). */
+/* Gilt foil: gold leaf for headings/seals/emblems, with a cursor-reactive sheen.
+   The base gold sweep is element-local; a single highlight layer is pinned to the
+   viewport at the pointer (--mx/--my from GoldSheen), so one light source sweeps
+   across every gilt element as the mouse moves. Defaults keep it static (SSR /
+   reduced-motion / no pointer). */
 .gilt {
-  background: linear-gradient(160deg, #8a6d2f 0%, #c9a24a 38%, #f0dca0 52%, #a87a2e 70%, #6e1f2b 110%);
+  background-image:
+    radial-gradient(
+      circle at var(--mx, 50%) var(--my, 28%),
+      rgba(255, 251, 230, 0.95),
+      rgba(255, 251, 230, 0) 12%
+    ),
+    linear-gradient(160deg, #8a6d2f 0%, #c9a24a 38%, #f0dca0 52%, #a87a2e 70%, #6e1f2b 110%);
+  background-attachment: fixed, scroll;
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 /* Brass-framed panel: a gold hairline with an inner shadow, like an inlaid plate. */

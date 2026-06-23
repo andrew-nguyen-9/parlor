@@ -23,7 +23,8 @@ const GAMES: Game[] = [
     name: "The Mystery",
     accent: "history",
     character: "the Order",
-    emblem: "◉",
+    emblem: "◉", // the all-seeing eye
+    rank: 1, // the Ace — the feature
     feature: true,
     blurb:
       "A new case every night. Read the dossiers, follow the clues, and name the culprit before the candle gutters out.",
@@ -33,7 +34,8 @@ const GAMES: Game[] = [
     name: "The Board",
     accent: "history",
     character: "the Host",
-    emblem: "▦",
+    emblem: "▦", // the category grid
+    rank: 2,
     blurb:
       "Five categories, five values, one daily double. The same board for everyone, every day.",
   },
@@ -42,7 +44,8 @@ const GAMES: Game[] = [
     name: "The Clock",
     accent: "music",
     character: "the Clockkeeper",
-    emblem: "⧗",
+    emblem: "◷", // a clock face
+    rank: 3,
     blurb:
       "When did it happen? Drag the year — closer guesses, bigger points. Five rounds against the century.",
   },
@@ -51,7 +54,8 @@ const GAMES: Game[] = [
     name: "The Wedges",
     accent: "sports",
     character: "the Ghost",
-    emblem: "❖",
+    emblem: "⬡", // six-sided — the six wedges
+    rank: 4,
     blurb:
       "Six wedges, twenty questions. Fill the ring before the deck runs out — quickfire across every category.",
   },
@@ -60,7 +64,8 @@ const GAMES: Game[] = [
     name: "The Streak",
     accent: "screen",
     character: "the Witch",
-    emblem: "✺",
+    emblem: "⇅", // higher or lower
+    rank: 5,
     blurb:
       "Higher or lower? Populations, box offices, fan counts. One wrong call ends the run.",
   },
@@ -69,7 +74,8 @@ const GAMES: Game[] = [
     name: "The Map",
     accent: "geography",
     character: "the Cartographer",
-    emblem: "❂",
+    emblem: "⌖", // drop a pin
+    rank: 6,
     blurb:
       "Drop a pin where it happened. Scored by the kilometer — no tile servers, no mercy.",
   },
@@ -78,7 +84,8 @@ const GAMES: Game[] = [
     name: "The Daily",
     accent: "wildcard",
     character: "the Adventurer",
-    emblem: "⚜",
+    emblem: "☉", // the day's run
+    rank: 7,
     blurb:
       "One round from every room, once a day, the same gauntlet for everyone. Share your line of squares.",
   },
@@ -87,7 +94,8 @@ const GAMES: Game[] = [
     name: "The Thread",
     accent: "history",
     character: "the Weaver",
-    emblem: "❧",
+    emblem: "⌇", // a stitch of thread
+    rank: 8,
     blurb:
       "Follow the chain of clues. Each answer links to the next — unravel the thread before it tangles.",
   },
@@ -96,7 +104,8 @@ const GAMES: Game[] = [
     name: "The Séance",
     accent: "wildcard",
     character: "the Medium",
-    emblem: "☾",
+    emblem: "☾", // the spirit's moon
+    rank: 9,
     blurb:
       "Who or what am I? Each clue costs a point. The earliest correct answer earns the most.",
   },
@@ -105,7 +114,8 @@ const GAMES: Game[] = [
     name: "The Ladder",
     accent: "music",
     character: "the Trickster",
-    emblem: "◬",
+    emblem: "☰", // the rungs
+    rank: 10,
     blurb:
       "Pick the closest match. Hints reveal shared attributes — category, region, magnitude. Climb the ladder.",
   },
@@ -139,16 +149,7 @@ export default function Home() {
           <p className="microlabel mb-3 tracking-[0.3em] text-brass">
             ✦ &nbsp; a secret order of the curious &nbsp; ✦
           </p>
-          <h1
-            className="display text-[clamp(4.5rem,20vw,15rem)] leading-none"
-            style={{
-              background:
-                "linear-gradient(135deg, #c9a24a 0%, #f0dca0 48%, #a87a2e 78%, #6e1f2b 120%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
+          <h1 className="gilt display text-[clamp(4.5rem,20vw,15rem)] leading-none">
             Parlor
           </h1>
         </div>

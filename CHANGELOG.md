@@ -22,6 +22,17 @@ The v2 framework is documented in `docs/v2/`. Phases, in order:
   2.12 Gauntlet · 2.13 SEO · 2.14 Accessibility · 2.15 Light/Dark ·
   2.16 Performance · 2.17 Mobile · 2.18 Cross-Browser · 2.19 Site Pages.
 
+### 2.2.1 — Card aesthetic
+- Game cards are now real playing cards: a **parchment front** with corner indices
+  (rank + suit) and the game's **gold emblem multiplied into canonical pips** by its
+  rank (Ace = the Mystery feature), and an **ornate back** — the seal on an
+  intricate gold-on-oxblood cross-hatch pattern, revealed on flip.
+- New `GoldSheen` tracks the pointer and drives a cursor-reactive highlight across
+  **all gilt on the page** (title, emblems, pips); rAF-throttled, off under
+  reduced-motion.
+- Re-themed each game's emblem to match its mechanic (clock face, six-sided wedge,
+  higher/lower arrows, drop-pin, rungs, …).
+
 ### 2.2.0 — Brand + Design System + Card-Deck Home
 - Reframed the brand from "after-dark" to **the Secret Order** (mystery/intrigue):
   README title, home hero copy, and the GitHub repo description.

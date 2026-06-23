@@ -38,9 +38,7 @@ export default function CardDeck({ games }: { games: Game[] }) {
   return (
     <section className="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-8">
       <div className="deco-rule mb-8">
-        <span className="display text-lg tracking-[0.2em] text-gold">
-          The Deck
-        </span>
+        <span className="gilt display text-lg tracking-[0.2em]">The Deck</span>
       </div>
 
       {feature && <FeatureCard game={feature} reduced={reduced} />}
@@ -94,7 +92,7 @@ function FeatureCard({ game, reduced }: { game: Game; reduced: boolean }) {
           <span className="microlabel" style={{ color: hex }}>
             ♦ {game.character} · tonight's case
           </span>
-          <h2 className="display mt-2 text-5xl sm:text-6xl">{game.name}</h2>
+          <h2 className="gilt display mt-2 text-5xl sm:text-6xl">{game.name}</h2>
           <p className="mt-3 max-w-xl text-sm text-muted sm:text-base">
             {game.blurb}
           </p>
