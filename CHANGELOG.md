@@ -22,6 +22,16 @@ The v2 framework is documented in `docs/v2/`. Phases, in order:
   2.12 Gauntlet · 2.13 SEO · 2.14 Accessibility · 2.15 Light/Dark ·
   2.16 Performance · 2.17 Mobile · 2.18 Cross-Browser · 2.19 Site Pages.
 
+### 2.1.0 — Pipeline Resurrection
+- Shared `bank-writer` concurrency group across `etl_daily.yml` + `wiki_hard.yml`
+  and `git pull --rebase` before push — kills the silent push-race.
+- Job-level `permissions: contents: write` on the publishing jobs.
+- `if: failure()` observability: opens/updates a `pipeline-failure` GitHub issue.
+- Health gate: `question_forge.py --min-questions 100` floor + a category-spread
+  gate in transform; real failures (`export_seed.py` refusals, dbt tests) stay red.
+- Hardened the `wiki_hard` dispatch `count` input against shell injection.
+- Runbook + as-built knobs documented in `docs/v2/PLATFORM.md §2.1`.
+
 ### 2.0.0 — Documentation framework (this branch)
 - Established the v2 documentation framework under `docs/v2/`.
 - Archived v1.0.0 docs to `docs/archive/`.

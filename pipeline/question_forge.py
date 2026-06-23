@@ -480,6 +480,13 @@ def forge_all(facts: list[dict], seed: int = 0) -> list[dict]:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--from-bronze", action="store_true", help="offline: forge from data/raw/*.jsonl")
+    ap.add_argument(
+        "--min-questions",
+        type=int,
+        default=0,
+        help="health floor: exit non-zero if fewer than N questions are forged "
+        "(catches total/per-source data decay in CI). 0 = off.",
+    )
     args = ap.parse_args()
 
     console.rule("[bold]Question forge")
@@ -492,6 +499,14 @@ def main() -> None:
     for q in questions:
         by_type[q["qtype"]] = by_type.get(q["qtype"], 0) + 1
     console.print(f"forged {len(questions)} questions: {by_type}")
+
+    # Health floor: a collapsed ingest (e.g. wikipedia 403s) yields a near-empty
+    # forge. Fail loudly instead of letting export_seed quietly keep the stale bank.
+    if args.min_questions and len(questions) < args.min_questions:
+        raise SystemExit(
+            f"health gate: forged {len(questions)} questions, floor is "
+            f"{args.min_questions} ({by_type}) — likely a starved ingest, refusing the run"
+        )
 
     n = upsert_questions(conn, questions)
     board = build_daily_board(questions, date.today())
