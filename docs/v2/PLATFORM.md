@@ -123,12 +123,17 @@ robots resolve, every route has unique metadata, OG previews render.
 - **Done-when**: reduced-motion kills non-essential animation; categories
   distinguishable without color; rooms keyboard-playable; axe/Lighthouse a11y clean.
 
-## 2.15 — Light/Dark Mode
+## 2.15 — Light/Dark Mode ✅
 
-Implement the two themes from `DESIGN_SYSTEM.md` ("candlelit" dark, "daylit" light)
-by remapping semantic tokens; system preference + persisted manual toggle; SSR-safe
-(no flash; obey `lib/rng.ts` SSR rules). **Done-when**: toggle persists, both themes
-coherent, no hydration flash.
+> Shipped. Semantic tokens (`bg/surface/line/ink/muted/brass/gold/…`) are now CSS
+> RGB-channel vars in `globals.css` (`:root` dark, `[data-theme="light"]` daylit);
+> `tailwind.config.ts` points the token colours at them as
+> `rgb(var(--c-x) / <alpha-value>)` so opacity modifiers still work. A pre-paint
+> inline script in `layout.tsx` resolves stored → system → dark onto
+> `<html data-theme>` (no flash; `suppressHydrationWarning`). `ThemeToggle.tsx`
+> (fixed bottom-right) persists the manual choice to `localStorage`. Category
+> jewels stay static (single source). **Done-when**: ✅ toggle persists · both
+> themes coherent · no hydration flash.
 
 ## 2.16 — Performance
 

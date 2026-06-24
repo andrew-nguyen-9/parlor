@@ -2,19 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Semantic theme tokens (RGB channels so Tailwind alpha modifiers work).
+   :root = "the mansion by candlelight" (dark, default). [data-theme="light"] =
+   "a daylit tour" (parchment). The no-flash script in layout.tsx resolves the
+   active theme (stored → system → dark) onto <html data-theme> before paint, so
+   the media query isn't needed and there's no hydration flash. ── */
 :root {
   color-scheme: dark;
+  --c-bg: 21 4 9;
+  --c-surface: 36 16 26;
+  --c-line: 74 34 51;
+  --c-ink: 240 230 207;
+  --c-muted: 154 122 120;
+  --c-brass: 168 122 46;
+  --c-gold: 201 162 74;
+  --c-goldlite: 230 200 120;
+  --c-candle: 245 197 66;
+  --c-smoke: 90 68 82;
+  --c-ember: 212 67 30;
+  --c-burgundy: 110 31 43;
+  --c-parchment: 239 232 192;
+  --body-grad:
+    radial-gradient(120% 80% at 50% -10%, rgba(201, 162, 74, 0.16) 0%, rgba(110, 31, 43, 0.08) 32%, transparent 60%),
+    radial-gradient(80% 60% at 50% 110%, rgba(110, 31, 43, 0.14) 0%, transparent 60%);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --c-bg: 237 228 203; /* parchment base */
+  --c-surface: 250 244 227; /* raised panel (lighter than bg) */
+  --c-line: 206 184 142; /* brass hairline */
+  --c-ink: 58 26 32; /* deep burgundy-brown text */
+  --c-muted: 122 92 80;
+  --c-brass: 150 110 40;
+  --c-gold: 160 124 46;
+  --c-goldlite: 184 144 60;
+  --c-candle: 214 150 40;
+  --c-smoke: 150 132 108;
+  --c-ember: 180 50 20;
+  --c-burgundy: 110 31 43;
+  --c-parchment: 239 232 192;
+  --body-grad:
+    radial-gradient(120% 80% at 50% -10%, rgba(201, 162, 74, 0.22) 0%, rgba(110, 31, 43, 0.06) 34%, transparent 62%),
+    radial-gradient(80% 60% at 50% 110%, rgba(110, 31, 43, 0.05) 0%, transparent 60%);
 }
 
 body {
   @apply bg-bg text-ink antialiased;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  /* candlelight from above: a warm brass pool fading into oxblood shadow */
-  background-color: #150409;
-  background-image:
-    radial-gradient(120% 80% at 50% -10%, rgba(201, 162, 74, 0.16) 0%, rgba(110, 31, 43, 0.08) 32%, transparent 60%),
-    radial-gradient(80% 60% at 50% 110%, rgba(110, 31, 43, 0.14) 0%, transparent 60%);
+  /* candlelight (or daylight) from above — driven by the active theme tokens */
+  background-image: var(--body-grad);
   background-attachment: fixed;
 }
 

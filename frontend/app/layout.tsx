@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cinzel } from "next/font/google";
 import GoldSheen from "@/components/GoldSheen";
 import SiteFooter from "@/components/SiteFooter";
+import ThemeToggle from "@/components/ThemeToggle";
 import { GAME_ROOMS, SITE_URL } from "@/lib/rooms";
 import "./globals.css";
 
@@ -81,7 +82,15 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={cinzel.variable}>
+    <html lang="en" className={cinzel.variable} suppressHydrationWarning>
+      <head>
+        {/* No-flash theme resolution: runs before paint. stored → system → dark. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('parlor.theme');if(!t){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}`,
+          }}
+        />
+      </head>
       <body className="noise min-h-screen">
         <script
           type="application/ld+json"
@@ -90,6 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GoldSheen />
         {children}
         <SiteFooter />
+        <ThemeToggle />
       </body>
     </html>
   );
