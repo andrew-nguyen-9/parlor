@@ -108,21 +108,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Joannes Gijsen, Dutch bishop (born 1932) died.",
-   "correct": "2013",
-   "year": 2013,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Johannes_Gijsen.jpg/330px-Johannes_Gijsen.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Joannes_Gijsen"
+   "prompt": "On 06/24/____: Athanase David, Canadian lawyer and politician (died 1953) was born.",
+   "correct": "1882",
+   "year": 1882,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Athanase_David.jpg/330px-Athanase_David.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Athanase_David"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Kari Diesen, Norwegian singer and revue actress (died 1987) was born.",
-   "correct": "1914",
-   "year": 1914,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Kari-Diesen-OB.F13362.jpg/330px-Kari-Diesen-OB.F13362.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Kari_Diesen"
+   "prompt": "On 06/24/____: Iain Glen, Scottish actor was born.",
+   "correct": "1961",
+   "year": 1961,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Iain_Glen.jpg/330px-Iain_Glen.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Iain_Glen"
   },
   {
    "qtype": "year_guess",
@@ -215,21 +215,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Athanase David, Canadian lawyer and politician (died 1953) was born.",
-   "correct": "1882",
-   "year": 1882,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Athanase_David.jpg/330px-Athanase_David.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Athanase_David"
+   "prompt": "On 06/24/____: Darrel Akerfelds, American baseball player and coach (born 1962) died.",
+   "correct": "2012",
+   "year": 2012,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Darrel_Akerfelds.jpg/330px-Darrel_Akerfelds.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Darrel_Akerfelds"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Jack Carter, American actor and comedian (died 2015) was born.",
-   "correct": "1922",
-   "year": 1922,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jack_Carter_1949.JPG/330px-Jack_Carter_1949.JPG",
-   "source_url": "https://en.wikipedia.org/wiki/Jack_Carter_(comedian)"
+   "prompt": "On 06/24/____: Derek Dougan, Northern Irish footballer and manager (born 1938) died.",
+   "correct": "2007",
+   "year": 2007,
+   "image_url": "https://upload.wikimedia.org/wikipedia/en/3/38/Derek_Dougan.png",
+   "source_url": "https://en.wikipedia.org/wiki/Derek_Dougan"
   },
   {
    "qtype": "year_guess",
@@ -322,21 +322,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Darrel Akerfelds, American baseball player and coach (born 1962) died.",
-   "correct": "2012",
-   "year": 2012,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Darrel_Akerfelds.jpg/330px-Darrel_Akerfelds.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Darrel_Akerfelds"
+   "prompt": "On 06/24/____: Ogden Reid, American politician (died 2019) was born.",
+   "correct": "1925",
+   "year": 1925,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Ogden_Reid_%28cropped%29.png/330px-Ogden_Reid_%28cropped%29.png",
+   "source_url": "https://en.wikipedia.org/wiki/Ogden_Reid"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Iain Glen, Scottish actor was born.",
-   "correct": "1961",
-   "year": 1961,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Iain_Glen.jpg/330px-Iain_Glen.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Iain_Glen"
+   "prompt": "On 06/24/____: Cristiano Ara\u00fajo, Brazilian singer-songwriter (born 1986) died.",
+   "correct": "2015",
+   "year": 2015,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Crisaraujo_fanfest.JPG/330px-Crisaraujo_fanfest.JPG",
+   "source_url": "https://en.wikipedia.org/wiki/Cristiano_Ara%C3%BAjo"
   },
   {
    "qtype": "year_guess",
@@ -420,21 +420,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Ogden Reid, American politician (died 2019) was born.",
-   "correct": "1925",
-   "year": 1925,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Ogden_Reid_%28cropped%29.png/330px-Ogden_Reid_%28cropped%29.png",
-   "source_url": "https://en.wikipedia.org/wiki/Ogden_Reid"
+   "prompt": "On 06/24/____: Olaf Holtedahl, Norwegian geologist (died 1975) was born.",
+   "correct": "1885",
+   "year": 1885,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Olaf_Holtedahl_1935_%28cropped%29.jpg/330px-Olaf_Holtedahl_1935_%28cropped%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Olaf_Holtedahl"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Derek Dougan, Northern Irish footballer and manager (born 1938) died.",
-   "correct": "2007",
-   "year": 2007,
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/3/38/Derek_Dougan.png",
-   "source_url": "https://en.wikipedia.org/wiki/Derek_Dougan"
+   "prompt": "On 06/24/____: Pierre Fournier, French cellist and educator (died 1986) was born.",
+   "correct": "1906",
+   "year": 1906,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Fournier_Harcourt_1941.jpg/330px-Fournier_Harcourt_1941.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Pierre_Fournier"
   },
   {
    "qtype": "year_guess",
@@ -518,21 +518,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Olaf Holtedahl, Norwegian geologist (died 1975) was born.",
-   "correct": "1885",
-   "year": 1885,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Olaf_Holtedahl_1935_%28cropped%29.jpg/330px-Olaf_Holtedahl_1935_%28cropped%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Olaf_Holtedahl"
+   "prompt": "On 06/24/____: Fred Anderson, American jazz tenor saxophonist (born 1929) died.",
+   "correct": "2010",
+   "year": 2010,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Fred_Anderson_Jazz.jpg/330px-Fred_Anderson_Jazz.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Fred_Anderson_(musician)"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Cristiano Ara\u00fajo, Brazilian singer-songwriter (born 1986) died.",
-   "correct": "2015",
-   "year": 2015,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Crisaraujo_fanfest.JPG/330px-Crisaraujo_fanfest.JPG",
-   "source_url": "https://en.wikipedia.org/wiki/Cristiano_Ara%C3%BAjo"
+   "prompt": "On 06/24/____: James Martin, English-Bermudian computer scientist and author (born 1933) died.",
+   "correct": "2013",
+   "year": 2013,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Dr_James_Martin.jpg/330px-Dr_James_Martin.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/James_Martin_(author)"
   },
   {
    "qtype": "year_guess",
@@ -617,21 +617,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Fred Anderson, American jazz tenor saxophonist (born 1929) died.",
-   "correct": "2010",
-   "year": 2010,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Fred_Anderson_Jazz.jpg/330px-Fred_Anderson_Jazz.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Fred_Anderson_(musician)"
+   "prompt": "On 06/24/____: Loren Roberts, American golfer was born.",
+   "correct": "1955",
+   "year": 1955,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Loren_Roberts.jpg/330px-Loren_Roberts.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Loren_Roberts"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Pierre Fournier, French cellist and educator (died 1986) was born.",
-   "correct": "1906",
-   "year": 1906,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Fournier_Harcourt_1941.jpg/330px-Fournier_Harcourt_1941.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Pierre_Fournier"
+   "prompt": "On 06/24/____: Frank King, American cartoonist (born 1883) died.",
+   "correct": "1969",
+   "year": 1969,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Frank_O._King_%28ca_1916%29.jpg/330px-Frank_O._King_%28ca_1916%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Frank_King_(cartoonist)"
   },
   {
    "qtype": "year_guess",
@@ -716,21 +716,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Loren Roberts, American golfer was born.",
-   "correct": "1955",
-   "year": 1955,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Loren_Roberts.jpg/330px-Loren_Roberts.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Loren_Roberts"
+   "prompt": "On 06/24/____: Karin Pils\u00e4ter, Swedish accountant and politician was born.",
+   "correct": "1960",
+   "year": 1960,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Karin_Pils%C3%A4ter.jpg/330px-Karin_Pils%C3%A4ter.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Karin_Pils%C3%A4ter"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: James Martin, English-Bermudian computer scientist and author (born 1933) died.",
-   "correct": "2013",
-   "year": 2013,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Dr_James_Martin.jpg/330px-Dr_James_Martin.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/James_Martin_(author)"
+   "prompt": "On 06/24/____: Samuel Johnson, Nigerian priest and historian (died 1901) was born.",
+   "correct": "1846",
+   "year": 1846,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samuel_Johnson_%28Yoruba%29.jpg/330px-Samuel_Johnson_%28Yoruba%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Samuel_Johnson_(Nigerian_historian)"
   },
   {
    "qtype": "year_guess",
@@ -815,21 +815,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Karin Pils\u00e4ter, Swedish accountant and politician was born.",
-   "correct": "1960",
-   "year": 1960,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Karin_Pils%C3%A4ter.jpg/330px-Karin_Pils%C3%A4ter.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Karin_Pils%C3%A4ter"
+   "prompt": "On 06/24/____: Gu Chaohao, Chinese mathematician and academic (born 1926) died.",
+   "correct": "2012",
+   "year": 2012,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/GuChao_hao_1959.jpg/330px-GuChao_hao_1959.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Gu_Chaohao"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Frank King, American cartoonist (born 1883) died.",
-   "correct": "1969",
-   "year": 1969,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Frank_O._King_%28ca_1916%29.jpg/330px-Frank_O._King_%28ca_1916%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Frank_King_(cartoonist)"
+   "prompt": "On 06/24/____: Jeff Beck, English guitarist and songwriter (died 2023) was born.",
+   "correct": "1944",
+   "year": 1944,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jeff_Beck_in_Amsterdam_1979_%28cropped%29.jpg/330px-Jeff_Beck_in_Amsterdam_1979_%28cropped%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Jeff_Beck"
   },
   {
    "qtype": "year_guess",
@@ -894,21 +894,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Gu Chaohao, Chinese mathematician and academic (born 1926) died.",
-   "correct": "2012",
-   "year": 2012,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/GuChao_hao_1959.jpg/330px-GuChao_hao_1959.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Gu_Chaohao"
+   "prompt": "On 06/24/____: William Hathaway, American lawyer and politician (born 1924) died.",
+   "correct": "2013",
+   "year": 2013,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Wm_D_Hathaway_Senate.jpg/330px-Wm_D_Hathaway_Senate.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/William_Hathaway"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Samuel Johnson, Nigerian priest and historian (died 1901) was born.",
-   "correct": "1846",
-   "year": 1846,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Samuel_Johnson_%28Yoruba%29.jpg/330px-Samuel_Johnson_%28Yoruba%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Samuel_Johnson_(Nigerian_historian)"
+   "prompt": "On 06/24/____: Julia Kristeva, Bulgarian-French psychoanalyst and author was born.",
+   "correct": "1941",
+   "year": 1941,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Julia_Kristeva_%C3%A0_Paris_en_2008.jpg/330px-Julia_Kristeva_%C3%A0_Paris_en_2008.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Julia_Kristeva"
   },
   {
    "qtype": "year_guess",
@@ -973,21 +973,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: William Hathaway, American lawyer and politician (born 1924) died.",
-   "correct": "2013",
-   "year": 2013,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Wm_D_Hathaway_Senate.jpg/330px-Wm_D_Hathaway_Senate.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/William_Hathaway"
+   "prompt": "On 06/24/____: Andrea Raggi, Italian footballer was born.",
+   "correct": "1984",
+   "year": 1984,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/72/Monaco-Zenit_%282%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Andrea_Raggi"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Jeff Beck, English guitarist and songwriter (died 2023) was born.",
-   "correct": "1944",
-   "year": 1944,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jeff_Beck_in_Amsterdam_1979_%28cropped%29.jpg/330px-Jeff_Beck_in_Amsterdam_1979_%28cropped%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Jeff_Beck"
+   "prompt": "On 06/24/____: Mario Biaggi, American police officer, politician and criminal (born 1917) died.",
+   "correct": "2015",
+   "year": 2015,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Mario_Biaggi.jpg/330px-Mario_Biaggi.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Mario_Biaggi"
   },
   {
    "qtype": "year_guess",
@@ -1042,21 +1042,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Andrea Raggi, Italian footballer was born.",
-   "correct": "1984",
-   "year": 1984,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/72/Monaco-Zenit_%282%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Andrea_Raggi"
+   "prompt": "On 06/24/____: Dimos Dikoudis, Greek basketball player and manager was born.",
+   "correct": "1977",
+   "year": 1977,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Dimos_Dikoudis_20250510.jpg/330px-Dimos_Dikoudis_20250510.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Dimos_Dikoudis"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Julia Kristeva, Bulgarian-French psychoanalyst and author was born.",
-   "correct": "1941",
-   "year": 1941,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Julia_Kristeva_%C3%A0_Paris_en_2008.jpg/330px-Julia_Kristeva_%C3%A0_Paris_en_2008.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Julia_Kristeva"
+   "prompt": "On 06/24/____: Brock Olivo, American football player and coach was born.",
+   "correct": "1976",
+   "year": 1976,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Brock_Olivo.jpg/330px-Brock_Olivo.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Brock_Olivo"
   },
   {
    "qtype": "year_guess",
@@ -1101,21 +1101,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Dimos Dikoudis, Greek basketball player and manager was born.",
-   "correct": "1977",
-   "year": 1977,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Dimos_Dikoudis_20250510.jpg/330px-Dimos_Dikoudis_20250510.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Dimos_Dikoudis"
+   "prompt": "On 06/24/____: Ken Gray, New Zealand rugby player (died 1992) was born.",
+   "correct": "1938",
+   "year": 1938,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Kenneth_Francis_Gray_c1963.jpg/330px-Kenneth_Francis_Gray_c1963.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Ken_Gray_(rugby_union)"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Mario Biaggi, American police officer, politician and criminal (born 1917) died.",
-   "correct": "2015",
-   "year": 2015,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Mario_Biaggi.jpg/330px-Mario_Biaggi.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Mario_Biaggi"
+   "prompt": "On 06/24/____: Uwe Krupp, German ice hockey player and coach was born.",
+   "correct": "1965",
+   "year": 1965,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/2023-11-03_Eisb%C3%A4ren_Berlin_gegen_K%C3%B6lner_Haie_%28Deutsche_Eishockey-Liga_2023-24%29_by_Sandro_Halank%E2%80%93127.jpg/330px-2023-11-03_Eisb%C3%A4ren_Berlin_gegen_K%C3%B6lner_Haie_%28Deutsche_Eishockey-Liga_2023-24%29_by_Sandro_Halank%E2%80%93127.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Uwe_Krupp"
   },
   {
    "qtype": "year_guess",
@@ -1160,21 +1160,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Ken Gray, New Zealand rugby player (died 1992) was born.",
-   "correct": "1938",
-   "year": 1938,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Kenneth_Francis_Gray_c1963.jpg/330px-Kenneth_Francis_Gray_c1963.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Ken_Gray_(rugby_union)"
+   "prompt": "On 06/24/____: Gad Beck, German author and educator (born 1923) died.",
+   "correct": "2012",
+   "year": 2012,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/%22Paragraph_175%22_German_premiere_-_6.jpg/330px-%22Paragraph_175%22_German_premiere_-_6.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Gad_Beck"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Brock Olivo, American football player and coach was born.",
-   "correct": "1976",
-   "year": 1976,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Brock_Olivo.jpg/330px-Brock_Olivo.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Brock_Olivo"
+   "prompt": "On 06/24/____: Ralph E. Reed, Jr., American journalist and activist was born.",
+   "correct": "1961",
+   "year": 1961,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Ralph_Reed_by_Gage_Skidmore.jpg/330px-Ralph_Reed_by_Gage_Skidmore.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Ralph_Reed"
   },
   {
    "qtype": "year_guess",
@@ -1209,21 +1209,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Gad Beck, German author and educator (born 1923) died.",
-   "correct": "2012",
-   "year": 2012,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/%22Paragraph_175%22_German_premiere_-_6.jpg/330px-%22Paragraph_175%22_German_premiere_-_6.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Gad_Beck"
+   "prompt": "On 06/24/____: Luis Garc\u00eda, Spanish footballer was born.",
+   "correct": "1978",
+   "year": 1978,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Luis_Garc%C3%ADa_Sanz_-_53690670543.jpg/330px-Luis_Garc%C3%ADa_Sanz_-_53690670543.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Luis_Garc%C3%ADa_(footballer%2C_born_1978)"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Uwe Krupp, German ice hockey player and coach was born.",
-   "correct": "1965",
-   "year": 1965,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/2023-11-03_Eisb%C3%A4ren_Berlin_gegen_K%C3%B6lner_Haie_%28Deutsche_Eishockey-Liga_2023-24%29_by_Sandro_Halank%E2%80%93127.jpg/330px-2023-11-03_Eisb%C3%A4ren_Berlin_gegen_K%C3%B6lner_Haie_%28Deutsche_Eishockey-Liga_2023-24%29_by_Sandro_Halank%E2%80%93127.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Uwe_Krupp"
+   "prompt": "On 06/24/____: John Postgate, English microbiologist, author, and academic (died 2014) was born.",
+   "correct": "1922",
+   "year": 1922,
+   "image_url": "https://upload.wikimedia.org/wikipedia/en/7/7a/John_Postgate_%28microbiologist%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/John_Postgate_(microbiologist)"
   },
   {
    "qtype": "year_guess",
@@ -1258,21 +1258,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Luis Garc\u00eda, Spanish footballer was born.",
-   "correct": "1978",
-   "year": 1978,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Luis_Garc%C3%ADa_Sanz_-_53690670543.jpg/330px-Luis_Garc%C3%ADa_Sanz_-_53690670543.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Luis_Garc%C3%ADa_(footballer%2C_born_1978)"
+   "prompt": "On 06/24/____: Ann C. Scales, American lawyer, educator, and activist (born 1952) died.",
+   "correct": "2012",
+   "year": 2012,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Scales_250x375.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Ann_C._Scales"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Ralph E. Reed, Jr., American journalist and activist was born.",
-   "correct": "1961",
-   "year": 1961,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Ralph_Reed_by_Gage_Skidmore.jpg/330px-Ralph_Reed_by_Gage_Skidmore.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Ralph_Reed"
+   "prompt": "On 06/24/____: David Shillington, Australian rugby league player was born.",
+   "correct": "1983",
+   "year": 1983,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/David_Shillington.jpg/330px-David_Shillington.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/David_Shillington"
   },
   {
    "qtype": "year_guess",
@@ -1307,21 +1307,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Ann C. Scales, American lawyer, educator, and activist (born 1952) died.",
-   "correct": "2012",
-   "year": 2012,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Scales_250x375.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Ann_C._Scales"
+   "prompt": "On 06/24/____: Gard Nilssen, Norwegian drummer was born.",
+   "correct": "1983",
+   "year": 1983,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Gard_Nilssen_2025.jpg/330px-Gard_Nilssen_2025.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Gard_Nilssen"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: John Postgate, English microbiologist, author, and academic (died 2014) was born.",
-   "correct": "1922",
-   "year": 1922,
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/7/7a/John_Postgate_%28microbiologist%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/John_Postgate_(microbiologist)"
+   "prompt": "On 06/24/____: JJ Redick, American basketball player and coach was born.",
+   "correct": "1984",
+   "year": 1984,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Tomas_Satoransky%2C_JJ_Redick_%28cropped%29.jpg/330px-Tomas_Satoransky%2C_JJ_Redick_%28cropped%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/JJ_Redick"
   },
   {
    "qtype": "year_guess",
@@ -1356,21 +1356,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Gard Nilssen, Norwegian drummer was born.",
-   "correct": "1983",
-   "year": 1983,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Gard_Nilssen_2025.jpg/330px-Gard_Nilssen_2025.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Gard_Nilssen"
+   "prompt": "On 06/24/____: Stuart Broad, English cricketer was born.",
+   "correct": "1986",
+   "year": 1986,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Stuart_broad.jpg/330px-Stuart_broad.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Stuart_Broad"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: David Shillington, Australian rugby league player was born.",
-   "correct": "1983",
-   "year": 1983,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/David_Shillington.jpg/330px-David_Shillington.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/David_Shillington"
+   "prompt": "On 06/24/____: Henry Chapman Mercer, American archaeologist and author (died 1930) was born.",
+   "correct": "1856",
+   "year": 1856,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/MercerLG.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Henry_Chapman_Mercer"
   },
   {
    "qtype": "year_guess",
@@ -1405,21 +1405,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Stuart Broad, English cricketer was born.",
-   "correct": "1986",
-   "year": 1986,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Stuart_broad.jpg/330px-Stuart_broad.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Stuart_Broad"
+   "prompt": "On 06/24/____: Mercedes Lackey, American author was born.",
+   "correct": "1950",
+   "year": 1950,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Mercedes_Lackey_by_Gage_Skidmore.jpg/330px-Mercedes_Lackey_by_Gage_Skidmore.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Mercedes_Lackey"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: JJ Redick, American basketball player and coach was born.",
-   "correct": "1984",
-   "year": 1984,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Tomas_Satoransky%2C_JJ_Redick_%28cropped%29.jpg/330px-Tomas_Satoransky%2C_JJ_Redick_%28cropped%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/JJ_Redick"
+   "prompt": "On 06/24/____: Saloua Raouda Choucair, Lebanese painter and sculptor (died 2017) was born.",
+   "correct": "1916",
+   "year": 1916,
+   "image_url": "https://upload.wikimedia.org/wikipedia/en/0/0a/Saloua_Raouda_Choucair%2C_Self_Portrait%2C_1943.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Saloua_Raouda_Choucair"
   },
   {
    "qtype": "year_guess",
@@ -1454,21 +1454,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Mercedes Lackey, American author was born.",
-   "correct": "1950",
-   "year": 1950,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Mercedes_Lackey_by_Gage_Skidmore.jpg/330px-Mercedes_Lackey_by_Gage_Skidmore.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Mercedes_Lackey"
+   "prompt": "On 06/24/____: Sam Jones, American basketball player and coach (died 2021) was born.",
+   "correct": "1933",
+   "year": 1933,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/6/6c/Sam_Jones%2C_Boston_Celtics%2C_1969.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Sam_Jones_(basketball%2C_born_1933)"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Henry Chapman Mercer, American archaeologist and author (died 1930) was born.",
-   "correct": "1856",
-   "year": 1856,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/MercerLG.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Henry_Chapman_Mercer"
+   "prompt": "On 06/24/____: Jan Matejko, Polish painter (died 1893) was born.",
+   "correct": "1838",
+   "year": 1838,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Jan_Matejko_1901_%28612306%29_%28cropped%29.jpg/330px-Jan_Matejko_1901_%28612306%29_%28cropped%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Jan_Matejko"
   },
   {
    "qtype": "year_guess",
@@ -1503,21 +1503,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Sam Jones, American basketball player and coach (died 2021) was born.",
-   "correct": "1933",
-   "year": 1933,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/6/6c/Sam_Jones%2C_Boston_Celtics%2C_1969.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Sam_Jones_(basketball%2C_born_1933)"
+   "prompt": "On 06/24/____: Andrew Jones, Australian race car driver was born.",
+   "correct": "1980",
+   "year": 1980,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/de/Andrew_Jones.JPG",
+   "source_url": "https://en.wikipedia.org/wiki/Andrew_Jones_(racing_driver)"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Saloua Raouda Choucair, Lebanese painter and sculptor (died 2017) was born.",
-   "correct": "1916",
-   "year": 1916,
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/0/0a/Saloua_Raouda_Choucair%2C_Self_Portrait%2C_1943.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Saloua_Raouda_Choucair"
+   "prompt": "On 06/24/____: Stuart Davis, American painter and academic (born 1892) died.",
+   "correct": "1964",
+   "year": 1964,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Archives_of_American_Art_-_Stuart_Davis_-_2053_%28cropped%29.jpg/330px-Archives_of_American_Art_-_Stuart_Davis_-_2053_%28cropped%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Stuart_Davis_(painter)"
   },
   {
    "qtype": "year_guess",
@@ -1552,21 +1552,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Andrew Jones, Australian race car driver was born.",
-   "correct": "1980",
-   "year": 1980,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/de/Andrew_Jones.JPG",
-   "source_url": "https://en.wikipedia.org/wiki/Andrew_Jones_(racing_driver)"
+   "prompt": "On 06/24/____: Phil Hughes, American baseball player was born.",
+   "correct": "1986",
+   "year": 1986,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Phil_Hughes_at_Camden_Yards_9-12-13.jpg/330px-Phil_Hughes_at_Camden_Yards_9-12-13.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Phil_Hughes_(baseball)"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Jan Matejko, Polish painter (died 1893) was born.",
-   "correct": "1838",
-   "year": 1838,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Jan_Matejko_1901_%28612306%29_%28cropped%29.jpg/330px-Jan_Matejko_1901_%28612306%29_%28cropped%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Jan_Matejko"
+   "prompt": "On 06/24/____: Olga Olgina, Polish opera singer and teacher (died 1979) was born.",
+   "correct": "1904",
+   "year": 1904,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Olga_Olgina_-_%C5%9Awiatowid_1935.jpg/330px-Olga_Olgina_-_%C5%9Awiatowid_1935.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Olga_Olgina"
   },
   {
    "qtype": "year_guess",
@@ -1601,21 +1601,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Phil Hughes, American baseball player was born.",
-   "correct": "1986",
-   "year": 1986,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Phil_Hughes_at_Camden_Yards_9-12-13.jpg/330px-Phil_Hughes_at_Camden_Yards_9-12-13.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Phil_Hughes_(baseball)"
+   "prompt": "On 06/24/____: Brian Johnston, English sportscaster and author (died 1994) was born.",
+   "correct": "1912",
+   "year": 1912,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Brian_Johnston.jpg/330px-Brian_Johnston.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Brian_Johnston"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Stuart Davis, American painter and academic (born 1892) died.",
-   "correct": "1964",
-   "year": 1964,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Archives_of_American_Art_-_Stuart_Davis_-_2053_%28cropped%29.jpg/330px-Archives_of_American_Art_-_Stuart_Davis_-_2053_%28cropped%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Stuart_Davis_(painter)"
+   "prompt": "On 06/24/____: Charlie Dees, American baseball player was born.",
+   "correct": "1935",
+   "year": 1935,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/00/Charlie_Dees_1964.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Charlie_Dees"
   },
   {
    "qtype": "year_guess",
@@ -1650,21 +1650,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Brian Johnston, English sportscaster and author (died 1994) was born.",
-   "correct": "1912",
-   "year": 1912,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Brian_Johnston.jpg/330px-Brian_Johnston.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Brian_Johnston"
+   "prompt": "On 06/24/____: Ferdinand Biwersi, German footballer and referee (died 2013) was born.",
+   "correct": "1934",
+   "year": 1934,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Ferdinand_Biwersi_%281971%29.jpg/330px-Ferdinand_Biwersi_%281971%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Ferdinand_Biwersi"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Olga Olgina, Polish opera singer and teacher (died 1979) was born.",
-   "correct": "1904",
-   "year": 1904,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Olga_Olgina_-_%C5%9Awiatowid_1935.jpg/330px-Olga_Olgina_-_%C5%9Awiatowid_1935.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Olga_Olgina"
+   "prompt": "On 06/24/____: Paul Winchell, American actor, voice artist, and ventriloquist (born 1922) died.",
+   "correct": "2005",
+   "year": 2005,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Paul_Winchell_Jerry_Mahoney_1951.JPG/330px-Paul_Winchell_Jerry_Mahoney_1951.JPG",
+   "source_url": "https://en.wikipedia.org/wiki/Paul_Winchell"
   },
   {
    "qtype": "year_guess",
@@ -1699,21 +1699,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Ferdinand Biwersi, German footballer and referee (died 2013) was born.",
-   "correct": "1934",
-   "year": 1934,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Ferdinand_Biwersi_%281971%29.jpg/330px-Ferdinand_Biwersi_%281971%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Ferdinand_Biwersi"
+   "prompt": "On 06/24/____: Natasja Saad, Danish rapper and reggae singer (born 1974) died.",
+   "correct": "2007",
+   "year": 2007,
+   "image_url": "https://upload.wikimedia.org/wikipedia/en/4/46/Natasja_Saad.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Natasja_Saad"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Charlie Dees, American baseball player was born.",
-   "correct": "1935",
-   "year": 1935,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/00/Charlie_Dees_1964.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Charlie_Dees"
+   "prompt": "On 06/24/____: Bob Cole, Canadian sports announcer (died 2024) was born.",
+   "correct": "1933",
+   "year": 1933,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Bob_Cole_sportscaster.JPG/330px-Bob_Cole_sportscaster.JPG",
+   "source_url": "https://en.wikipedia.org/wiki/Bob_Cole_(sportscaster)"
   },
   {
    "qtype": "year_guess",
@@ -1748,21 +1748,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Natasja Saad, Danish rapper and reggae singer (born 1974) died.",
-   "correct": "2007",
-   "year": 2007,
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/4/46/Natasja_Saad.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Natasja_Saad"
+   "prompt": "On 06/24/____: Clarence Campbell, Canadian businessman (born 1905) died.",
+   "correct": "1984",
+   "year": 1984,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Clarence_Campbell_Stanley_Cup_1957.jpg/330px-Clarence_Campbell_Stanley_Cup_1957.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Clarence_Campbell"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Paul Winchell, American actor, voice artist, and ventriloquist (born 1922) died.",
-   "correct": "2005",
-   "year": 2005,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Paul_Winchell_Jerry_Mahoney_1951.JPG/330px-Paul_Winchell_Jerry_Mahoney_1951.JPG",
-   "source_url": "https://en.wikipedia.org/wiki/Paul_Winchell"
+   "prompt": "On 06/24/____: Vera Atkins, British intelligence officer (born 1908) died.",
+   "correct": "2000",
+   "year": 2000,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Vera_Atkins.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Vera_Atkins"
   },
   {
    "qtype": "year_guess",
@@ -1797,21 +1797,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Clarence Campbell, Canadian businessman (born 1905) died.",
-   "correct": "1984",
-   "year": 1984,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Clarence_Campbell_Stanley_Cup_1957.jpg/330px-Clarence_Campbell_Stanley_Cup_1957.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Clarence_Campbell"
+   "prompt": "On 06/24/____: Jere Lehtinen, Finnish ice hockey player was born.",
+   "correct": "1973",
+   "year": 1973,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Jere_Lehtinen_%28Dallas%29.JPG/330px-Jere_Lehtinen_%28Dallas%29.JPG",
+   "source_url": "https://en.wikipedia.org/wiki/Jere_Lehtinen"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Bob Cole, Canadian sports announcer (died 2024) was born.",
-   "correct": "1933",
-   "year": 1933,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Bob_Cole_sportscaster.JPG/330px-Bob_Cole_sportscaster.JPG",
-   "source_url": "https://en.wikipedia.org/wiki/Bob_Cole_(sportscaster)"
+   "prompt": "On 06/24/____: Mike Wieringo, American author and illustrator (died 2007) was born.",
+   "correct": "1963",
+   "year": 1963,
+   "image_url": "https://upload.wikimedia.org/wikipedia/en/4/45/Mike_Wieringo.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Mike_Wieringo"
   },
   {
    "qtype": "year_guess",
@@ -1846,21 +1846,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Jere Lehtinen, Finnish ice hockey player was born.",
-   "correct": "1973",
-   "year": 1973,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Jere_Lehtinen_%28Dallas%29.JPG/330px-Jere_Lehtinen_%28Dallas%29.JPG",
-   "source_url": "https://en.wikipedia.org/wiki/Jere_Lehtinen"
+   "prompt": "On 06/24/____: Adrienne Shelly, American actress, director, and screenwriter (died 2006) was born.",
+   "correct": "1966",
+   "year": 1966,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Adrienne_Shelly_as_Dannie.jpg/330px-Adrienne_Shelly_as_Dannie.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Adrienne_Shelly"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Vera Atkins, British intelligence officer (born 1908) died.",
-   "correct": "2000",
-   "year": 2000,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Vera_Atkins.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Vera_Atkins"
+   "prompt": "On 06/24/____: Portia White, Canadian opera singer (died 1968) was born.",
+   "correct": "1911",
+   "year": 1911,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/09/Portia_White.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Portia_White"
   },
   {
    "qtype": "year_guess",
@@ -1895,21 +1895,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Adrienne Shelly, American actress, director, and screenwriter (died 2006) was born.",
-   "correct": "1966",
-   "year": 1966,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Adrienne_Shelly_as_Dannie.jpg/330px-Adrienne_Shelly_as_Dannie.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Adrienne_Shelly"
+   "prompt": "On 06/24/____: Andreas Vokos Miaoulis, Greek admiral and politician (born 1769) died.",
+   "correct": "1835",
+   "year": 1835,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Miaoylis-elaio.jpg/330px-Miaoylis-elaio.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Andreas_Miaoulis"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Mike Wieringo, American author and illustrator (died 2007) was born.",
-   "correct": "1963",
-   "year": 1963,
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/4/45/Mike_Wieringo.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Mike_Wieringo"
+   "prompt": "On 06/24/____: Lionel Messi, Argentinian footballer was born.",
+   "correct": "1987",
+   "year": 1987,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Lionel_Messi_NE_Revolution_Inter_Miami_7.9.25-178_%28cropped_2%29.jpg/330px-Lionel_Messi_NE_Revolution_Inter_Miami_7.9.25-178_%28cropped_2%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Lionel_Messi"
   },
   {
    "qtype": "year_guess",
@@ -1944,21 +1944,21 @@
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/____: Andreas Vokos Miaoulis, Greek admiral and politician (born 1769) died.",
-   "correct": "1835",
-   "year": 1835,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Miaoylis-elaio.jpg/330px-Miaoylis-elaio.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Andreas_Miaoulis"
+   "prompt": "On 06/24/____: Gary Suter, American ice hockey player and scout was born.",
+   "correct": "1964",
+   "year": 1964,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/GarySuter.png/330px-GarySuter.png",
+   "source_url": "https://en.wikipedia.org/wiki/Gary_Suter"
   },
   {
    "qtype": "year_guess",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/____: Portia White, Canadian opera singer (died 1968) was born.",
-   "correct": "1911",
-   "year": 1911,
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/09/Portia_White.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Portia_White"
+   "prompt": "On 06/24/____: Hugo Distler, German organist, composer, and conductor (died 1942) was born.",
+   "correct": "1908",
+   "year": 1908,
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Hugo_Distler.jpg/330px-Hugo_Distler.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Hugo_Distler"
   },
   {
    "qtype": "audio_guess",
@@ -2729,9 +2729,9 @@
    "correct": "New Delhi",
    "choices": [
     "New Delhi",
-    "Mexico City",
-    "Dhaka",
-    "Manila"
+    "Islamabad",
+    "Beijing",
+    "Moscow"
    ],
    "image_url": "https://flagcdn.com/in.svg",
    "source_url": "https://www.openstreetmap.org/relation/304716"
@@ -2743,9 +2743,9 @@
    "prompt": "_____ is the capital of Egypt.",
    "correct": "Cairo",
    "choices": [
-    "Washington, D.C.",
-    "Tokyo",
-    "Manila",
+    "Mexico City",
+    "Dhaka",
+    "Moscow",
     "Cairo"
    ],
    "image_url": "https://flagcdn.com/eg.svg",
@@ -2758,9 +2758,9 @@
    "prompt": "_____ is the capital of Philippines.",
    "correct": "Manila",
    "choices": [
-    "Beijing",
+    "New Delhi",
+    "Tokyo",
     "Mexico City",
-    "Washington, D.C.",
     "Manila"
    ],
    "image_url": "https://flagcdn.com/ph.svg",
@@ -2773,10 +2773,10 @@
    "prompt": "_____ is the capital of Pakistan.",
    "correct": "Islamabad",
    "choices": [
-    "Washington, D.C.",
+    "Mexico City",
     "Islamabad",
     "Jakarta",
-    "Cairo"
+    "Bras\u00edlia"
    ],
    "image_url": "https://flagcdn.com/pk.svg",
    "source_url": "https://www.openstreetmap.org/relation/307573"
@@ -2789,9 +2789,9 @@
    "correct": "Dhaka",
    "choices": [
     "Dhaka",
-    "Cairo",
-    "Manila",
-    "New Delhi"
+    "Bras\u00edlia",
+    "Moscow",
+    "Beijing"
    ],
    "image_url": "https://flagcdn.com/bd.svg",
    "source_url": "https://www.openstreetmap.org/relation/184640"
@@ -2804,8 +2804,8 @@
    "correct": "Liberty",
    "choices": [
     "Clemson",
-    "USC",
-    "Michigan State",
+    "Arkansas",
+    "Southeast Missouri State",
     "Liberty"
    ],
    "source_url": "https://sleeper.com"
@@ -2817,10 +2817,10 @@
    "prompt": "Zavion Thomas (WR, CHI) played college football at _____.",
    "correct": "LSU",
    "choices": [
-    "Michigan State",
-    "Virginia",
+    "Southeast Missouri State",
+    "Baylor",
     "LSU",
-    "Southeast Missouri State"
+    "Liberty"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -2831,10 +2831,10 @@
    "prompt": "Erick All (TE, CIN) played college football at _____.",
    "correct": "Iowa",
    "choices": [
-    "Southeast Missouri State",
-    "Notre Dame",
+    "Liberty",
+    "Texas",
     "Iowa",
-    "Florida"
+    "Arkansas"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -2845,10 +2845,10 @@
    "prompt": "Taylen Green (QB, CLE) played college football at _____.",
    "correct": "Arkansas",
    "choices": [
-    "Oregon",
-    "Kentucky",
+    "Notre Dame",
+    "Alabama",
     "Arkansas",
-    "Alabama"
+    "Kentucky"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -2859,9 +2859,9 @@
    "prompt": "MarShawn Lloyd (RB, GB) played college football at _____.",
    "correct": "USC",
    "choices": [
-    "Notre Dame",
-    "Michigan State",
-    "Houston",
+    "Texas",
+    "Southeast Missouri State",
+    "UCLA",
     "USC"
    ],
    "source_url": "https://sleeper.com"
@@ -2874,9 +2874,9 @@
    "correct": "Jakarta",
    "choices": [
     "Jakarta",
-    "Abuja",
-    "Beijing",
-    "Manila"
+    "Washington, D.C.",
+    "Dhaka",
+    "Moscow"
    ],
    "image_url": "https://flagcdn.com/id.svg",
    "source_url": "https://www.openstreetmap.org/relation/21335"
@@ -2888,9 +2888,9 @@
    "prompt": "_____ is the capital of Japan.",
    "correct": "Tokyo",
    "choices": [
-    "Dhaka",
-    "Abuja",
-    "Moscow",
+    "Islamabad",
+    "Washington, D.C.",
+    "Manila",
     "Tokyo"
    ],
    "image_url": "https://flagcdn.com/jp.svg",
@@ -2903,10 +2903,10 @@
    "prompt": "_____ is the capital of Brazil.",
    "correct": "Bras\u00edlia",
    "choices": [
-    "Dhaka",
+    "Tokyo",
     "Bras\u00edlia",
-    "Mexico City",
-    "Abuja"
+    "Abuja",
+    "Washington, D.C."
    ],
    "image_url": "https://flagcdn.com/br.svg",
    "source_url": "https://www.openstreetmap.org/relation/59470"
@@ -2918,9 +2918,9 @@
    "prompt": "_____ is the capital of Nigeria.",
    "correct": "Abuja",
    "choices": [
-    "Dhaka",
-    "New Delhi",
-    "Mexico City",
+    "Islamabad",
+    "Beijing",
+    "Tokyo",
     "Abuja"
    ],
    "image_url": "https://flagcdn.com/ng.svg",
@@ -2934,9 +2934,9 @@
    "correct": "Michigan State",
    "choices": [
     "Michigan State",
-    "Texas",
-    "Florida",
-    "UCLA"
+    "Houston",
+    "Arkansas",
+    "Kentucky"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -2947,10 +2947,10 @@
    "prompt": "Greg Dulcich (TE, MIA) played college football at _____.",
    "correct": "UCLA",
    "choices": [
-    "Notre Dame",
+    "Kentucky",
     "UCLA",
     "Clemson",
-    "USC"
+    "Oregon"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -2962,9 +2962,9 @@
    "correct": "Kentucky",
    "choices": [
     "Kentucky",
-    "LSU",
-    "Houston",
-    "Southeast Missouri State"
+    "Florida",
+    "SMU",
+    "Liberty"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -2975,10 +2975,10 @@
    "prompt": "Bryce Lance (WR, NO) played college football at _____.",
    "correct": "North Dakota State",
    "choices": [
-    "Southeast Missouri State",
+    "Liberty",
     "North Dakota State",
     "Arkansas",
-    "Iowa"
+    "Houston"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -2989,10 +2989,10 @@
    "prompt": "Isaiah Bond (WR, CLE) played college football at _____.",
    "correct": "Texas",
    "choices": [
-    "Cincinnati",
-    "Southeast Missouri State",
+    "Virginia",
+    "Liberty",
     "Texas",
-    "Texas Tech"
+    "Baylor"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -3003,10 +3003,10 @@
    "prompt": "_____ is the capital of China.",
    "correct": "Beijing",
    "choices": [
-    "New Delhi",
+    "Islamabad",
     "Beijing",
-    "Addis Ababa",
-    "Bras\u00edlia"
+    "Cairo",
+    "Dhaka"
    ],
    "image_url": "https://flagcdn.com/cn.svg",
    "source_url": "https://www.openstreetmap.org/relation/270056"
@@ -3018,9 +3018,9 @@
    "prompt": "_____ is the capital of Ethiopia.",
    "correct": "Addis Ababa",
    "choices": [
-    "Cairo",
-    "Manila",
-    "Beijing",
+    "Bras\u00edlia",
+    "Moscow",
+    "New Delhi",
     "Addis Ababa"
    ],
    "image_url": "https://flagcdn.com/et.svg",
@@ -3034,9 +3034,9 @@
    "correct": "Moscow",
    "choices": [
     "Moscow",
-    "Bras\u00edlia",
-    "Dhaka",
-    "Islamabad"
+    "Manila",
+    "Islamabad",
+    "Jakarta"
    ],
    "image_url": "https://flagcdn.com/ru.svg",
    "source_url": "https://www.openstreetmap.org/relation/60189#map=3/65.15/105.29"
@@ -3048,8 +3048,8 @@
    "prompt": "Ryan Flournoy (WR, DAL) played college football at _____.",
    "correct": "Southeast Missouri State",
    "choices": [
-    "North Dakota State",
-    "LSU",
+    "Liberty",
+    "Texas",
     "Southeast Missouri State",
     "Arkansas"
    ],
@@ -3062,10 +3062,10 @@
    "prompt": "Colbie Young (WR, CIN) played college football at _____.",
    "correct": "Georgia",
    "choices": [
-    "Liberty",
+    "Houston",
     "Georgia",
-    "Kentucky",
-    "Virginia"
+    "SMU",
+    "Baylor"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -3077,9 +3077,9 @@
    "correct": "Cincinnati",
    "choices": [
     "Cincinnati",
-    "Clemson",
+    "LSU",
     "Iowa",
-    "Alabama"
+    "Texas"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -3090,10 +3090,10 @@
    "prompt": "Caleb Douglas (WR, MIA) played college football at _____.",
    "correct": "Texas Tech",
    "choices": [
-    "Notre Dame",
     "North Dakota State",
+    "Oregon",
     "Texas Tech",
-    "LSU"
+    "Florida"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -3104,9 +3104,9 @@
    "prompt": "Jam Miller (RB, NE) played college football at _____.",
    "correct": "Alabama",
    "choices": [
-    "Notre Dame",
+    "Kentucky",
     "Alabama",
-    "SMU",
+    "UCLA",
     "Clemson"
    ],
    "source_url": "https://sleeper.com"
@@ -3118,10 +3118,10 @@
    "prompt": "_____ is the capital of United States.",
    "correct": "Washington, D.C.",
    "choices": [
-    "New Delhi",
-    "Moscow",
+    "Beijing",
+    "Jakarta",
     "Washington, D.C.",
-    "Islamabad"
+    "Manila"
    ],
    "image_url": "https://flagcdn.com/us.svg",
    "source_url": "https://www.openstreetmap.org/relation/148838#map=2/20.6/-85.8"
@@ -3134,9 +3134,9 @@
    "correct": "Mexico City",
    "choices": [
     "Mexico City",
-    "New Delhi",
-    "Jakarta",
-    "Moscow"
+    "Beijing",
+    "Tokyo",
+    "Abuja"
    ],
    "image_url": "https://flagcdn.com/mx.svg",
    "source_url": "https://www.openstreetmap.org/relation/114686"
@@ -3149,9 +3149,9 @@
    "correct": "Clemson",
    "choices": [
     "Clemson",
-    "USC",
-    "North Dakota State",
-    "Kentucky"
+    "Oregon",
+    "Texas Tech",
+    "Alabama"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -3163,9 +3163,9 @@
    "correct": "Cincinnati",
    "choices": [
     "Cincinnati",
-    "Michigan State",
-    "USC",
-    "Arkansas"
+    "Virginia",
+    "Oregon",
+    "Michigan State"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -3176,9 +3176,9 @@
    "prompt": "Cade Klubnik (QB, NYJ) played college football at _____.",
    "correct": "Clemson",
    "choices": [
-    "LSU",
+    "North Dakota State",
+    "Georgia",
     "Virginia",
-    "Cincinnati",
     "Clemson"
    ],
    "source_url": "https://sleeper.com"
@@ -3190,9 +3190,9 @@
    "prompt": "Eli Raridon (TE, NE) played college football at _____.",
    "correct": "Notre Dame",
    "choices": [
-    "Florida",
-    "Southeast Missouri State",
-    "Texas",
+    "Arkansas",
+    "Liberty",
+    "North Dakota State",
     "Notre Dame"
    ],
    "source_url": "https://sleeper.com"
@@ -3204,10 +3204,10 @@
    "prompt": "J'Mari Taylor (RB, JAX) played college football at _____.",
    "correct": "Virginia",
    "choices": [
-    "Oregon",
-    "Houston",
+    "Georgia",
+    "UCLA",
     "Virginia",
-    "Clemson"
+    "Notre Dame"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -3218,10 +3218,10 @@
    "prompt": "Michael Trigg (TE, DAL) played college football at _____.",
    "correct": "Baylor",
    "choices": [
-    "LSU",
-    "UCLA",
+    "North Dakota State",
+    "USC",
     "Baylor",
-    "Oregon"
+    "Clemson"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -3232,10 +3232,10 @@
    "prompt": "Matt Hibner (TE, BAL) played college football at _____.",
    "correct": "SMU",
    "choices": [
-    "Texas",
-    "Virginia",
+    "Florida",
+    "Georgia",
     "SMU",
-    "Arkansas"
+    "Michigan State"
    ],
    "source_url": "https://sleeper.com"
   },
@@ -3246,9 +3246,9 @@
    "prompt": "Malik Davis (RB, DAL) played college football at _____.",
    "correct": "Florida",
    "choices": [
-    "Baylor",
+    "LSU",
     "SMU",
-    "Virginia",
+    "Georgia",
     "Florida"
    ],
    "source_url": "https://sleeper.com"
@@ -3261,8 +3261,8 @@
    "correct": "Houston",
    "choices": [
     "Houston",
-    "Texas Tech",
-    "Southeast Missouri State",
+    "Baylor",
+    "Liberty",
     "SMU"
    ],
    "source_url": "https://sleeper.com"
@@ -3274,9 +3274,9 @@
    "prompt": "Malik Benson (WR, LV) played college football at _____.",
    "correct": "Oregon",
    "choices": [
-    "USC",
-    "North Dakota State",
-    "UCLA",
+    "Arkansas",
+    "Texas Tech",
+    "Kentucky",
     "Oregon"
    ],
    "source_url": "https://sleeper.com"
@@ -3481,28 +3481,28 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "The 2023 this subject represented this subject University as a member of the Southern Conference (SoCon) during the 2023 NCAA Division I FCS this subject season.",
-   "correct": "2023 Mercer Bears football team",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Mercer_Bears_wordmark.svg/330px-Mercer_Bears_wordmark.svg.png",
-   "source_url": "https://en.wikipedia.org/wiki/2023_Mercer_Bears_football_team"
+   "prompt": "This subject is a rural locality of the Shire of Dardanup in the South West region of Western Australia.",
+   "correct": "Ferguson, Western Australia",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/St_Aidan_Church_gn.jpg/330px-St_Aidan_Church_gn.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Ferguson%2C_Western_Australia"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/2013: this subject, Dutch bishop (born 1932) died.",
-   "correct": "Joannes Gijsen",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Johannes_Gijsen.jpg/330px-Johannes_Gijsen.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Joannes_Gijsen"
+   "prompt": "On 06/24/1882: this subject, Canadian lawyer and politician (died 1953) was born.",
+   "correct": "Athanase David",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Athanase_David.jpg/330px-Athanase_David.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Athanase_David"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/1914: this subject, Norwegian singer and revue actress (died 1987) was born.",
-   "correct": "Kari Diesen",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Kari-Diesen-OB.F13362.jpg/330px-Kari-Diesen-OB.F13362.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Kari_Diesen"
+   "prompt": "On 06/24/1777: this subject, Scottish commander and explorer (died 1856) was born.",
+   "correct": "John Ross (Royal Navy officer)",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/British_School_-_Sir_John_Ross_%281777%E2%80%931856%29_-_BHC2983_-_Royal_Museums_Greenwich.jpg/330px-British_School_-_Sir_John_Ross_%281777%E2%80%931856%29_-_BHC2983_-_Royal_Museums_Greenwich.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/John_Ross_(Royal_Navy_officer)"
   },
   {
    "qtype": "clue",
@@ -3669,10 +3669,10 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 3,
-   "prompt": "This subject is a rural locality of the Shire of Dardanup in the South West region of Western Australia.",
-   "correct": "Ferguson, Western Australia",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/St_Aidan_Church_gn.jpg/330px-St_Aidan_Church_gn.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Ferguson%2C_Western_Australia"
+   "prompt": "This subject is a large concrete sculpture in D\u0105browa G\u00f3rnicza, Silesian Voivodeship, Poland, placed at the Freedom Square, in front of the Basin Palace of Culture.",
+   "correct": "Memorial to the Heroes of the Red Flags",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Dabrowa_Gornicza_monument.jpg/330px-Dabrowa_Gornicza_monument.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Memorial_to_the_Heroes_of_the_Red_Flags"
   },
   {
    "qtype": "clue",
@@ -3696,28 +3696,28 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "This subject is a Sunni mosque, located in Pilibhit, in the Bareilly division of the state of Uttar Pradesh, India.",
-   "correct": "Jama Masjid, Pilibhit",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jamiamasjid_pilibhit02.JPG/330px-Jamiamasjid_pilibhit02.JPG",
-   "source_url": "https://en.wikipedia.org/wiki/Jama_Masjid%2C_Pilibhit"
+   "prompt": "The 2023 this subject represented this subject University as a member of the Southern Conference (SoCon) during the 2023 NCAA Division I FCS this subject season.",
+   "correct": "2023 Mercer Bears football team",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Mercer_Bears_wordmark.svg/330px-Mercer_Bears_wordmark.svg.png",
+   "source_url": "https://en.wikipedia.org/wiki/2023_Mercer_Bears_football_team"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/1882: this subject, Canadian lawyer and politician (died 1953) was born.",
-   "correct": "Athanase David",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Athanase_David.jpg/330px-Athanase_David.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Athanase_David"
+   "prompt": "On 06/24/2012: this subject, American baseball player and coach (born 1962) died.",
+   "correct": "Darrel Akerfelds",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Darrel_Akerfelds.jpg/330px-Darrel_Akerfelds.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Darrel_Akerfelds"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/1922: this subject, American actor and comedian (died 2015) was born.",
-   "correct": "Jack Carter (comedian)",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jack_Carter_1949.JPG/330px-Jack_Carter_1949.JPG",
-   "source_url": "https://en.wikipedia.org/wiki/Jack_Carter_(comedian)"
+   "prompt": "On 06/24/1961: this subject, Scottish actor was born.",
+   "correct": "Iain Glen",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Iain_Glen.jpg/330px-Iain_Glen.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Iain_Glen"
   },
   {
    "qtype": "clue",
@@ -3894,10 +3894,10 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 5,
-   "prompt": "This subject 183 is a designation for a state this subject in the U.S.",
-   "correct": "Arkansas Highway 183",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Arkansas_183.svg/330px-Arkansas_183.svg.png",
-   "source_url": "https://en.wikipedia.org/wiki/Arkansas_Highway_183"
+   "prompt": "This subject is small settlement under the \u010crnivec Pass in the Municipality of Kamnik in the Upper Carniola region of Slovenia..",
+   "correct": "Smre\u010dje v \u010crni",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Smrecje_v_Crni_Slovenia.jpg/330px-Smrecje_v_Crni_Slovenia.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Smre%C4%8Dje_v_%C4%8Crni"
   },
   {
    "qtype": "clue",
@@ -3912,28 +3912,28 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "This subject is an American retired pair skater.",
-   "correct": "Tiffany Vise",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/2011_Skate_America_Tiffany_VISE_Don_BALDWIN.jpg/330px-2011_Skate_America_Tiffany_VISE_Don_BALDWIN.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Tiffany_Vise"
+   "prompt": "This subject is a Sunni mosque, located in Pilibhit, in the Bareilly division of the state of Uttar Pradesh, India.",
+   "correct": "Jama Masjid, Pilibhit",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jamiamasjid_pilibhit02.JPG/330px-Jamiamasjid_pilibhit02.JPG",
+   "source_url": "https://en.wikipedia.org/wiki/Jama_Masjid%2C_Pilibhit"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/2012: this subject, American baseball player and coach (born 1962) died.",
-   "correct": "Darrel Akerfelds",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Darrel_Akerfelds.jpg/330px-Darrel_Akerfelds.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Darrel_Akerfelds"
+   "prompt": "On 06/24/1925: this subject, American politician (died 2019) was born.",
+   "correct": "Ogden Reid",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Ogden_Reid_%28cropped%29.png/330px-Ogden_Reid_%28cropped%29.png",
+   "source_url": "https://en.wikipedia.org/wiki/Ogden_Reid"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/1777: this subject, Scottish commander and explorer (died 1856) was born.",
-   "correct": "John Ross (Royal Navy officer)",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/British_School_-_Sir_John_Ross_%281777%E2%80%931856%29_-_BHC2983_-_Royal_Museums_Greenwich.jpg/330px-British_School_-_Sir_John_Ross_%281777%E2%80%931856%29_-_BHC2983_-_Royal_Museums_Greenwich.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/John_Ross_(Royal_Navy_officer)"
+   "prompt": "On 06/24/2007: this subject, Northern Irish footballer and manager (born 1938) died.",
+   "correct": "Derek Dougan",
+   "image_url": "https://upload.wikimedia.org/wikipedia/en/3/38/Derek_Dougan.png",
+   "source_url": "https://en.wikipedia.org/wiki/Derek_Dougan"
   },
   {
    "qtype": "clue",
@@ -4110,10 +4110,10 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 5,
-   "prompt": "This subject is an unincorporated community in this subject, Virginia, United States.",
-   "correct": "Pigeon Hill, Clarke County, Virginia",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Map_of_Virginia_highlighting_Clarke_County.svg/330px-Map_of_Virginia_highlighting_Clarke_County.svg.png",
-   "source_url": "https://en.wikipedia.org/wiki/Pigeon_Hill%2C_Clarke_County%2C_Virginia"
+   "prompt": "This subject 183 is a designation for a state this subject in the U.S.",
+   "correct": "Arkansas Highway 183",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Arkansas_183.svg/330px-Arkansas_183.svg.png",
+   "source_url": "https://en.wikipedia.org/wiki/Arkansas_Highway_183"
   },
   {
    "qtype": "clue",
@@ -4128,28 +4128,28 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "This subject is a 1990 Indian Tamil-language film directed by Manivasagam and produced by Rajeshwari Manivasakam.",
-   "correct": "Namma Ooru Poovatha",
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/c/c4/Namma_Ooru_Poovatha.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Namma_Ooru_Poovatha"
+   "prompt": "\"this subject\" is a song by American country music singer Gabby Barrett.",
+   "correct": "Glory Days (Gabby Barrett song)",
+   "image_url": "https://upload.wikimedia.org/wikipedia/en/e/ef/GabbyBarrettGloryDays.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Glory_Days_(Gabby_Barrett_song)"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/1925: this subject, American politician (died 2019) was born.",
-   "correct": "Ogden Reid",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Ogden_Reid_%28cropped%29.png/330px-Ogden_Reid_%28cropped%29.png",
-   "source_url": "https://en.wikipedia.org/wiki/Ogden_Reid"
+   "prompt": "On 06/24/1885: this subject, Norwegian geologist (died 1975) was born.",
+   "correct": "Olaf Holtedahl",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Olaf_Holtedahl_1935_%28cropped%29.jpg/330px-Olaf_Holtedahl_1935_%28cropped%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Olaf_Holtedahl"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/1961: this subject, Scottish actor was born.",
-   "correct": "Iain Glen",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Iain_Glen.jpg/330px-Iain_Glen.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Iain_Glen"
+   "prompt": "On 06/24/2015: this subject, Brazilian singer-songwriter (born 1986) died.",
+   "correct": "Cristiano Ara\u00fajo",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Crisaraujo_fanfest.JPG/330px-Crisaraujo_fanfest.JPG",
+   "source_url": "https://en.wikipedia.org/wiki/Cristiano_Ara%C3%BAjo"
   },
   {
    "qtype": "clue",
@@ -4328,10 +4328,10 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 5,
-   "prompt": "This subject-this subject-des-this subject is a Catholic church situated at 185-187, street of Ch\u00e2teau-des-Rentiers in the 13th\u00a0arrondissement of Paris..",
-   "correct": "Church of Saint-Jean-des-Deux-Moulins",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Paris_13e_-_%C3%89glise_Saint-_Jean-des-Deux-Moulins_2.JPG/330px-Paris_13e_-_%C3%89glise_Saint-_Jean-des-Deux-Moulins_2.JPG",
-   "source_url": "https://en.wikipedia.org/wiki/Church_of_Saint-Jean-des-Deux-Moulins"
+   "prompt": "This subject is an unincorporated community in this subject, Virginia, United States.",
+   "correct": "Pigeon Hill, Clarke County, Virginia",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Map_of_Virginia_highlighting_Clarke_County.svg/330px-Map_of_Virginia_highlighting_Clarke_County.svg.png",
+   "source_url": "https://en.wikipedia.org/wiki/Pigeon_Hill%2C_Clarke_County%2C_Virginia"
   },
   {
    "qtype": "clue",
@@ -4346,27 +4346,28 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "This subject'this subject is a 1965 French-Italian international co-production spy film directed by Raoul Andr\u00e9 and starring Eddie Constantine in a sequel to Jeff Gordon, Secret Agent (1963)..",
-   "correct": "Ces dames s'en m\u00ealent",
-   "source_url": "https://en.wikipedia.org/wiki/Ces%20dames%20s%27en%20m%C3%AAlent"
+   "prompt": "This subject is an American retired pair skater.",
+   "correct": "Tiffany Vise",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/2011_Skate_America_Tiffany_VISE_Don_BALDWIN.jpg/330px-2011_Skate_America_Tiffany_VISE_Don_BALDWIN.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Tiffany_Vise"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/1885: this subject, Norwegian geologist (died 1975) was born.",
-   "correct": "Olaf Holtedahl",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Olaf_Holtedahl_1935_%28cropped%29.jpg/330px-Olaf_Holtedahl_1935_%28cropped%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Olaf_Holtedahl"
+   "prompt": "On 06/24/2010: this subject, American jazz tenor saxophonist (born 1929) died.",
+   "correct": "Fred Anderson (musician)",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Fred_Anderson_Jazz.jpg/330px-Fred_Anderson_Jazz.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Fred_Anderson_(musician)"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/2007: this subject, Northern Irish footballer and manager (born 1938) died.",
-   "correct": "Derek Dougan",
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/3/38/Derek_Dougan.png",
-   "source_url": "https://en.wikipedia.org/wiki/Derek_Dougan"
+   "prompt": "On 06/24/1906: this subject, French cellist and educator (died 1986) was born.",
+   "correct": "Pierre Fournier",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Fournier_Harcourt_1941.jpg/330px-Fournier_Harcourt_1941.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Pierre_Fournier"
   },
   {
    "qtype": "clue",
@@ -4535,19 +4536,19 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 3,
-   "prompt": "\"this subject\" is a song by American country music singer Gabby Barrett.",
-   "correct": "Glory Days (Gabby Barrett song)",
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/e/ef/GabbyBarrettGloryDays.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Glory_Days_(Gabby_Barrett_song)"
+   "prompt": "This subject.",
+   "correct": "Rural Municipality of Eldon No. 471",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/SK_RM_471_Eldon.svg/330px-SK_RM_471_Eldon.svg.png",
+   "source_url": "https://en.wikipedia.org/wiki/Rural_Municipality_of_Eldon_No._471"
   },
   {
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 5,
-   "prompt": "This subject was a French rugby league footballer who represented France national rugby league team in the 1954 World Cup.",
-   "correct": "Vincent Cantoni",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/16.10.60_V._Cantoni_et_Puig_Aubert_%281960%29_-_53Fi531_%28Cantoni%29.jpg/330px-16.10.60_V._Cantoni_et_Puig_Aubert_%281960%29_-_53Fi531_%28Cantoni%29.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Vincent_Cantoni"
+   "prompt": "This subject-this subject-des-this subject is a Catholic church situated at 185-187, street of Ch\u00e2teau-des-Rentiers in the 13th\u00a0arrondissement of Paris..",
+   "correct": "Church of Saint-Jean-des-Deux-Moulins",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Paris_13e_-_%C3%89glise_Saint-_Jean-des-Deux-Moulins_2.JPG/330px-Paris_13e_-_%C3%89glise_Saint-_Jean-des-Deux-Moulins_2.JPG",
+   "source_url": "https://en.wikipedia.org/wiki/Church_of_Saint-Jean-des-Deux-Moulins"
   },
   {
    "qtype": "clue",
@@ -4562,28 +4563,28 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "This subject (born September 20, 1987) is an American former college football quarterback who played at the University of Kansas.",
-   "correct": "Todd Reesing",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Todd-Reesing-ku-vs-mizzou-nov-29-08.jpg/330px-Todd-Reesing-ku-vs-mizzou-nov-29-08.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Todd%20Reesing"
+   "prompt": "This subject is this subject in Grand Haven, Michigan.",
+   "correct": "Coast Guard Festival",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Parade_of_ships.jpg/330px-Parade_of_ships.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Coast_Guard_Festival"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/2010: this subject, American jazz tenor saxophonist (born 1929) died.",
-   "correct": "Fred Anderson (musician)",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Fred_Anderson_Jazz.jpg/330px-Fred_Anderson_Jazz.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Fred_Anderson_(musician)"
+   "prompt": "On 06/24/1955: this subject, American golfer was born.",
+   "correct": "Loren Roberts",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Loren_Roberts.jpg/330px-Loren_Roberts.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Loren_Roberts"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/2015: this subject, Brazilian singer-songwriter (born 1986) died.",
-   "correct": "Cristiano Ara\u00fajo",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Crisaraujo_fanfest.JPG/330px-Crisaraujo_fanfest.JPG",
-   "source_url": "https://en.wikipedia.org/wiki/Cristiano_Ara%C3%BAjo"
+   "prompt": "On 06/24/1616: this subject, Dutch painter, etcher and draftsman, student of Rembrandt (died 1680) was born.",
+   "correct": "Ferdinand Bol",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Ferdinand_Bol.Self-portrait.jpg/330px-Ferdinand_Bol.Self-portrait.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Ferdinand_Bol"
   },
   {
    "qtype": "clue",
@@ -4752,19 +4753,19 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 3,
-   "prompt": "This subject.",
-   "correct": "Rural Municipality of Eldon No. 471",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/SK_RM_471_Eldon.svg/330px-SK_RM_471_Eldon.svg.png",
-   "source_url": "https://en.wikipedia.org/wiki/Rural_Municipality_of_Eldon_No._471"
+   "prompt": "\u039a-this subject (this subject-this subject) is a neurotoxin that is part of this subject family.",
+   "correct": "Kappa-Bungarotoxin",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Bungarus_multicinctus.jpg/330px-Bungarus_multicinctus.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Kappa-Bungarotoxin"
   },
   {
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 5,
-   "prompt": "This subject was a Swiss photographer and photojournalist.",
-   "correct": "Monique Jacot",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Monique_Jacot_by_Erling_Mandelmann.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Monique_Jacot"
+   "prompt": "This subject was a French rugby league footballer who represented France national rugby league team in the 1954 World Cup.",
+   "correct": "Vincent Cantoni",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/16.10.60_V._Cantoni_et_Puig_Aubert_%281960%29_-_53Fi531_%28Cantoni%29.jpg/330px-16.10.60_V._Cantoni_et_Puig_Aubert_%281960%29_-_53Fi531_%28Cantoni%29.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Vincent_Cantoni"
   },
   {
    "qtype": "clue",
@@ -4779,28 +4780,28 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "This subject Yurtcu is a Turkish actress and model.",
-   "correct": "Deniz Baysal",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Deniz_Baysal_3_-_7._Ko%C4%9Fu%C5%9Ftaki_Mucize.jpg/330px-Deniz_Baysal_3_-_7._Ko%C4%9Fu%C5%9Ftaki_Mucize.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Deniz_Baysal"
+   "prompt": "This subject is a town in Radziej\u00f3w County, Kuyavian-Pomeranian Voivodeship, Poland, with 4,463 inhabitants (2004)..",
+   "correct": "Piotrk\u00f3w Kujawski",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Piotrkow_Kuj_kosciol.jpg/330px-Piotrkow_Kuj_kosciol.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Piotrk%C3%B3w_Kujawski"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/1955: this subject, American golfer was born.",
-   "correct": "Loren Roberts",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Loren_Roberts.jpg/330px-Loren_Roberts.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Loren_Roberts"
+   "prompt": "On 06/24/1960: this subject, Swedish accountant and politician was born.",
+   "correct": "Karin Pils\u00e4ter",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Karin_Pils%C3%A4ter.jpg/330px-Karin_Pils%C3%A4ter.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Karin_Pils%C3%A4ter"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 4,
-   "prompt": "On 06/24/1906: this subject, French cellist and educator (died 1986) was born.",
-   "correct": "Pierre Fournier",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Fournier_Harcourt_1941.jpg/330px-Fournier_Harcourt_1941.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Pierre_Fournier"
+   "prompt": "On 06/24/2013: this subject, English-Bermudian computer scientist and author (born 1933) died.",
+   "correct": "James Martin (author)",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Dr_James_Martin.jpg/330px-Dr_James_Martin.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/James_Martin_(author)"
   },
   {
    "qtype": "clue",
@@ -4970,19 +4971,19 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 3,
-   "prompt": "\u039a-this subject (this subject-this subject) is a neurotoxin that is part of this subject family.",
-   "correct": "Kappa-Bungarotoxin",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Bungarus_multicinctus.jpg/330px-Bungarus_multicinctus.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Kappa-Bungarotoxin"
+   "prompt": "2-this subject, also known as estra-1,3,5(10)-triene-2,3,16\u03b1,17\u03b2-tetrol, is an endogenous catechol estrogen and metabolite of estriol.",
+   "correct": "2-Hydroxyestriol",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/2-Hydroxyestriol.svg/330px-2-Hydroxyestriol.svg.png",
+   "source_url": "https://en.wikipedia.org/wiki/2-Hydroxyestriol"
   },
   {
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 5,
-   "prompt": "\"this subject\" is a song by American hard rock band Crobot.",
-   "correct": "Nowhere to Hide (Crobot song)",
-   "image_url": "https://upload.wikimedia.org/wikipedia/en/c/c3/Nowhere_to_Hide_Crobot.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Nowhere_to_Hide_(Crobot_song)"
+   "prompt": "This subject was a Swiss photographer and photojournalist.",
+   "correct": "Monique Jacot",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Monique_Jacot_by_Erling_Mandelmann.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Monique_Jacot"
   },
   {
    "qtype": "clue",
@@ -4997,18 +4998,19 @@
    "qtype": "clue",
    "category": "wildcard",
    "difficulty": 2,
-   "prompt": "Benjamin Joseph this subject  (born September 6, 1986) is an American retired professional basketball player who last played for Brujos de Guayama of the Baloncesto Superior Nacional (BSN).",
-   "correct": "Ben McCauley",
-   "source_url": "https://en.wikipedia.org/wiki/Ben%20McCauley"
+   "prompt": "This subject is an unincorporated community and census-designated place (CDP) in Missaukee County in the U.S.",
+   "correct": "Jennings, Michigan",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Jennings_%28Missaukee%29%2C_MI.jpg/330px-Jennings_%28Missaukee%29%2C_MI.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Jennings%2C_Michigan"
   },
   {
    "qtype": "clue",
    "category": "history",
    "difficulty": 3,
-   "prompt": "On 06/24/1960: this subject, Swedish accountant and politician was born.",
-   "correct": "Karin Pils\u00e4ter",
-   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Karin_Pils%C3%A4ter.jpg/330px-Karin_Pils%C3%A4ter.jpg",
-   "source_url": "https://en.wikipedia.org/wiki/Karin_Pils%C3%A4ter"
+   "prompt": "On 06/24/2012: this subject, Chinese mathematician and academic (born 1926) died.",
+   "correct": "Gu Chaohao",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/GuChao_hao_1959.jpg/330px-GuChao_hao_1959.jpg",
+   "source_url": "https://en.wikipedia.org/wiki/Gu_Chaohao"
   },
   {
    "qtype": "where",
