@@ -172,7 +172,17 @@ Touch-first: adequate touch targets, responsive room layouts, the card deck refl
 for small screens, gesture support (swipe/drag where natural). **Done-when**: every
 room usable + correct on a phone viewport (playwright mobile emulation passes).
 
-## 2.18 — Cross-Browser
+## 2.18 — Cross-Browser ◐ (gotchas resolved; playwright sweep pending)
+
+> Audit outcome — most gotchas were already handled: Tailwind auto-prefixes
+> `backdrop-blur` (`-webkit-backdrop-filter`); `lib/sound.ts` falls back to
+> `webkitAudioContext` and calls `ctx.resume()` on every play (inside the click
+> gesture, so Safari unlocks); `background-clip: text` carries `-webkit-` on every
+> gilt rule. Fixed: the one raw-CSS `.deck-zoom-backdrop` now has
+> `-webkit-backdrop-filter`. **Known remaining quirk:** `.gilt`/`.deck-pip` use
+> `background-attachment: fixed` for the cursor-driven gold, which iOS Safari
+> ignores — left as-is (restructuring risks regressions without visual checks).
+> **Remaining (needs the harness):** the `playwright` Chrome/Safari/Firefox sweep.
 
 Chrome / Safari / Firefox parity via `playwright` multi-engine runs. Watch the known
 gotchas: `backdrop-filter`, `AudioContext` unlock (Safari), `background-clip: text`
