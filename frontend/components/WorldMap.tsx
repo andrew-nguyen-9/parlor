@@ -10,12 +10,20 @@ import { project, unproject, type LatLng } from "@/lib/geo";
 // renders, so the Google Map path (which never mounts WorldMap) skips it entirely.
 let LAND_PATH_CACHE = "";
 
+// Equirectangular has no wrap handling, so a ring that crosses the antimeridian
+// (e.g. Antarctica, Chukotka, Fiji) has consecutive vertices whose longitude
+// jumps ~+180 → ~-180. Drawing an `L` between them sweeps a horizontal line
+// straight across the map — the "stray lines" bug. We break the subpath (start a
+// fresh `M`) whenever a step jumps more than half the world in x.
 function ringsToPath(coords: Position[][]): string {
   let d = "";
   for (const ring of coords) {
-    ring.forEach(([lng, lat], i) => {
+    let prevX: number | null = null;
+    ring.forEach(([lng, lat]) => {
       const { x, y } = project({ lat, lng });
-      d += `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`;
+      const jumped = prevX !== null && Math.abs(x - prevX) > 180;
+      d += `${prevX === null || jumped ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+      prevX = x;
     });
     d += "Z";
   }
