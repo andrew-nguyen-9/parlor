@@ -134,6 +134,20 @@ alter table seance_puzzles enable row level security;
 drop policy if exists "public read seance" on seance_puzzles;
 create policy "public read seance" on seance_puzzles for select using (true);
 
+-- ── ladder_puzzles: pre-generated daily logic/math ladders (Phase 2.10). ──
+-- Same archive pattern as seance_puzzles. No seed fallback — absent row ⇒ dark.
+create table if not exists ladder_puzzles (
+  play_date   date primary key,
+  weekday     int  not null,
+  rite        text not null,
+  seed        bigint not null,
+  payload     jsonb not null,   -- full LadderPuzzle (see frontend/lib/ladder.ts)
+  created_at  timestamptz not null default now()
+);
+alter table ladder_puzzles enable row level security;
+drop policy if exists "public read ladder" on ladder_puzzles;
+create policy "public read ladder" on ladder_puzzles for select using (true);
+
 -- updated_at trigger
 create or replace function set_updated_at() returns trigger as $$
 begin

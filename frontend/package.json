@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "seance:generate": "tsx scripts/generate-seance.ts"
+    "seance:generate": "tsx scripts/generate-seance.ts",
+    "ladder:generate": "tsx scripts/generate-ladder.ts",
+    "puzzles:generate": "npm run seance:generate && npm run ladder:generate"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
