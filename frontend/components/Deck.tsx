@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
@@ -8,21 +8,33 @@ import {
   motion,
   useMotionValue,
   useReducedMotion,
+  useSpring,
   useTransform,
+  type MotionValue,
   type PanInfo,
 } from "framer-motion";
 import CardFace, { type Game } from "./CardFace";
 
-const FAN_STEP = 7; // degrees between fanned cards
-const DRAW_THRESHOLD = 120; // px the top card must travel to count as "drawn"
+const FAN_STEP = 9; // degrees between fanned cards
+const PAGE_THRESHOLD = 70; // px of horizontal travel to page the browser
+const FLICK_VELOCITY = 480; // px/s — a fast flick pages even below the px threshold
 
-type Mode = "deck" | "fan" | "carousel";
+type Mode = "browser" | "spread" | "coverflow" | "fan";
+
+// circular signed distance of `pos` from a (possibly fractional) `center`,
+// folded into the range [-n/2, n/2) so the deck wraps infinitely both ways.
+function circularDelta(pos: number, center: number, n: number) {
+  let d = pos - center;
+  d = ((d % n) + n) % n; // 0 … n
+  if (d > n / 2) d -= n; // -n/2 … n/2
+  return d;
+}
 
 export default function Deck({ games }: { games: Game[] }) {
   const reduced = useReducedMotion() ?? false;
   const n = games.length;
   const [order, setOrder] = useState(() => games.map((_, i) => i));
-  const [mode, setMode] = useState<Mode>("deck");
+  const [mode, setMode] = useState<Mode>("browser");
   const [selected, setSelected] = useState<number | null>(null);
   const [shuffling, setShuffling] = useState(false);
   // The zoom overlay is portalled to <body>: the page's `.page-enter` wrapper has
@@ -32,39 +44,70 @@ export default function Deck({ games }: { games: Game[] }) {
 
   const spring = reduced
     ? { duration: 0.15 }
-    : { type: "spring" as const, stiffness: 160, damping: 20 };
+    : { type: "spring" as const, stiffness: 200, damping: 26 };
 
-  // Carousel auto-rotation angle (deg). Driven by rAF; frozen on select/reduce.
-  const [orbit, setOrbit] = useState(0);
-  const frozen = selected !== null; // selecting freezes the carousel
+  const frozen = selected !== null; // selecting freezes drift/auto motion
+
+  // ── BROWSER paging: `active` is a position into `order` (0…n-1). ──────────────
+  const [active, setActive] = useState(0);
+  const stepBrowser = (dir: 1 | -1) =>
+    setActive((a) => (((a + dir) % n) + n) % n);
+
+  // ── COVERFLOW index: a continuous float; render by circular distance. ─────────
+  const coverIndex = useMotionValue(0);
+  const [coverFront, setCoverFront] = useState(0); // nearest integer card, for tap-select
   useEffect(() => {
-    if (mode !== "carousel" || reduced || frozen) return;
+    const unsub = coverIndex.on("change", (v) => {
+      const idx = ((Math.round(v) % n) + n) % n;
+      setCoverFront(idx);
+    });
+    return unsub;
+  }, [coverIndex, n]);
+  const stepCover = (dir: 1 | -1) => {
+    coverIndex.set(coverIndex.get() + dir);
+  };
+  // gentle auto-drift in coverflow — user input overrides, freeze on select.
+  useEffect(() => {
+    if (mode !== "coverflow" || reduced || frozen) return;
     let raf = 0;
     let last = performance.now();
     const tick = (now: number) => {
       const dt = (now - last) / 1000;
       last = now;
-      setOrbit((o) => (o + dt * 9) % 360); // ~9°/s slow drift
+      coverIndex.set(coverIndex.get() + dt * 0.12); // ~1 card / 8s
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [mode, reduced, frozen]);
+  }, [mode, reduced, frozen, coverIndex]);
 
-  // Stable per-card "magic" bob offsets (phase + amplitude), randomized once.
-  const bob = useMemo(
-    () =>
-      games.map(() => ({
-        rot: (Math.random() * 2 - 1) * 6, // ±6deg gentle spin
-        delay: Math.random() * 2,
-        dur: 3 + Math.random() * 2,
-      })),
-    [games]
-  );
+  // ── FAN focus: pointer X (0..1 across the stage) → focused card index, ────────
+  // smoothed by a spring for buttery transitions.
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const fanPointer = useMotionValue((n - 1) / 2); // resting at centre card
+  const fanFocus = useSpring(fanPointer, { stiffness: 220, damping: 26, mass: 0.4 });
+  const [fanFocusInt, setFanFocusInt] = useState(Math.round((n - 1) / 2));
+  useEffect(() => {
+    const unsub = fanFocus.on("change", (v) =>
+      setFanFocusInt(Math.max(0, Math.min(n - 1, Math.round(v))))
+    );
+    return unsub;
+  }, [fanFocus, n]);
+  // Sensitivity: tightened ~1.5× — a smaller pointer delta moves focus one card.
+  // Default mapping would be one card per (width / n); we map to a virtual span of
+  // n / 1.5 cards across the full width, so the same nudge pops the neighbour.
+  const onFanPointerMove = (e: React.PointerEvent) => {
+    if (reduced || mode !== "fan") return;
+    const el = stageRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const t = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const span = n / 1.5; // virtual range > n/… raises sensitivity ~1.5×
+    const centre = (n - 1) / 2;
+    fanPointer.set(centre + (t - 0.5) * span);
+  };
 
-  // Move the top card to the bottom — the carousel cycle.
-  const cycle = () => setOrder((p) => [...p.slice(1), p[0]]);
-
+  // ── per-card transforms ───────────────────────────────────────────────────────
   const reorderRandom = () =>
     setOrder((p) => {
       const next = [...p];
@@ -78,66 +121,34 @@ export default function Deck({ games }: { games: Game[] }) {
   // SHUFFLE — bridge/riffle. Reduced-motion: instant reorder + restack.
   const shuffle = () => {
     if (shuffling) return;
+    setSelected(null);
     if (reduced) {
       reorderRandom();
-      setMode("deck");
+      setMode("browser");
+      setActive(0);
       return;
     }
-    setMode("deck");
+    setMode("browser");
     setShuffling(true);
-    // The bridge animation is driven by CSS/Framer variants keyed on `shuffling`.
-    // Reorder mid-flight (after the split/riffle), then settle.
     window.setTimeout(() => reorderRandom(), 520);
-    window.setTimeout(() => setShuffling(false), 1000);
-  };
-
-  // Per-card transform, by its position in the current order.
-  const transformFor = (pos: number) => {
-    if (mode === "fan") {
-      const angle = (pos - (n - 1) / 2) * FAN_STEP;
-      return { x: 0, y: 0, z: 0, rotate: angle, rotateY: 0, scale: 1, opacity: 1, zIndex: pos };
-    }
-    if (mode === "carousel") {
-      // Cards arranged on a 3D ring. theta walks the circle; front (theta≈0)
-      // is largest/brightest, back is smaller + dimmer.
-      const theta = ((pos / n) * 360 + orbit) % 360;
-      const rad = (theta * Math.PI) / 180;
-      const radius = 150;
-      const depth = Math.cos(rad); // 1 = front, -1 = back
-      const x = Math.sin(rad) * radius;
-      const scale = 0.62 + (depth + 1) * 0.24; // 0.62 (back) → 1.1 (front)
-      const opacity = 0.4 + (depth + 1) * 0.3; // 0.4 → 1
-      const b = bob[order[pos]] ?? { rot: 0 };
-      return {
-        x,
-        y: 0,
-        z: depth * 80,
-        rotate: reduced || frozen ? 0 : b.rot,
-        rotateY: -theta * 0.25,
-        scale,
-        opacity,
-        zIndex: Math.round((depth + 1) * 100),
-      };
-    }
-    // deck (stacked)
-    return {
-      x: pos * 1.4,
-      y: pos * 1.2,
-      z: 0,
-      rotate: reduced ? 0 : (pos % 2 ? 1 : -1) * Math.min(pos, 4) * 0.5,
-      rotateY: 0,
-      scale: 1 - Math.min(pos, 6) * 0.012,
-      opacity: 1,
-      zIndex: n - pos,
-    };
+    window.setTimeout(() => {
+      setShuffling(false);
+      setActive(0);
+    }, 1000);
   };
 
   const microlabel =
-    mode === "deck"
-      ? "drag the top card to draw it · tap to open · fan or orbit to choose"
-      : mode === "fan"
-      ? "pick a card"
-      : "the cards orbit — tap one to draw it";
+    mode === "browser"
+      ? "swipe or use ← → to browse · tap the centre card to draw it"
+      : mode === "spread"
+      ? "every room, laid out — tap a card to draw it"
+      : mode === "coverflow"
+      ? "scroll, swipe or use ← → to glide · tap the front card to draw it"
+      : reduced
+      ? "tap a card to draw it"
+      : "sweep the cursor left and right · tap a card to draw it";
+
+  const select = (gi: number) => setSelected(gi);
 
   return (
     <section className="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-8">
@@ -148,54 +159,92 @@ export default function Deck({ games }: { games: Game[] }) {
       {/* controls */}
       <div className="mb-8 flex flex-wrap items-center justify-center gap-3">
         <DeckButton
-          onClick={mode === "deck" ? cycle : () => setMode("deck")}
-          active={mode === "deck"}
+          onClick={() => setMode((m) => (m === "spread" ? "browser" : "spread"))}
+          active={mode === "spread"}
         >
-          {mode === "deck" ? "▸ next card" : "▤ stack"}
+          {mode === "spread" ? "▤ gather deck" : "▦ lay out"}
+        </DeckButton>
+        <DeckButton onClick={() => setMode("browser")} active={mode === "browser"}>
+          ▤ browse
         </DeckButton>
         <DeckButton
-          onClick={() => setMode((m) => (m === "fan" ? "deck" : "fan"))}
+          onClick={() => setMode((m) => (m === "fan" ? "browser" : "fan"))}
           active={mode === "fan"}
         >
           {mode === "fan" ? "▤ gather" : "◡ fan out"}
         </DeckButton>
         <DeckButton
-          onClick={() => setMode((m) => (m === "carousel" ? "deck" : "carousel"))}
-          active={mode === "carousel"}
+          onClick={() => setMode((m) => (m === "coverflow" ? "browser" : "coverflow"))}
+          active={mode === "coverflow"}
         >
-          {mode === "carousel" ? "▤ settle" : "◍ orbit"}
+          {mode === "coverflow" ? "▤ settle" : "◍ orbit"}
         </DeckButton>
         <DeckButton onClick={shuffle}>♠ shuffle</DeckButton>
       </div>
 
-      {/* the deck stage */}
-      <div className="deck-stage" style={{ perspective: 1600 }}>
-        {order.map((gi, pos) => {
-          const game = games[gi];
-          const isTop = pos === 0;
-          // dragging is a pointer enhancement; reduced-motion users tap to draw.
-          const draggable = mode === "deck" && isTop && !shuffling && !reduced;
-          const tappable = mode === "fan" || mode === "carousel" || isTop;
-          return (
-            <DeckCard
-              key={game.href}
-              game={game}
-              pos={pos}
-              mode={mode}
-              reduced={reduced}
-              shuffling={shuffling}
-              transform={transformFor(pos)}
-              spring={spring}
-              bob={bob[gi]}
-              frozen={frozen}
-              draggable={draggable}
-              onSelect={() => {
-                if (tappable) setSelected(gi);
-                else cycle();
-              }}
+      {/* the deck stage + arrow rails (browser & coverflow page horizontally) */}
+      <div className="deck-stagewrap">
+        {(mode === "browser" || mode === "coverflow") && (
+          <>
+            <DeckArrow
+              dir="prev"
+              onClick={() => (mode === "browser" ? stepBrowser(-1) : stepCover(-1))}
             />
-          );
-        })}
+            <DeckArrow
+              dir="next"
+              onClick={() => (mode === "browser" ? stepBrowser(1) : stepCover(1))}
+            />
+          </>
+        )}
+
+        {mode === "spread" ? (
+          <SpreadGrid games={games} order={order} reduced={reduced} onSelect={select} />
+        ) : (
+          <div
+            ref={stageRef}
+            className="deck-stage"
+            style={{ perspective: 1600 }}
+            onPointerMove={mode === "fan" ? onFanPointerMove : undefined}
+          >
+            {shuffling && !reduced ? (
+              <ShuffleOverlay games={games} order={order} />
+            ) : mode === "browser" ? (
+              <BrowserStage
+                games={games}
+                order={order}
+                n={n}
+                active={active}
+                reduced={reduced}
+                shuffling={shuffling}
+                spring={spring}
+                onStep={stepBrowser}
+                onSelect={select}
+              />
+            ) : mode === "coverflow" ? (
+              <CoverflowStage
+                games={games}
+                order={order}
+                n={n}
+                coverIndex={coverIndex}
+                coverFront={coverFront}
+                reduced={reduced}
+                spring={spring}
+                onSelect={select}
+              />
+            ) : (
+              <FanStage
+                games={games}
+                order={order}
+                n={n}
+                fanFocus={fanFocusInt}
+                reduced={reduced}
+                shuffling={shuffling}
+                spring={spring}
+                onSelect={select}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       <p className="microlabel mt-6 text-center opacity-60">{microlabel}</p>
@@ -206,46 +255,12 @@ export default function Deck({ games }: { games: Game[] }) {
         createPortal(
           <AnimatePresence>
             {selected !== null && (
-              <motion.div
-                className="deck-zoom-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSelected(null)}
-                role="dialog"
-                aria-modal="true"
-                aria-label={`${games[selected].name} — drawn`}
-              >
-                <motion.div
-                  className="deck-zoom-wrap"
-                  initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.6, y: 30 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.6, y: 30 }}
-                  transition={spring}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="deck-zoom-card deck-scene">
-                    <CardFace game={games[selected]} side="front" zoomed />
-                  </div>
-                  <div className="deck-zoom-actions">
-                    <Link
-                      href={games[selected].href}
-                      className="deck-play-btn"
-                      autoFocus
-                    >
-                      ▶ Play {games[selected].name}
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => setSelected(null)}
-                      className="deck-close-btn microlabel"
-                      aria-label="Close"
-                    >
-                      ✕ close
-                    </button>
-                  </div>
-                </motion.div>
-              </motion.div>
+              <ZoomOverlay
+                game={games[selected]}
+                reduced={reduced}
+                spring={spring}
+                onClose={() => setSelected(null)}
+              />
             )}
           </AnimatePresence>,
           document.body
@@ -254,161 +269,495 @@ export default function Deck({ games }: { games: Game[] }) {
   );
 }
 
-// ── A single card in the stage. The top card in deck mode is draggable, and
-// flips (rotateY) as it is pulled away. Releasing past DRAW_THRESHOLD selects it.
-function DeckCard({
-  game,
-  pos,
-  mode,
+// ── BROWSER: single-card horizontal pager. Drag/flick L→next, R→prev. ─────────
+function BrowserStage({
+  games,
+  order,
+  n,
+  active,
   reduced,
   shuffling,
-  transform,
   spring,
-  bob,
-  frozen,
-  draggable,
+  onStep,
+  onSelect,
+}: {
+  games: Game[];
+  order: number[];
+  n: number;
+  active: number;
+  reduced: boolean;
+  shuffling: boolean;
+  spring: object;
+  onStep: (d: 1 | -1) => void;
+  onSelect: (gi: number) => void;
+}) {
+  // render the active card plus its two neighbours for a peeked deck feel.
+  const slots = [-1, 0, 1].map((rel) => {
+    const pos = (((active + rel) % n) + n) % n;
+    return { rel, gi: order[pos] };
+  });
+  const SPREAD = 150; // px the neighbour cards peek out to the side
+
+  return (
+    <>
+      {slots.map(({ rel, gi }) => {
+        const game = games[gi];
+        const isActive = rel === 0;
+        return (
+          <BrowserCard
+            key={game.href}
+            game={game}
+            rel={rel}
+            spread={SPREAD}
+            isActive={isActive}
+            reduced={reduced}
+            shuffling={shuffling}
+            spring={spring}
+            onStep={onStep}
+            onSelect={() => onSelect(gi)}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function BrowserCard({
+  game,
+  rel,
+  spread,
+  isActive,
+  reduced,
+  shuffling,
+  spring,
+  onStep,
   onSelect,
 }: {
   game: Game;
-  pos: number;
-  mode: Mode;
+  rel: number;
+  spread: number;
+  isActive: boolean;
   reduced: boolean;
   shuffling: boolean;
-  transform: Record<string, number>;
   spring: object;
-  bob: { rot: number; delay: number; dur: number };
-  frozen: boolean;
-  draggable: boolean;
+  onStep: (d: 1 | -1) => void;
   onSelect: () => void;
 }) {
   const dragX = useMotionValue(0);
-  const dragY = useMotionValue(0);
-  // flip the card as it is pulled away — back → front by ~half the threshold.
-  const dist = useTransform([dragX, dragY], ([x, y]: number[]) =>
-    Math.hypot(x as number, y as number)
-  );
-  const flip = useTransform(dist, [0, DRAW_THRESHOLD], [180, 0]);
-  const [dragging, setDragging] = useState(false);
-  const [revealFront, setRevealFront] = useState(false); // committed face after drag
-
-  const isTop = pos === 0;
-  // Fan/carousel always show fronts; in deck mode only the top card is a front.
-  const baseFront = mode === "fan" || mode === "carousel" || isTop;
-  // The draggable top deck card renders BOTH faces and flips via rotateY.
-  const useFlip = draggable;
-
-  // Bridge-shuffle: split deck in two halves and riffle. Even pos → left, odd → right.
-  const shuffleAnim =
-    shuffling && !reduced
-      ? (() => {
-          const side = pos % 2 === 0 ? -1 : 1;
-          return {
-            keyframes: {
-              x: [transform.x, side * 130, side * 70, transform.x],
-              y: [transform.y, -10, 8, transform.y],
-              rotate: [transform.rotate, side * 8, side * -3, transform.rotate],
-              rotateY: [0, 180, 180, baseFront ? 0 : 180], // face down during riffle
-            },
-            transition: {
-              duration: 0.95,
-              times: [0, 0.35, 0.7, 1],
-              delay: Math.min(pos, 9) * 0.025,
-              ease: "easeInOut" as const,
-            },
-          };
-        })()
-      : null;
-
-  const animate = shuffleAnim
-    ? { opacity: 1, ...shuffleAnim.keyframes, scale: transform.scale, zIndex: transform.zIndex }
-    : draggable && !reduced
-    ? // top card: x/y are owned by the drag motion values (snap to origin = slot).
-      {
-        opacity: transform.opacity,
-        rotate: transform.rotate,
-        scale: transform.scale,
-        zIndex: transform.zIndex,
-      }
-    : {
-        opacity: transform.opacity,
-        x: transform.x,
-        y: transform.y,
-        rotate: transform.rotate,
-        rotateY: transform.rotateY,
-        scale: transform.scale,
-        zIndex: transform.zIndex,
-      };
+  const baseX = rel * spread;
+  const scale = isActive ? 1 : 0.82;
+  const opacity = isActive ? 1 : 0.4;
+  const zIndex = isActive ? 30 : 10;
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
-    const d = Math.hypot(info.offset.x, info.offset.y);
-    setDragging(false);
-    if (d >= DRAW_THRESHOLD) {
-      setRevealFront(true);
-      onSelect();
+    const dx = info.offset.x;
+    const vx = info.velocity.x;
+    if (dx <= -PAGE_THRESHOLD || vx <= -FLICK_VELOCITY) {
+      onStep(1); // swipe LEFT → next
+    } else if (dx >= PAGE_THRESHOLD || vx >= FLICK_VELOCITY) {
+      onStep(-1); // swipe RIGHT → previous
     }
     dragX.set(0);
-    dragY.set(0);
   };
-
-  // gentle magical bob in carousel mode
-  const bobAnim =
-    mode === "carousel" && !reduced && !frozen
-      ? {
-          y: [transform.y, transform.y - 8, transform.y],
-          rotate: [transform.rotate, transform.rotate + bob.rot * 0.4, transform.rotate],
-        }
-      : undefined;
 
   return (
     <motion.button
       type="button"
-      aria-label={`${game.name} — ${baseFront ? "open" : "reveal"}`}
-      onClick={onSelect}
-      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 60, scale: 0.9 }}
-      animate={animate}
-      transition={
-        shuffleAnim
-          ? shuffleAnim.transition
-          : { ...spring, delay: reduced || mode === "carousel" ? 0 : Math.min(pos, 8) * 0.04 }
-      }
-      whileHover={mode === "fan" && !reduced ? { y: -26, scale: 1.05, zIndex: 50 } : undefined}
-      drag={draggable && !reduced ? true : false}
-      dragSnapToOrigin
-      dragElastic={0.6}
-      style={{
-        x: draggable && !reduced ? dragX : undefined,
-        y: draggable && !reduced ? dragY : undefined,
-        transformOrigin: mode === "fan" ? "50% 145%" : "50% 50%",
-        zIndex: transform.zIndex,
+      aria-label={`${game.name} — ${isActive ? "open" : "bring to front"}`}
+      aria-hidden={!isActive}
+      tabIndex={isActive ? 0 : -1}
+      onClick={() => {
+        if (isActive) onSelect();
+        else onStep(rel > 0 ? 1 : -1);
       }}
-      onDragStart={() => setDragging(true)}
+      initial={false}
+      animate={{ x: baseX, scale, opacity, zIndex }}
+      transition={shuffling ? { duration: 0.4 } : spring}
+      drag={isActive && !reduced && !shuffling ? "x" : false}
+      dragSnapToOrigin
+      dragElastic={0.5}
+      dragConstraints={{ left: 0, right: 0 }}
+      style={{ x: isActive && !reduced ? dragX : undefined, zIndex }}
       onDragEnd={onDragEnd}
       className="deck-slot deck-scene"
     >
-      {useFlip ? (
-        <motion.div
-          className="deck-flip-inner"
-          style={{ rotateY: dragging ? flip : revealFront ? 0 : 180 }}
-        >
-          <div className="deck-flip-face">
-            <CardFace game={game} side="back" />
-          </div>
-          <div className="deck-flip-face deck-flip-back">
-            <CardFace game={game} side="front" />
-          </div>
-        </motion.div>
-      ) : bobAnim ? (
-        <motion.div
-          className="deck-bob"
-          animate={bobAnim}
-          transition={{ duration: bob.dur, delay: bob.delay, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <CardFace game={game} side="front" />
-        </motion.div>
-      ) : (
-        <CardFace game={game} side={baseFront ? "front" : "back"} />
-      )}
+      <CardFace game={game} side="front" />
     </motion.button>
+  );
+}
+
+// ── COVERFLOW: horizontal flow, centred card largest/opaque, depth falloff. ───
+function CoverflowStage({
+  games,
+  order,
+  n,
+  coverIndex,
+  coverFront,
+  reduced,
+  spring,
+  onSelect,
+}: {
+  games: Game[];
+  order: number[];
+  n: number;
+  coverIndex: MotionValue<number>;
+  coverFront: number;
+  reduced: boolean;
+  spring: object;
+  onSelect: (gi: number) => void;
+}) {
+  // wheel + horizontal scroll advance the continuous index.
+  const onWheel = (e: React.WheelEvent) => {
+    if (reduced) return;
+    const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    coverIndex.set(coverIndex.get() + d * 0.0035);
+  };
+  const dragStart = useRef(0);
+  return (
+    <motion.div
+      className="deck-cover"
+      onWheel={reduced ? undefined : onWheel}
+      drag={reduced ? false : "x"}
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.12}
+      dragSnapToOrigin
+      onDragStart={() => (dragStart.current = coverIndex.get())}
+      onDrag={(_, info) => {
+        if (reduced) return;
+        coverIndex.set(dragStart.current - info.offset.x * 0.012);
+      }}
+    >
+      {order.map((gi, pos) => (
+        <CoverflowCard
+          key={games[gi].href}
+          game={games[gi]}
+          pos={pos}
+          n={n}
+          coverIndex={coverIndex}
+          front={coverFront}
+          reduced={reduced}
+          spring={spring}
+          onSelect={() => onSelect(gi)}
+        />
+      ))}
+    </motion.div>
+  );
+}
+
+function CoverflowCard({
+  game,
+  pos,
+  n,
+  coverIndex,
+  front,
+  reduced,
+  spring,
+  onSelect,
+}: {
+  game: Game;
+  pos: number;
+  n: number;
+  coverIndex: MotionValue<number>;
+  front: number;
+  reduced: boolean;
+  spring: object;
+  onSelect: () => void;
+}) {
+  const isFront = pos === front;
+  // spacing: spread cards across the stage width; clamp so edges stay visible.
+  const SPACING = 132; // px per step away from centre
+  const x = useTransform(coverIndex, (c) => {
+    const d = circularDelta(pos, c, n);
+    return d * SPACING;
+  });
+  const scale = useTransform(coverIndex, (c) => {
+    const d = Math.abs(circularDelta(pos, c, n));
+    return Math.max(0.5, 1.05 - d * 0.18);
+  });
+  const opacity = useTransform(coverIndex, (c) => {
+    const d = Math.abs(circularDelta(pos, c, n));
+    return Math.max(0, 1 - d * 0.34);
+  });
+  const z = useTransform(coverIndex, (c) => {
+    const d = Math.abs(circularDelta(pos, c, n));
+    return -d * 90;
+  });
+  const rotateY = useTransform(coverIndex, (c) => {
+    const d = circularDelta(pos, c, n);
+    return Math.max(-50, Math.min(50, -d * 18));
+  });
+  const zIndex = useTransform(coverIndex, (c) => {
+    const d = Math.abs(circularDelta(pos, c, n));
+    return Math.round(100 - d * 10);
+  });
+
+  if (reduced) {
+    // static: lay cards in a simple row, front card centred (no live transforms).
+    // State-driven (front index) so arrow steps re-render without a rAF loop.
+    const d = circularDelta(pos, front, n);
+    const ad = Math.abs(d);
+    if (ad > 2) return null; // only render the near neighbourhood when static
+    return (
+      <button
+        type="button"
+        aria-label={`${game.name} — open`}
+        onClick={onSelect}
+        className="deck-slot deck-scene"
+        style={{
+          transform: `translateX(${d * 120}px) scale(${ad === 0 ? 1 : 0.78})`,
+          opacity: ad === 0 ? 1 : 0.5,
+          zIndex: 100 - ad * 10,
+        }}
+      >
+        <CardFace game={game} side="front" />
+      </button>
+    );
+  }
+
+  return (
+    <motion.button
+      type="button"
+      aria-label={`${game.name} — ${isFront ? "open" : "glide here"}`}
+      onClick={onSelect}
+      className="deck-slot deck-scene"
+      style={{ x, scale, opacity, z, rotateY, zIndex }}
+      transition={spring}
+    >
+      <CardFace game={game} side="front" />
+    </motion.button>
+  );
+}
+
+// ── FAN: pointer-X focuses a card; wide spread; springy. ──────────────────────
+function FanStage({
+  games,
+  order,
+  n,
+  fanFocus,
+  reduced,
+  shuffling,
+  spring,
+  onSelect,
+}: {
+  games: Game[];
+  order: number[];
+  n: number;
+  fanFocus: number;
+  reduced: boolean;
+  shuffling: boolean;
+  spring: object;
+  onSelect: (gi: number) => void;
+}) {
+  return (
+    <>
+      {order.map((gi, pos) => (
+        <FanCard
+          key={games[gi].href}
+          game={games[gi]}
+          pos={pos}
+          n={n}
+          focused={pos === fanFocus}
+          reduced={reduced}
+          shuffling={shuffling}
+          spring={spring}
+          onSelect={() => onSelect(gi)}
+        />
+      ))}
+    </>
+  );
+}
+
+function FanCard({
+  game,
+  pos,
+  n,
+  focused,
+  reduced,
+  shuffling,
+  spring,
+  onSelect,
+}: {
+  game: Game;
+  pos: number;
+  n: number;
+  focused: boolean;
+  reduced: boolean;
+  shuffling: boolean;
+  spring: object;
+  onSelect: () => void;
+}) {
+  const mid = (n - 1) / 2;
+  const off = pos - mid; // -mid … +mid
+  const angle = off * FAN_STEP;
+  // WIDE spread: push cards across nearly the whole container. Clamp via the
+  // CSS var --fan-w so edge cards stay on-screen at every breakpoint.
+  const x = `calc(${off} * var(--fan-x))`;
+  const lift = off * off * -2; // arc: edge cards sit a touch lower
+  const raised = focused && !reduced;
+  return (
+    <motion.button
+      type="button"
+      aria-label={`${game.name} — open`}
+      onClick={onSelect}
+      initial={false}
+      animate={{
+        x,
+        y: raised ? lift - 30 : lift,
+        rotate: reduced ? angle : raised ? 0 : angle,
+        scale: raised ? 1.08 : 1,
+        zIndex: raised ? 60 : pos,
+      }}
+      transition={shuffling ? { duration: 0.4 } : spring}
+      style={{ transformOrigin: "50% 150%" }}
+      className="deck-slot deck-scene"
+    >
+      <CardFace game={game} side="front" />
+    </motion.button>
+  );
+}
+
+// ── SPREAD: all 10 fronts in a responsive grid; each opens its zoom. ──────────
+function SpreadGrid({
+  games,
+  order,
+  reduced,
+  onSelect,
+}: {
+  games: Game[];
+  order: number[];
+  reduced: boolean;
+  onSelect: (gi: number) => void;
+}) {
+  return (
+    <div className="deck-spread">
+      {order.map((gi, i) => {
+        const game = games[gi];
+        return (
+          <motion.button
+            key={game.href}
+            type="button"
+            aria-label={`${game.name} — open`}
+            onClick={() => onSelect(gi)}
+            className="deck-spread-cell deck-scene"
+            initial={reduced ? false : { opacity: 0, y: 18, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={reduced ? { duration: 0.12 } : { delay: Math.min(i, 10) * 0.03 }}
+            whileHover={reduced ? undefined : { y: -8, scale: 1.04 }}
+          >
+            <CardFace game={game} side="front" />
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── SHUFFLE: bridge / riffle. Split the stack L/R, riffle, snap back. ─────────
+function ShuffleOverlay({ games, order }: { games: Game[]; order: number[] }) {
+  return (
+    <>
+      {order.map((gi, pos) => {
+        const side = pos % 2 === 0 ? -1 : 1;
+        const game = games[gi];
+        return (
+          <motion.div
+            key={game.href}
+            className="deck-slot deck-scene"
+            style={{ zIndex: order.length - pos }}
+            initial={{ x: 0, y: 0, rotate: 0 }}
+            animate={{
+              x: [0, side * 140, side * 80, 0],
+              y: [0, -12, 8, 0],
+              rotate: [0, side * 8, side * -3, 0],
+              rotateY: [0, 180, 180, 0],
+            }}
+            transition={{
+              duration: 0.95,
+              times: [0, 0.35, 0.7, 1],
+              delay: Math.min(pos, 9) * 0.025,
+              ease: "easeInOut",
+            }}
+          >
+            <div className="deck-flip-inner" style={{ transform: "rotateY(0deg)" }}>
+              <CardFace game={game} side="back" />
+            </div>
+          </motion.div>
+        );
+      })}
+    </>
+  );
+}
+
+// ── ZOOM overlay (dialog) ─────────────────────────────────────────────────────
+function ZoomOverlay({
+  game,
+  reduced,
+  spring,
+  onClose,
+}: {
+  game: Game;
+  reduced: boolean;
+  spring: object;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      className="deck-zoom-backdrop"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${game.name} — drawn`}
+    >
+      <motion.div
+        className="deck-zoom-wrap"
+        initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.6, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.6, y: 30 }}
+        transition={spring}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="deck-zoom-card deck-scene">
+          <CardFace game={game} side="front" zoomed />
+        </div>
+        <div className="deck-zoom-actions">
+          <Link href={game.href} className="deck-play-btn" autoFocus>
+            ▶ Play {game.name}
+          </Link>
+          <button
+            type="button"
+            onClick={onClose}
+            className="deck-close-btn microlabel"
+            aria-label="Close"
+          >
+            ✕ close
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function DeckArrow({ dir, onClick }: { dir: "prev" | "next"; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={dir === "prev" ? "Previous card" : "Next card"}
+      className={`deck-arrow ${dir === "prev" ? "deck-arrow-prev" : "deck-arrow-next"}`}
+    >
+      {dir === "prev" ? "←" : "→"}
+    </button>
   );
 }
 
