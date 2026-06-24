@@ -33,7 +33,7 @@ const GAMES: Game[] = [
     name: "Codex",
     accent: "history",
     character: "the Host",
-    emblem: "▤", // the open codex / page of categories
+    emblem: "⌘", // the open codex / page of categories
     rank: 2,
     blurb:
       "Five categories, five values, one daily double. The same board for everyone, every day.",
@@ -43,7 +43,7 @@ const GAMES: Game[] = [
     name: "Chronos",
     accent: "music",
     character: "the Clockkeeper",
-    emblem: "◷", // a clock face
+    emblem: "⧗", // a clock face
     rank: 3,
     blurb:
       "When did it happen? Drag the year — closer guesses, bigger points. Five rounds against the century.",
@@ -53,7 +53,7 @@ const GAMES: Game[] = [
     name: "Fractures",
     accent: "sports",
     character: "the Ghost",
-    emblem: "◈", // the shattered mirror's shard
+    emblem: "⬡", // the shattered mirror's shard
     rank: 4,
     blurb:
       "Six wedges, twenty questions. Fill the ring before the deck runs out — quickfire across every category.",
@@ -63,7 +63,7 @@ const GAMES: Game[] = [
     name: "Ignite",
     accent: "screen",
     character: "the Witch",
-    emblem: "✺", // the witch's kindling flame
+    emblem: "✦", // the witch's kindling flame
     rank: 5,
     blurb:
       "Higher or lower? Populations, box offices, fan counts. One wrong call ends the run.",
@@ -83,7 +83,7 @@ const GAMES: Game[] = [
     name: "The Gauntlet",
     accent: "wildcard",
     character: "the Adventurer",
-    emblem: "☉", // the day's run
+    emblem: "⧈", // the day's run
     rank: 7,
     blurb:
       "One round from every room, once a day, the same gauntlet for everyone. Share your line of squares.",
@@ -103,7 +103,7 @@ const GAMES: Game[] = [
     name: "The Séance",
     accent: "wildcard",
     character: "the Medium",
-    emblem: "☾", // the spirit's moon
+    emblem: "☍", // the spirit's moon
     rank: 9,
     blurb:
       "Who or what am I? Each clue costs a point. The earliest correct answer earns the most.",
