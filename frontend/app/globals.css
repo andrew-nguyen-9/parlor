@@ -594,6 +594,7 @@ body {
   justify-content: center;
   padding: 1.5rem;
   background: rgba(8, 2, 5, 0.82);
+  -webkit-backdrop-filter: blur(3px); /* Safari < 18 needs the prefix */
   backdrop-filter: blur(3px);
 }
 .deck-zoom-wrap {
