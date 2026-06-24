@@ -36,7 +36,7 @@ create table if not exists questions (
   id            uuid primary key default gen_random_uuid(),
   content_hash  text not null unique,
   fact_id       uuid references facts(id) on delete cascade,
-  qtype         text not null check (qtype in ('multiple_choice','year_guess','higher_lower','clue','where','audio_guess','image_guess','connections','seance','ladder')),
+  qtype         text not null check (qtype in ('multiple_choice','year_guess','higher_lower','clue','where','audio_guess','image_guess','connections','seance','ladder','thread')),
   category      text not null check (category in ('history','music','sports','screen','geography','wildcard')),
   difficulty    int not null default 3 check (difficulty between 1 and 5),
   prompt        text not null,                  -- the clue / question / pair framing
@@ -57,6 +57,9 @@ create table if not exists questions (
   groups        jsonb,                          -- connections: [{label,members,difficulty}]
   clues         jsonb,                          -- seance: ordered clue strings (vague→specific)
   candidates    jsonb,                          -- ladder: [{label,category,region,magnitude}]
+  chain         jsonb,                          -- thread: [{prompt,answer,link}] last-letter→first-letter
+  theme         text,                           -- thread: master theme (the final answer)
+  theme_choices jsonb,                          -- thread: ["theme", distractors...] for the final guess
   created_at    timestamptz default now()
 );
 

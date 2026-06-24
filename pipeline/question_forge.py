@@ -363,6 +363,117 @@ def forge_ladder(facts: list[dict], rng: random.Random) -> list[dict]:
     return out
 
 
+MIN_THREAD_LINKS = 5     # shortest publishable chain for THE THREAD
+MAX_THREAD_LINKS = 7
+
+# Display names for the master theme a thread weaves toward (mirrors
+# BOARD_THEME_KEYWORDS keys; 'library' is the always-true fallback and is NOT a
+# recognizable master theme, so it's never used as a thread theme).
+THREAD_THEME_NAMES: dict[str, str] = {
+    "egypt": "Egypt",
+    "noir": "Film Noir",
+    "voyage": "The Voyage",
+    "cosmos": "The Cosmos",
+    "carnival": "The Carnival",
+    "deep-sea": "The Deep Sea",
+}
+
+
+def _chain_key(answer: str) -> str:
+    """Normalize an answer to its bare letters (for last-char→first-char joins)."""
+    return re.sub(r"[^a-z]", "", answer.lower())
+
+
+def forge_thread(clues: list[dict], rng: random.Random) -> list[dict]:
+    """THE THREAD: greedy walk over masked CLUE questions sharing a board theme,
+    chaining answer[n]'s last letter → answer[n+1]'s first letter. Every link ties
+    (even tangentially) to one recognizable master theme; the final question asks
+    for that theme. Offline-safe: derived from the same masked clues the board uses.
+
+    # ponytail: a plain greedy walk from one seed — not a max-length Hamiltonian
+    #   path over the theme graph. Good enough for a daily 5–7 link chain; if a
+    #   theme can't reach MIN_THREAD_LINKS it's skipped rather than padded.
+    """
+    by_theme: dict[str, list[dict]] = {}
+    for q in clues:
+        for t in (q.get("meta") or {}).get("board_themes", []):
+            if t in THREAD_THEME_NAMES:  # skip 'library' — not a master theme
+                by_theme.setdefault(t, []).append(q)
+
+    out = []
+    for theme, pool in by_theme.items():
+        # dedupe by answer spelling so a chain never repeats a word
+        seen: set[str] = set()
+        items: list[dict] = []
+        for q in pool:
+            key = _chain_key(q["correct"])
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            items.append(q)
+        if len(items) < MIN_THREAD_LINKS:
+            continue
+        rng.shuffle(items)
+
+        chain: list[dict] = []
+        for start in items:
+            walk = [start]
+            used = {_chain_key(start["correct"])}
+            while len(walk) < MAX_THREAD_LINKS:
+                last = _chain_key(walk[-1]["correct"])[-1]
+                nxt = next(
+                    (q for q in items
+                     if _chain_key(q["correct"])[0] == last
+                     and _chain_key(q["correct"]) not in used),
+                    None,
+                )
+                if nxt is None:
+                    break
+                walk.append(nxt)
+                used.add(_chain_key(nxt["correct"]))
+            if len(walk) >= MIN_THREAD_LINKS:
+                chain = walk
+                break
+        if not chain:
+            continue
+
+        theme_name = THREAD_THEME_NAMES[theme]
+        links = []
+        for i, q in enumerate(chain):
+            nxt_letter = (
+                _chain_key(chain[i + 1]["correct"])[0].upper()
+                if i + 1 < len(chain) else None
+            )
+            link = f"Ties to {theme_name}."
+            if nxt_letter:
+                link += f" Its last letter passes the thread to “{nxt_letter}…”."
+            else:
+                link += " The final stitch — now name the thread."
+            links.append({"prompt": q["prompt"], "answer": q["correct"], "link": link})
+
+        # final-guess choices: the real theme + sibling theme names as distractors
+        others = [n for k, n in THREAD_THEME_NAMES.items() if k != theme]
+        choices = rng.sample(others, min(3, len(others))) + [theme_name]
+        rng.shuffle(choices)
+
+        src = next((q.get("source_url") for q in chain if q.get("source_url")), None)
+        out.append(
+            {
+                "content_hash": content_hash("thread", theme, *[q["content_hash"] for q in chain]),
+                "qtype": "thread",
+                "category": chain[0]["category"],
+                "difficulty": max(q.get("difficulty", 3) for q in chain),
+                "prompt": "What is the thread that ties them all together?",
+                "correct": theme_name,
+                "chain": links,
+                "theme": theme_name,
+                "theme_choices": choices,
+                "source_url": src,
+            }
+        )
+    return out
+
+
 def _subject_class(f: dict) -> str:
     return {
         "music": "artist",
@@ -494,14 +605,16 @@ def load_facts_from_db(conn) -> list[dict]:
 def forge_all(facts: list[dict], seed: int = 0) -> list[dict]:
     rng = random.Random(seed)
     assign_difficulty(facts)
+    clues = forge_clues(facts)
     questions = (
         forge_year_guess(facts)
         + forge_higher_lower(facts, rng)
         + forge_multiple_choice(facts, rng)
-        + forge_clues(facts)
+        + clues
         + forge_where(facts)
         + forge_seance(facts)
         + forge_ladder(facts, rng)
+        + forge_thread(clues, rng)  # chains masked clues by theme (THE THREAD)
     )
     return questions
 

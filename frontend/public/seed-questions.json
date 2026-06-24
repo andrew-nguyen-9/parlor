@@ -7,10 +7,10 @@
    "prompt": "_____ is the capital of India.",
    "correct": "New Delhi",
    "choices": [
-    "Manila",
+    "Mexico City",
     "New Delhi",
-    "Washington, D.C.",
-    "Abuja"
+    "Beijing",
+    "Dhaka"
    ],
    "image_url": "https://flagcdn.com/in.svg",
    "source_url": "https://www.openstreetmap.org/relation/304716"
@@ -22,9 +22,9 @@
    "prompt": "_____ is the capital of China.",
    "correct": "Beijing",
    "choices": [
-    "Cairo",
-    "Islamabad",
-    "Jakarta",
+    "Tokyo",
+    "Abuja",
+    "Bras\u00edlia",
     "Beijing"
    ],
    "image_url": "https://flagcdn.com/cn.svg",
@@ -38,9 +38,9 @@
    "correct": "Washington, D.C.",
    "choices": [
     "Washington, D.C.",
-    "Jakarta",
-    "Cairo",
-    "Addis Ababa"
+    "Bras\u00edlia",
+    "Tokyo",
+    "Manila"
    ],
    "image_url": "https://flagcdn.com/us.svg",
    "source_url": "https://www.openstreetmap.org/relation/148838#map=2/20.6/-85.8"
@@ -52,10 +52,10 @@
    "prompt": "_____ is the capital of Indonesia.",
    "correct": "Jakarta",
    "choices": [
-    "Dhaka",
-    "Washington, D.C.",
+    "Bras\u00edlia",
+    "Beijing",
     "Jakarta",
-    "Abuja"
+    "Mexico City"
    ],
    "image_url": "https://flagcdn.com/id.svg",
    "source_url": "https://www.openstreetmap.org/relation/21335"
@@ -68,9 +68,9 @@
    "correct": "Islamabad",
    "choices": [
     "Islamabad",
-    "Bras\u00edlia",
-    "New Delhi",
-    "Manila"
+    "Dhaka",
+    "Abuja",
+    "Mexico City"
    ],
    "image_url": "https://flagcdn.com/pk.svg",
    "source_url": "https://www.openstreetmap.org/relation/307573"
@@ -83,9 +83,9 @@
    "correct": "Bras\u00edlia",
    "choices": [
     "Bras\u00edlia",
-    "Washington, D.C.",
     "Beijing",
-    "New Delhi"
+    "Washington, D.C.",
+    "Addis Ababa"
    ],
    "image_url": "https://flagcdn.com/br.svg",
    "source_url": "https://www.openstreetmap.org/relation/59470"
@@ -97,10 +97,10 @@
    "prompt": "_____ is the capital of Bangladesh.",
    "correct": "Dhaka",
    "choices": [
-    "Abuja",
-    "Beijing",
+    "Mexico City",
+    "Washington, D.C.",
     "Dhaka",
-    "Bras\u00edlia"
+    "New Delhi"
    ],
    "image_url": "https://flagcdn.com/bd.svg",
    "source_url": "https://www.openstreetmap.org/relation/184640"
@@ -113,9 +113,9 @@
    "correct": "Abuja",
    "choices": [
     "Abuja",
+    "Tokyo",
     "Cairo",
-    "Mexico City",
-    "Tokyo"
+    "Islamabad"
    ],
    "image_url": "https://flagcdn.com/ng.svg",
    "source_url": "https://www.openstreetmap.org/relation/192787"
@@ -127,10 +127,10 @@
    "prompt": "_____ is the capital of Japan.",
    "correct": "Tokyo",
    "choices": [
-    "Mexico City",
-    "Moscow",
+    "Cairo",
+    "Jakarta",
     "Tokyo",
-    "Islamabad"
+    "Addis Ababa"
    ],
    "image_url": "https://flagcdn.com/jp.svg",
    "source_url": "https://www.openstreetmap.org/relation/382313"
@@ -142,9 +142,9 @@
    "prompt": "_____ is the capital of Mexico.",
    "correct": "Mexico City",
    "choices": [
-    "New Delhi",
-    "Dhaka",
-    "Moscow",
+    "Addis Ababa",
+    "Bras\u00edlia",
+    "Jakarta",
     "Mexico City"
    ],
    "image_url": "https://flagcdn.com/mx.svg",
@@ -158,9 +158,9 @@
    "correct": "Moscow",
    "choices": [
     "Moscow",
-    "Washington, D.C.",
-    "Bras\u00edlia",
-    "Beijing"
+    "Beijing",
+    "Abuja",
+    "Islamabad"
    ],
    "image_url": "https://flagcdn.com/ru.svg",
    "source_url": "https://www.openstreetmap.org/relation/60189#map=3/65.15/105.29"
@@ -172,10 +172,10 @@
    "prompt": "_____ is the capital of Egypt.",
    "correct": "Cairo",
    "choices": [
-    "New Delhi",
+    "Addis Ababa",
     "Cairo",
-    "Manila",
-    "Islamabad"
+    "Mexico City",
+    "Abuja"
    ],
    "image_url": "https://flagcdn.com/eg.svg",
    "source_url": "https://www.openstreetmap.org/relation/1473947"
@@ -188,9 +188,9 @@
    "correct": "Manila",
    "choices": [
     "Manila",
-    "Moscow",
-    "Bras\u00edlia",
-    "Mexico City"
+    "Jakarta",
+    "Dhaka",
+    "Tokyo"
    ],
    "image_url": "https://flagcdn.com/ph.svg",
    "source_url": "https://www.openstreetmap.org/relation/443174"
@@ -202,9 +202,9 @@
    "prompt": "_____ is the capital of Ethiopia.",
    "correct": "Addis Ababa",
    "choices": [
-    "Moscow",
-    "New Delhi",
-    "Tokyo",
+    "Jakarta",
+    "Abuja",
+    "Islamabad",
     "Addis Ababa"
    ],
    "image_url": "https://flagcdn.com/et.svg",
@@ -2445,6 +2445,48 @@
    "unit": "area (km\u00b2)",
    "image_url": "https://flagcdn.com/bd.svg",
    "source_url": "https://www.openstreetmap.org/relation/1473947"
+  },
+  {
+   "qtype": "thread",
+   "category": "wildcard",
+   "difficulty": 5,
+   "prompt": "What is the thread that ties them all together?",
+   "correct": "The Voyage",
+   "source_url": "https://en.wikipedia.org/wiki/1989_Speedway_Under-21_World_Championship",
+   "chain": [
+    {
+     "prompt": "The 1989 Individual this subject Junior this subject was the 13th edition of this subject motorcycle this subject-21 Championships..",
+     "answer": "1989 Speedway Under-21 World Championship",
+     "link": "Ties to The Voyage. Its last letter passes the thread to \u201cP\u2026\u201d."
+    },
+    {
+     "prompt": "This subject [p\u0254\u02c8r\u0254sw\u0268] is a village in the administrative district of Gmina Choroszcz, within Bia\u0142ystok County, Podlaskie Voivodeship, in north-eastern Poland..",
+     "answer": "Poros\u0142y",
+     "link": "Ties to The Voyage. Its last letter passes the thread to \u201cY\u2026\u201d."
+    },
+    {
+     "prompt": "This subject comprises a group of parallel, linear wetlands, with a collective this subject of 59\u00a0km2, on the Swan Coastal Plain of south-west Western Australia between the cities of Mandurah and Bunbury.",
+     "answer": "Yalgorup Important Bird Area",
+     "link": "Ties to The Voyage. Its last letter passes the thread to \u201cA\u2026\u201d."
+    },
+    {
+     "prompt": "The 2020 this subject was this subject match of the 2019\u201320 this subject, the 29th season of this subject League's main club football tournament organised by UAFA, and the 2nd season since it was renamed from this subject Championship to this subject.",
+     "answer": "2020 Arab Club Champions Cup final",
+     "link": "Ties to The Voyage. Its last letter passes the thread to \u201cL\u2026\u201d."
+    },
+    {
+     "prompt": "L'this subject is a municipality in the comarca of Alt Empord\u00e0, Girona, Catalonia, Spain, on the coastline of the Costa Brava..",
+     "answer": "L'Armentera",
+     "link": "Ties to The Voyage. The final stitch \u2014 now name the thread."
+    }
+   ],
+   "theme": "The Voyage",
+   "theme_choices": [
+    "The Voyage",
+    "The Carnival",
+    "Egypt",
+    "The Cosmos"
+   ]
   }
  ]
 }

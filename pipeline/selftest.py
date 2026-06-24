@@ -78,6 +78,18 @@ def synthetic_facts() -> list[dict]:
             numeric_value=float(i + 1), numeric_unit="Deezer albums",
             popularity=10.0 * i, source_url="https://example.com",
         ))
+
+    # THE THREAD (2.8): a set of geography subjects that (a) share a board theme
+    # via a keyword in the prose ('voyage') and (b) chain by last-letter→first-
+    # letter (Oceanus→Seafarer→Rudder→Reef→Frigate→Estuary), so forge_thread can
+    # build a clean themed chain offline.
+    chain_subjects = ["Oceanus", "Seafarer", "Rudder", "Reef", "Frigate", "Estuary"]
+    for j, subj in enumerate(chain_subjects):
+        facts.append(make_fact(
+            source="wikipedia", category="geography", subject=subj,
+            fact_text=f"A landmark from the great voyage, known to every sailor who set sail.",
+            popularity=20.0 + j, source_url="https://example.com",
+        ))
     return facts
 
 
@@ -107,6 +119,7 @@ def main() -> None:
     check("forge produces where", "where" in types)
     check("forge produces seance", "seance" in types)
     check("forge produces ladder", "ladder" in types)
+    check("forge produces thread", "thread" in types)
 
     for q in qs:
         if q["qtype"] == "where":
@@ -160,6 +173,29 @@ def main() -> None:
     else:
         check("forge produces ladder", False, "no ladder question in output")
 
+    for q in qs:
+        if q["qtype"] == "thread":
+            chain = q.get("chain") or []
+            check("thread has ≥5 links", len(chain) >= 5, f"{len(chain)} found")
+            check("thread links carry prompt/answer/link",
+                  all(all(k in lk for k in ("prompt", "answer", "link")) for lk in chain))
+            # last-letter→first-letter adjacency holds across the whole chain
+            import re as _re
+            keys = [_re.sub(r"[^a-z]", "", lk["answer"].lower()) for lk in chain]
+            adj_ok = all(keys[i][-1] == keys[i + 1][0] for i in range(len(keys) - 1))
+            check("thread chain is last-letter→first-letter adjacent", adj_ok)
+            theme = q.get("theme") or ""
+            check("thread has a master theme", bool(theme) and q["correct"] == theme)
+            # no link prompt may leak the theme name
+            check("thread links don't leak the theme",
+                  all(theme.lower() not in lk["prompt"].lower() for lk in chain))
+            choices = q.get("theme_choices") or []
+            check("thread final choices include the theme",
+                  theme in choices and len(choices) >= 2)
+            break
+    else:
+        check("forge produces thread", False, "no thread question in output")
+
     d = date(2026, 6, 12)
     b1, b2 = build_daily_board(qs, d), build_daily_board(qs, d)
     check("daily board is deterministic", b1 == b2)
@@ -209,6 +245,11 @@ def main() -> None:
             if q["qtype"] == "ladder":
                 ok = ok and isinstance(q.get("candidates"), list) and len(q["candidates"]) >= 3
                 ok = ok and any(c.get("label") == q["correct"] for c in (q.get("candidates") or []))
+            if q["qtype"] == "thread":
+                chain = q.get("chain") or []
+                ok = ok and isinstance(chain, list) and len(chain) >= 5
+                ok = ok and all(all(k in lk for k in ("prompt", "answer", "link")) for lk in chain)
+                ok = ok and q.get("theme") == q["correct"]
             if not ok:
                 check("seed bank question shape", False, json.dumps(q)[:120])
                 break

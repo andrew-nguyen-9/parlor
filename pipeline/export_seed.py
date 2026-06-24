@@ -29,6 +29,9 @@ FIELDS = [
     "lat", "lng", "image_url", "source_url", "audio_url", "melody", "groups",
     "clues",       # seance: ordered clue strings
     "candidates",  # ladder: [{label, category, region, magnitude}]
+    "chain",       # thread: [{prompt, answer, link}]
+    "theme",       # thread: master theme (final answer)
+    "theme_choices",  # thread: final-guess choices (theme included)
 ]
 
 
