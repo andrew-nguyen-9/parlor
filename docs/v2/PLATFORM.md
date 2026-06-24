@@ -135,7 +135,17 @@ robots resolve, every route has unique metadata, OG previews render.
 > jewels stay static (single source). **Done-when**: ✅ toggle persists · both
 > themes coherent · no hydration flash.
 
-## 2.16 — Performance
+## 2.16 — Performance ◐ (code wins shipped; live audit pending)
+
+> Shipped: the win-only canvas `Confetti` (127-line RAF component) is now
+> `next/dynamic({ ssr:false })` across all 8 games, so it's an on-demand chunk
+> instead of route weight (e.g. /clock 7.5→5.7 kB, /gallery & /jukebox 4.4→2.5 kB,
+> /board 64.9→62.9 kB first-party). Reduced-motion already caps perpetual
+> animations (2.14). `next.config` keeps remote-image patterns; route-level code
+> splitting is automatic per room. **Remaining (needs a running deployment):** the
+> `chrome-devtools lighthouse_audit` + `performance_*` before/after numbers, and
+> converting dynamic-dimension content images to `next/image` (deferred — risky to
+> do without visual verification).
 
 Reduce cache/CPU/GPU/API load; make it fast everywhere.
 
