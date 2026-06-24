@@ -44,7 +44,7 @@ function Corner({ game, corner }: { game: Game; corner: "tl" | "br" }) {
   return (
     <span
       className={`absolute z-[2] flex flex-col items-center leading-none ${
-        corner === "tl" ? "left-2.5 top-2" : "bottom-2 right-2.5 rotate-180"
+        corner === "tl" ? "left-3.5 top-3" : "bottom-3 right-3.5 rotate-180"
       }`}
     >
       <span className="display text-base" style={{ color: "#43141f" }}>

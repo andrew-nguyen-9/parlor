@@ -233,6 +233,9 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 30rem;
+  /* keep the orbit/fan spread from forcing horizontal scroll on phones */
+  overflow: hidden;
+  touch-action: pan-y;
 }
 .deck-scene {
   perspective: 1600px;
@@ -264,6 +267,27 @@ body {
   border-radius: 0.9rem;
   padding: 0.85rem 0.9rem;
   overflow: hidden;
+}
+
+/* Draggable draw: the top card flips back↔front in 3D as it is pulled away. */
+.deck-flip-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.deck-flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.deck-flip-back {
+  transform: rotateY(180deg);
+}
+/* orbit "magic" bob wrapper — fills the slot, no chrome of its own */
+.deck-bob {
+  position: absolute;
+  inset: 0;
 }
 /* double engraved inner frame, drawn on both faces */
 .deck-face::before {
@@ -412,28 +436,73 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.1rem;
+  max-width: 100%;
 }
 .deck-zoom-card {
   position: relative;
-  width: clamp(230px, 72vw, 300px);
+  /* fits a small viewport without pushing the Play button off-screen */
+  width: clamp(190px, 58vw, 280px);
+  max-height: 56vh;
   aspect-ratio: 5 / 7;
 }
-.deck-enter-btn {
+.deck-zoom-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+}
+@media (min-width: 480px) {
+  .deck-zoom-actions {
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+  }
+}
+
+/* Play — the clear primary action: large, accent-coloured, ≥44px tall. */
+.deck-play-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.7rem 1.8rem;
   border-radius: 9999px;
-  border: 1px solid rgba(201, 162, 74, 0.7);
-  background: linear-gradient(180deg, rgba(201, 162, 74, 0.22), rgba(110, 31, 43, 0.22));
-  padding: 0.6rem 1.4rem;
+  border: 1px solid rgba(230, 200, 120, 0.9);
+  background: linear-gradient(180deg, rgba(245, 197, 66, 0.32), rgba(110, 31, 43, 0.4));
   font-family: var(--font-display), Georgia, serif;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  font-size: 0.8rem;
-  color: #f0e6cf;
+  font-size: 1rem;
+  color: #fdf3d6;
+  box-shadow: 0 0 22px rgba(201, 162, 74, 0.28), inset 0 1px 0 rgba(255, 240, 200, 0.25);
   transition: all 0.2s;
 }
-.deck-enter-btn:hover {
-  border-color: rgba(230, 200, 120, 0.9);
-  box-shadow: 0 0 24px rgba(201, 162, 74, 0.3);
+.deck-play-btn:hover,
+.deck-play-btn:focus-visible {
+  border-color: rgba(245, 222, 160, 1);
+  box-shadow: 0 0 34px rgba(245, 197, 66, 0.45);
+  transform: translateY(-1px);
+  outline: none;
+}
+/* Close — secondary, still a ≥44px tap target. */
+.deck-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.4rem 1.2rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(201, 162, 74, 0.4);
+  color: #c8b88a;
+  transition: color 0.2s, border-color 0.2s;
+}
+.deck-close-btn:hover,
+.deck-close-btn:focus-visible {
+  color: #f0e6cf;
+  border-color: rgba(201, 162, 74, 0.7);
+  outline: none;
 }
 
 /* ── Secret-order flourishes ─────────────────────────────────────────────── */
