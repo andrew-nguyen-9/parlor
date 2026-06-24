@@ -1,6 +1,8 @@
+import Link from "next/link";
 import Marquee from "@/components/Marquee";
 import Deck from "@/components/Deck";
 import type { Game } from "@/components/CardFace";
+import { CATEGORY_HEX } from "@/lib/types";
 import { isDbConfigured } from "@/lib/db";
 
 const TICKER = [
@@ -148,7 +150,7 @@ export default function Home() {
           <p className="microlabel mb-3 tracking-[0.3em] text-brass">
             ✦ &nbsp; a secret order of the curious &nbsp; ✦
           </p>
-          <h1 className="gilt display text-[clamp(4.5rem,20vw,15rem)] leading-none">
+          <h1 className="gilt display text-[clamp(4.5rem,20vw,15rem)] leading-[0.86] tracking-[0.01em]">
             Parlor
           </h1>
         </div>
@@ -166,6 +168,45 @@ export default function Home() {
       <Marquee items={TICKER} />
 
       <Deck games={GAMES} />
+
+      {/* The ledger — every room at a glance, server-rendered from GAMES */}
+      <section className="relative z-10 mx-auto max-w-6xl px-4 pb-20 sm:px-8">
+        <div className="deco-rule mb-8">
+          <span className="gilt display text-lg tracking-[0.2em]">The Rooms</span>
+        </div>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {GAMES.map((game) => (
+            <li key={game.href}>
+              <Link
+                href={game.href}
+                className="gilt-frame group flex h-full gap-4 rounded-xl bg-surface/40 p-5 transition hover:border-gold/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              >
+                <span
+                  aria-hidden
+                  className="display mt-0.5 shrink-0 text-3xl leading-none"
+                  style={{ color: CATEGORY_HEX[game.accent] }}
+                >
+                  {game.emblem}
+                </span>
+                <div className="min-w-0">
+                  <span
+                    className="microlabel block"
+                    style={{ color: CATEGORY_HEX[game.accent] }}
+                  >
+                    {game.character}
+                  </span>
+                  <h3 className="gilt display mt-1 text-lg leading-tight tracking-[0.04em]">
+                    {game.name}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">
+                    {game.blurb}
+                  </p>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <footer className="relative z-10 border-t border-line px-4 py-10 sm:px-8">
         <div className="mb-3 flex items-center gap-3">

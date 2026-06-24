@@ -118,17 +118,21 @@ export default function CardFace({
         </div>
       )}
 
-      <div className="deck-cartouche">
-        <span className="microlabel block" style={{ color: hex }}>
+      <div className={`deck-cartouche${zoomed ? " deck-cartouche-zoom" : ""}`}>
+        <span className="deck-cart-character microlabel block" style={{ color: hex }}>
           {game.character}
         </span>
         <span
-          className={`display block leading-tight ${zoomed ? "text-3xl" : "text-base"}`}
+          className={`deck-cart-name display block ${zoomed ? "text-[clamp(1.5rem,5vw,2.1rem)]" : "text-base"}`}
           style={{ color: "#43141f" }}
         >
           {game.name}
         </span>
-        {zoomed && <p className="mt-2 text-sm leading-relaxed" style={{ color: "#5a2230" }}>{game.blurb}</p>}
+        {zoomed && (
+          <p className="deck-cart-blurb" style={{ color: "#5a2230" }}>
+            {game.blurb}
+          </p>
+        )}
       </div>
     </div>
   );
