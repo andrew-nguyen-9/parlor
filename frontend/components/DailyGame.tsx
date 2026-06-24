@@ -106,7 +106,7 @@ export default function DailyGame({
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <h1 className="display text-4xl sm:text-5xl">The Daily</h1>
+        <h1 className="display text-4xl sm:text-5xl">The Gauntlet</h1>
         <div className="text-right">
           <div className="microlabel">
             #{dailyNumber} · round {i + 1}/5

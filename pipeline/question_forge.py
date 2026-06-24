@@ -87,12 +87,40 @@ def assign_difficulty(facts: list[dict]) -> None:
 
 
 # ── recipes ─────────────────────────────────────────────────────────────────
+def forge_audio(facts: list[dict]) -> list[dict]:
+    """THE CLOCK audio rounds (folded Jukebox): a fact carrying an offline melody
+    in meta becomes a "when was this first heard?" round — the year is the answer,
+    the synthesized tune (lib/sound.ts) is the clue. No audio files involved."""
+    out = []
+    for f in facts:
+        melody = (f.get("meta") or {}).get("melody")
+        year = f.get("year")
+        if not melody or not year:
+            continue
+        out.append(
+            {
+                "content_hash": content_hash("audio_guess", f["content_hash"]),
+                "qtype": "audio_guess",
+                "category": f["category"],
+                "difficulty": f.get("_difficulty", 3),
+                "prompt": f["fact_text"],
+                "correct": str(year),
+                "year": year,
+                "melody": melody,
+                "source_url": f.get("source_url"),
+            }
+        )
+    return out
+
+
 def forge_year_guess(facts: list[dict]) -> list[dict]:
     out = []
     for f in facts:
         year = f.get("year")
         if not year or year < 1800:
             continue
+        if (f.get("meta") or {}).get("melody"):
+            continue  # melody facts are audio rounds (forge_audio), not dial rounds
         prompt = f["fact_text"]
         # Strip the give-away year from the prompt where formulaic
         for token in (f" in {year}", f"/{year}"):
@@ -214,6 +242,8 @@ def forge_clues(facts: list[dict]) -> list[dict]:
     Only facts whose text doesn't leak the subject verbatim qualify."""
     out = []
     for f in facts:
+        if (f.get("meta") or {}).get("melody"):
+            continue  # melody facts are audio-only (forge_audio); skip as clues
         subject = f["subject"]
         clue = mask_subject(f["fact_text"], subject, f)
         if clue is None:
@@ -623,6 +653,7 @@ def forge_all(facts: list[dict], seed: int = 0) -> list[dict]:
     clues = forge_clues(facts)
     questions = (
         forge_year_guess(facts)
+        + forge_audio(facts)
         + forge_higher_lower(facts, rng)
         + forge_multiple_choice(facts, rng)
         + clues

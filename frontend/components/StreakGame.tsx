@@ -178,7 +178,7 @@ export default function StreakGame({ pool }: { pool: Question[] }) {
       <>
         <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
           <Candle brightness={0.5} />
-          <h1 className="display mt-4 text-5xl sm:text-6xl">The Streak</h1>
+          <h1 className="display mt-4 text-5xl sm:text-6xl">Ignite</h1>
           <p className="microlabel mt-2 text-history">The Witch of the Order</p>
           <p className="mt-3 max-w-md text-muted">
             Feed her flame. Higher or lower? Each correct call burns brighter — but
@@ -247,7 +247,7 @@ export default function StreakGame({ pool }: { pool: Question[] }) {
       <div className="relative z-10">
         <div className="flex items-baseline justify-between">
           <div>
-            <h1 className="display text-4xl sm:text-5xl">The Streak</h1>
+            <h1 className="display text-4xl sm:text-5xl">Ignite</h1>
             <p className="microlabel mt-1 text-history">The Witch of the Order</p>
           </div>
           <div className="flex items-center gap-4">

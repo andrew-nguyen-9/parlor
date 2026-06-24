@@ -20,7 +20,7 @@ const TICKER = [
 const GAMES: Game[] = [
   {
     href: "/mystery",
-    name: "The Mystery",
+    name: "Sanctum Mysterii",
     accent: "history",
     character: "the Order",
     emblem: "◉", // the all-seeing eye
@@ -30,17 +30,17 @@ const GAMES: Game[] = [
   },
   {
     href: "/board",
-    name: "The Board",
+    name: "Codex",
     accent: "history",
     character: "the Host",
-    emblem: "▦", // the category grid
+    emblem: "▤", // the open codex / page of categories
     rank: 2,
     blurb:
       "Five categories, five values, one daily double. The same board for everyone, every day.",
   },
   {
     href: "/clock",
-    name: "The Clock",
+    name: "Chronos",
     accent: "music",
     character: "the Clockkeeper",
     emblem: "◷", // a clock face
@@ -50,27 +50,27 @@ const GAMES: Game[] = [
   },
   {
     href: "/wedges",
-    name: "The Wedges",
+    name: "Fractures",
     accent: "sports",
     character: "the Ghost",
-    emblem: "⬡", // six-sided — the six wedges
+    emblem: "◈", // the shattered mirror's shard
     rank: 4,
     blurb:
       "Six wedges, twenty questions. Fill the ring before the deck runs out — quickfire across every category.",
   },
   {
     href: "/streak",
-    name: "The Streak",
+    name: "Ignite",
     accent: "screen",
     character: "the Witch",
-    emblem: "⇅", // higher or lower
+    emblem: "✺", // the witch's kindling flame
     rank: 5,
     blurb:
       "Higher or lower? Populations, box offices, fan counts. One wrong call ends the run.",
   },
   {
     href: "/map",
-    name: "The Map",
+    name: "Atlas Obscura",
     accent: "geography",
     character: "the Cartographer",
     emblem: "⌖", // drop a pin
@@ -80,7 +80,7 @@ const GAMES: Game[] = [
   },
   {
     href: "/daily",
-    name: "The Daily",
+    name: "The Gauntlet",
     accent: "wildcard",
     character: "the Adventurer",
     emblem: "☉", // the day's run
@@ -90,7 +90,7 @@ const GAMES: Game[] = [
   },
   {
     href: "/thread",
-    name: "The Thread",
+    name: "Thread of Fate",
     accent: "history",
     character: "the Weaver",
     emblem: "⌇", // a stitch of thread
@@ -110,7 +110,7 @@ const GAMES: Game[] = [
   },
   {
     href: "/ladder",
-    name: "The Ladder",
+    name: "Climb of the Initiate",
     accent: "music",
     character: "the Trickster",
     emblem: "☰", // the rungs

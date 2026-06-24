@@ -20,7 +20,7 @@ export default async function ClockPage() {
   const calendar = pickCalendar(day); // deterministic daily twist (SSR/client agree)
 
   return (
-    <RoomShell label={`room 02 — the clock · ${calendar.name.toLowerCase()}`} accent="music">
+    <RoomShell label={`room 02 — chronos · ${calendar.name.toLowerCase()}`} accent="music">
       <ClockGame rounds={rounds} pool={pool} calendar={calendar} daySeed={day} />
     </RoomShell>
   );

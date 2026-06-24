@@ -32,7 +32,7 @@ export default async function DailyPage() {
   const dailyNumber = day - EPOCH + 1;
 
   return (
-    <RoomShell label="room 06 — the daily" accent="wildcard">
+    <RoomShell label="room 06 — the gauntlet" accent="wildcard">
       <DailyGame rounds={rounds} dailyNumber={dailyNumber} />
     </RoomShell>
   );

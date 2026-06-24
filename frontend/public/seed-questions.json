@@ -2628,6 +2628,257 @@
     "The Deep Sea",
     "The Cosmos"
    ]
+  },
+  {
+   "qtype": "audio_guess",
+   "category": "music",
+   "difficulty": 1,
+   "prompt": "Listen closely \u2014 in what year was this melody first heard?",
+   "correct": "1824",
+   "year": 1824,
+   "source_url": "https://en.wikipedia.org/wiki/Ode_to_Joy",
+   "melody": [
+    {
+     "n": "E4",
+     "d": 1
+    },
+    {
+     "n": "E4",
+     "d": 1
+    },
+    {
+     "n": "F4",
+     "d": 1
+    },
+    {
+     "n": "G4",
+     "d": 1
+    },
+    {
+     "n": "G4",
+     "d": 1
+    },
+    {
+     "n": "F4",
+     "d": 1
+    },
+    {
+     "n": "E4",
+     "d": 1
+    },
+    {
+     "n": "D4",
+     "d": 1
+    },
+    {
+     "n": "C4",
+     "d": 1
+    },
+    {
+     "n": "C4",
+     "d": 1
+    },
+    {
+     "n": "D4",
+     "d": 1
+    },
+    {
+     "n": "E4",
+     "d": 1
+    },
+    {
+     "n": "E4",
+     "d": 1.5
+    },
+    {
+     "n": "D4",
+     "d": 0.5
+    },
+    {
+     "n": "D4",
+     "d": 2
+    }
+   ]
+  },
+  {
+   "qtype": "audio_guess",
+   "category": "music",
+   "difficulty": 2,
+   "prompt": "Listen closely \u2014 in what year was this melody first heard?",
+   "correct": "1857",
+   "year": 1857,
+   "source_url": "https://en.wikipedia.org/wiki/Jingle_Bells",
+   "melody": [
+    {
+     "n": "E4",
+     "d": 1
+    },
+    {
+     "n": "E4",
+     "d": 1
+    },
+    {
+     "n": "E4",
+     "d": 2
+    },
+    {
+     "n": "E4",
+     "d": 1
+    },
+    {
+     "n": "E4",
+     "d": 1
+    },
+    {
+     "n": "E4",
+     "d": 2
+    },
+    {
+     "n": "E4",
+     "d": 1
+    },
+    {
+     "n": "G4",
+     "d": 1
+    },
+    {
+     "n": "C4",
+     "d": 1.5
+    },
+    {
+     "n": "D4",
+     "d": 0.5
+    },
+    {
+     "n": "E4",
+     "d": 3
+    }
+   ]
+  },
+  {
+   "qtype": "audio_guess",
+   "category": "music",
+   "difficulty": 3,
+   "prompt": "Listen closely \u2014 in what year was this melody first heard?",
+   "correct": "1893",
+   "year": 1893,
+   "source_url": "https://en.wikipedia.org/wiki/Happy_Birthday_to_You",
+   "melody": [
+    {
+     "n": "G4",
+     "d": 0.75
+    },
+    {
+     "n": "G4",
+     "d": 0.25
+    },
+    {
+     "n": "A4",
+     "d": 1
+    },
+    {
+     "n": "G4",
+     "d": 1
+    },
+    {
+     "n": "C5",
+     "d": 1
+    },
+    {
+     "n": "B4",
+     "d": 2
+    }
+   ]
+  },
+  {
+   "qtype": "audio_guess",
+   "category": "music",
+   "difficulty": 4,
+   "prompt": "Listen closely \u2014 in what year was this melody first heard?",
+   "correct": "1808",
+   "year": 1808,
+   "source_url": "https://en.wikipedia.org/wiki/Beethoven's_Fifth_Symphony",
+   "melody": [
+    {
+     "n": "G4",
+     "d": 0.5
+    },
+    {
+     "n": "G4",
+     "d": 0.5
+    },
+    {
+     "n": "G4",
+     "d": 0.5
+    },
+    {
+     "n": "D#4",
+     "d": 1.5
+    },
+    {
+     "n": "F4",
+     "d": 0.5
+    },
+    {
+     "n": "F4",
+     "d": 0.5
+    },
+    {
+     "n": "F4",
+     "d": 0.5
+    },
+    {
+     "n": "D4",
+     "d": 1.5
+    }
+   ]
+  },
+  {
+   "qtype": "audio_guess",
+   "category": "music",
+   "difficulty": 5,
+   "prompt": "Listen closely \u2014 in what year was this melody first heard?",
+   "correct": "1810",
+   "year": 1810,
+   "source_url": "https://en.wikipedia.org/wiki/F\u00fcr_Elise",
+   "melody": [
+    {
+     "n": "E5",
+     "d": 0.5
+    },
+    {
+     "n": "D#5",
+     "d": 0.5
+    },
+    {
+     "n": "E5",
+     "d": 0.5
+    },
+    {
+     "n": "D#5",
+     "d": 0.5
+    },
+    {
+     "n": "E5",
+     "d": 0.5
+    },
+    {
+     "n": "B4",
+     "d": 0.5
+    },
+    {
+     "n": "D5",
+     "d": 0.5
+    },
+    {
+     "n": "C5",
+     "d": 0.5
+    },
+    {
+     "n": "A4",
+     "d": 1.5
+    }
+   ]
   }
  ]
 }

@@ -8,7 +8,7 @@ export default async function StreakPage() {
   const pool = await getQuestionsByType("higher_lower");
 
   return (
-    <RoomShell label="room 04 — the streak" accent="screen">
+    <RoomShell label="room 04 — ignite" accent="screen">
       <StreakGame pool={pool} />
     </RoomShell>
   );

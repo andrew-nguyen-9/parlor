@@ -11,7 +11,7 @@ export default function MysteryPage() {
   const mystery = generateCase(today);
 
   return (
-    <RoomShell label="room 10 — the mystery" accent="history">
+    <RoomShell label="room 10 — sanctum mysterii" accent="history">
       <MysteryGame mystery={mystery} />
     </RoomShell>
   );

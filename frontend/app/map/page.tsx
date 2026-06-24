@@ -17,7 +17,7 @@ export default async function MapPage() {
   const rounds = [...civRounds(civ), ...pickRotating(pool, 2)];
 
   return (
-    <RoomShell label="room 05 — the map" accent="geography">
+    <RoomShell label="room 05 — atlas obscura" accent="geography">
       <MapGame rounds={rounds} pool={pool} civ={civ} />
     </RoomShell>
   );

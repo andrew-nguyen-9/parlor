@@ -13,7 +13,7 @@ export default async function ThreadPage() {
   ]);
 
   return (
-    <RoomShell label="room 07 — the thread" accent="history">
+    <RoomShell label="room 07 — thread of fate" accent="history">
       <ThreadGame threads={threads} clues={clues} />
     </RoomShell>
   );

@@ -241,7 +241,7 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
     return (
       <>
         <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-          <h1 className="display text-5xl sm:text-6xl">The Wedges</h1>
+          <h1 className="display text-5xl sm:text-6xl">Fractures</h1>
           <p className="mt-3 max-w-md text-muted">
             Shatter the mirror — earn all six wedges. Today&apos;s questions are
             the same for every player; beat the clock before the ghost speaks.
@@ -346,7 +346,7 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
     <div className="flex flex-col items-center">
       <div className="flex w-full items-start justify-between">
         <div>
-          <h1 className="display text-4xl sm:text-5xl">The Wedges</h1>
+          <h1 className="display text-4xl sm:text-5xl">Fractures</h1>
           <p className="microlabel mt-1">
             {phase === "bonus" ? "bonus round" : "the six wedges"}
           </p>

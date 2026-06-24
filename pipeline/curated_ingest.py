@@ -65,6 +65,39 @@ _FACTS: list[tuple[str, str, str, int | None, float]] = [
 ]
 
 
+# THE CLOCK audio rounds (folded Jukebox): recognizable PUBLIC-DOMAIN melodies as
+# offline note lists (no audio files — synthesized by lib/sound.ts playMelody), each
+# with a composition/publication year. forge_audio turns these into "when was this
+# first heard?" rounds; the melody is carried in meta so make_fact stays generic.
+# Note = {"n": scientific-pitch | "rest", "d": beats}.
+_MELODIES: list[tuple[str, int, list[dict]]] = [
+    ("Beethoven's Fifth Symphony", 1808, [
+        {"n": "G4", "d": 0.5}, {"n": "G4", "d": 0.5}, {"n": "G4", "d": 0.5}, {"n": "D#4", "d": 1.5},
+        {"n": "F4", "d": 0.5}, {"n": "F4", "d": 0.5}, {"n": "F4", "d": 0.5}, {"n": "D4", "d": 1.5},
+    ]),
+    ("Ode to Joy", 1824, [
+        {"n": "E4", "d": 1}, {"n": "E4", "d": 1}, {"n": "F4", "d": 1}, {"n": "G4", "d": 1},
+        {"n": "G4", "d": 1}, {"n": "F4", "d": 1}, {"n": "E4", "d": 1}, {"n": "D4", "d": 1},
+        {"n": "C4", "d": 1}, {"n": "C4", "d": 1}, {"n": "D4", "d": 1}, {"n": "E4", "d": 1},
+        {"n": "E4", "d": 1.5}, {"n": "D4", "d": 0.5}, {"n": "D4", "d": 2},
+    ]),
+    ("Für Elise", 1810, [
+        {"n": "E5", "d": 0.5}, {"n": "D#5", "d": 0.5}, {"n": "E5", "d": 0.5}, {"n": "D#5", "d": 0.5},
+        {"n": "E5", "d": 0.5}, {"n": "B4", "d": 0.5}, {"n": "D5", "d": 0.5}, {"n": "C5", "d": 0.5},
+        {"n": "A4", "d": 1.5},
+    ]),
+    ("Jingle Bells", 1857, [
+        {"n": "E4", "d": 1}, {"n": "E4", "d": 1}, {"n": "E4", "d": 2},
+        {"n": "E4", "d": 1}, {"n": "E4", "d": 1}, {"n": "E4", "d": 2},
+        {"n": "E4", "d": 1}, {"n": "G4", "d": 1}, {"n": "C4", "d": 1.5}, {"n": "D4", "d": 0.5}, {"n": "E4", "d": 3},
+    ]),
+    ("Happy Birthday to You", 1893, [
+        {"n": "G4", "d": 0.75}, {"n": "G4", "d": 0.25}, {"n": "A4", "d": 1}, {"n": "G4", "d": 1},
+        {"n": "C5", "d": 1}, {"n": "B4", "d": 2},
+    ]),
+]
+
+
 def build_facts() -> list[dict]:
     out = []
     for subject, category, text, year, pop in _FACTS:
@@ -77,6 +110,19 @@ def build_facts() -> list[dict]:
                 year=year,
                 popularity=float(pop),
                 source_url=f"https://en.wikipedia.org/wiki/{subject.replace(' ', '_')}",
+            )
+        )
+    for subject, year, melody in _MELODIES:
+        out.append(
+            make_fact(
+                source="curated",
+                category="music",
+                subject=subject,
+                fact_text="Listen closely — in what year was this melody first heard?",
+                year=year,
+                popularity=85.0,
+                source_url=f"https://en.wikipedia.org/wiki/{subject.replace(' ', '_')}",
+                meta={"melody": melody},
             )
         )
     return out

@@ -198,7 +198,7 @@ export default function MapGame({
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <h1 className="display text-4xl sm:text-5xl">The Map</h1>
+        <h1 className="display text-4xl sm:text-5xl">Atlas Obscura</h1>
         <div className="text-right">
           <div className="microlabel">
             round {i + 1}/{rounds.length} · score

@@ -265,6 +265,12 @@ def main() -> None:
         check("seed bank has year_guess fuel for THE CLOCK", len(yg) >= 6, f"{len(yg)} found")
         check("year_guess prompts don't leak the year",
               all(str(q.get("year")) not in q["prompt"] for q in yg))
+        # THE CLOCK's audio rounds must play offline: melody facts (no audio files)
+        # carry a synthesizable note list + a year to guess.
+        au = [q for q in bank if q["qtype"] == "audio_guess"]
+        check("seed bank has offline audio rounds for THE CLOCK", len(au) >= 3, f"{len(au)} found")
+        check("audio rounds carry an offline melody + year",
+              all(isinstance(q.get("melody"), list) and q["melody"] and isinstance(q.get("year"), int) for q in au))
         # THE THREAD's master theme must be deducible, not handed over: no chain
         # answer may equal the theme it belongs to.
         for q in (q for q in bank if q["qtype"] == "thread"):

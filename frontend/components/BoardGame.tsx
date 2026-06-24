@@ -185,7 +185,7 @@ export default function BoardGame({
 
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="display text-4xl sm:text-5xl">The Board</h1>
+          <h1 className="display text-4xl sm:text-5xl">Codex</h1>
           {practiceMode && clues && clues.length > 0 && (
             <button
               onClick={newPracticeBoard}
