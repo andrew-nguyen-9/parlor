@@ -169,28 +169,42 @@ type").
 - **Done-when**: ✅ design recorded · new Séance playable · `seance.test.ts`
   (uniqueness / determinism / minimality / weekday scaling) + build green.
 
-## 2.10 — The Ladder (FULL REDO)
+## 2.10 — The Ladder (FULL REDO) — ✅ CHOSEN DESIGN
 
-> **Brainstorm first.** Record the chosen design here before building.
+> Built as **Climb of the Initiate**. Brainstorm folded all three sketched
+> directions (constraint grid / illusion sequence / paradox door) into one
+> path-dependent ladder rather than picking one.
 
 - **Why redo**: v1 "closest-match by magnitude/region" overlaps Streak/Connections.
-- **v2 direction**: **math + logic** puzzles with **Dr-Strange / Loki / trickster,
-  illusion** framing and **Queens-style** (LinkedIn) constraint solving — twists and
-  misdirection you must reason through.
-- **Brainstorm directions**:
-  - *Constraint grid* (Queens-like): place items on a grid under rules derived from
-    trivia facts (one per row/region/era), deduced not guessed.
-  - *Illusion sequences*: a number/logic sequence where the "obvious" next step is a
-    trap; the trickster hides the real rule.
-  - *Paradox doors*: pick the door whose statement is logically consistent given
-    trivia-sourced premises.
-- **Constraints**: deterministic daily; uniquely solvable by logic; offline;
-  shareable; a11y.
-- **Character tie-in**: the Trickster / Illusionist of the Order.
-- **Data/forge**: likely numeric/relational facts as puzzle premises; possibly a new
-  `qtype`. Folds in **Connections** constraint logic.
-- **Done-when**: chosen design recorded; new logic/math Ladder playable; build +
-  tests green.
+- **Concept**: a 4–7 **rung** ascent (by weekday) built by a Trickster. Each rung
+  is one of three uniquely-solvable mechanisms, threaded by a **Global Constraint
+  Memory** "resonance" value carried up the staircase (later rungs' parameters
+  derive from earlier solutions → genuinely cumulative). Validation is **immediate
+  on Lock** (resolving the spec's own §2-vs-§4 contradiction — a wrong lock
+  collapses the board with a compounding **+90s / +180s** cascade; zero collapses
+  = **Perfect Ascent**).
+- **Rung mechanisms** (`frontend/lib/ladder.ts`, pure + tested):
+  - **grid** — LinkedIn-**Queens**: one sigil per row/col/colour-region, none
+    touching (incl. diagonally). Real backtracking solver; regions grown by
+    multi-source flood; true cells revealed until uniquely solvable.
+  - **sequence** — true generator vs. the "obvious" linear decoy (the illusion);
+    parameter tuned by resonance.
+  - **door** — pick the only assertion about the resonance that holds.
+  - **Tricksters** (Loki / Dr Chen / Silas Crowe / Astrid Moon / Prof Marlow,
+    `ladderFlavor.ts`) skin each rung as a modifier archetype. Folds **Connections**
+    grouping into the grid/region logic.
+- **Determinism & archive** (mirrors 2.9): `scripts/generate-ladder.ts` (cron,
+  write role) pre-computes today + 14 days into the Neon **`ladder_puzzles`**
+  archive. Frontend only **reads** (`getLadderPuzzle`, read-only); no row / no DB
+  → dark state, **no seed fallback**. `/ladder?date=YYYY-MM-DD` = archive-play.
+- **UX**: vertical staircase, one rung at a time, rung pips, chrono timer, carried
+  resonance token, Collapse shake on a wrong Lock, emoji share + localStorage best
+  ascent. **a11y**: ARIA grids, native-button keyboard play, reduced-motion freezes
+  the collapse shake.
+- **Character tie-in**: the Trickster / Illusionist of the Order (Loki hosts).
+- **Done-when**: ✅ design recorded · new logic/math Ladder playable · `ladder.test.ts`
+  (determinism / Queens uniqueness / option & door validity / resonance threading /
+  weekday scaling) + build green.
 
 ## 2.11 — The Mystery (CROWN JEWEL)
 

@@ -6,6 +6,7 @@ import seed from "../public/seed-questions.json";
 import { getDb } from "./db";
 import type { Category, Question, QType } from "./types";
 import type { SeancePuzzle } from "./seance";
+import type { LadderPuzzle } from "./ladder";
 
 const SEED_BANK = (seed as { questions: Question[] }).questions;
 
@@ -45,6 +46,25 @@ export async function getSeancePuzzle(date?: string): Promise<SeancePuzzle | nul
     if (rows.length > 0) return rows[0].payload as SeancePuzzle;
   } catch {
     // db hiccup → dark state, never throw (and never fall back to a fake puzzle)
+  }
+  return null;
+}
+
+/**
+ * CLIMB OF THE INITIATE — fetch one day's pre-generated ladder. Same archive
+ * contract as the Séance: read-only, NO seed fallback (absent row / no DB ⇒ the
+ * room is dark). `date` (YYYY-MM-DD) enables archive-play; defaults to today.
+ */
+export async function getLadderPuzzle(date?: string): Promise<LadderPuzzle | null> {
+  const sql = getDb();
+  if (!sql) return null;
+  const day = date ?? new Date().toISOString().slice(0, 10);
+  try {
+    const rows = await sql`
+      select payload from ladder_puzzles where play_date = ${day} limit 1`;
+    if (rows.length > 0) return rows[0].payload as LadderPuzzle;
+  } catch {
+    // db hiccup → dark state, never throw, never fabricate a puzzle
   }
   return null;
 }
