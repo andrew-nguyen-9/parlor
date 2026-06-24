@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cinzel } from "next/font/google";
 import GoldSheen from "@/components/GoldSheen";
+import SiteFooter from "@/components/SiteFooter";
 import { GAME_ROOMS, SITE_URL } from "@/lib/rooms";
 import "./globals.css";
 
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <GoldSheen />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );
