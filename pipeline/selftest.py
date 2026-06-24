@@ -83,10 +83,12 @@ def synthetic_facts() -> list[dict]:
     # via a keyword in the prose ('voyage') and (b) chain by last-letter→first-
     # letter (Oceanus→Seafarer→Rudder→Reef→Frigate→Estuary), so forge_thread can
     # build a clean themed chain offline.
+    # source must NOT be the broad 'wikipedia' sweep — forge_thread's notability
+    # gate bars that source from chains (obscure stubs make unguessable themes).
     chain_subjects = ["Oceanus", "Seafarer", "Rudder", "Reef", "Frigate", "Estuary"]
     for j, subj in enumerate(chain_subjects):
         facts.append(make_fact(
-            source="wikipedia", category="geography", subject=subj,
+            source="curated", category="geography", subject=subj,
             fact_text=f"A landmark from the great voyage, known to every sailor who set sail.",
             popularity=20.0 + j, source_url="https://example.com",
         ))
@@ -255,6 +257,21 @@ def main() -> None:
                 break
         else:
             check("seed bank question shapes all valid", True)
+
+        # ── offline playability gates (Clock 2.4 / Thread 2.8) ────────────────
+        # THE CLOCK needs dated facts offline; the broad scrapers produce none
+        # (year is null), so the curated baseline must keep year_guess fuel here.
+        yg = [q for q in bank if q["qtype"] == "year_guess"]
+        check("seed bank has year_guess fuel for THE CLOCK", len(yg) >= 6, f"{len(yg)} found")
+        check("year_guess prompts don't leak the year",
+              all(str(q.get("year")) not in q["prompt"] for q in yg))
+        # THE THREAD's master theme must be deducible, not handed over: no chain
+        # answer may equal the theme it belongs to.
+        for q in (q for q in bank if q["qtype"] == "thread"):
+            theme = (q.get("theme") or "").lower()
+            answers = [lk["answer"].lower() for lk in (q.get("chain") or [])]
+            check("thread answers don't leak the theme", theme and theme not in answers,
+                  f"{q.get('theme')} ∈ {[lk['answer'] for lk in q.get('chain') or []]}")
 
         # ── difficulty calibration gate ──────────────────────────────────────
         # New/sourced questions must spread across tiers, not pile onto one

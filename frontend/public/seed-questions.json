@@ -2447,44 +2447,185 @@
    "source_url": "https://www.openstreetmap.org/relation/1473947"
   },
   {
+   "qtype": "year_guess",
+   "category": "history",
+   "difficulty": 2,
+   "prompt": "The first sustained, controlled powered aeroplane flight was made at Kitty Hawk.",
+   "correct": "1903",
+   "year": 1903,
+   "source_url": "https://en.wikipedia.org/wiki/Wright_Flyer"
+  },
+  {
+   "qtype": "year_guess",
+   "category": "wildcard",
+   "difficulty": 1,
+   "prompt": "This telescope was carried into orbit by a Space Shuttle and still images deep space.",
+   "correct": "1990",
+   "year": 1990,
+   "source_url": "https://en.wikipedia.org/wiki/Hubble"
+  },
+  {
+   "qtype": "year_guess",
+   "category": "history",
+   "difficulty": 2,
+   "prompt": "Launched, it was the first artificial satellite to orbit the Earth.",
+   "correct": "1957",
+   "year": 1957,
+   "source_url": "https://en.wikipedia.org/wiki/Sputnik"
+  },
+  {
+   "qtype": "year_guess",
+   "category": "wildcard",
+   "difficulty": 1,
+   "prompt": "Tim Berners-Lee released this hyperlinked information system to the public.",
+   "correct": "1991",
+   "year": 1991,
+   "source_url": "https://en.wikipedia.org/wiki/World_Wide_Web"
+  },
+  {
+   "qtype": "year_guess",
+   "category": "geography",
+   "difficulty": 5,
+   "prompt": "This wrought-iron tower in Paris was completed for a World's Fair.",
+   "correct": "1889",
+   "year": 1889,
+   "source_url": "https://en.wikipedia.org/wiki/Eiffel_Tower"
+  },
+  {
+   "qtype": "year_guess",
+   "category": "history",
+   "difficulty": 1,
+   "prompt": "This astronaut became the first person to walk on the Moon.",
+   "correct": "1969",
+   "year": 1969,
+   "source_url": "https://en.wikipedia.org/wiki/Neil_Armstrong"
+  },
+  {
+   "qtype": "year_guess",
+   "category": "wildcard",
+   "difficulty": 1,
+   "prompt": "Alexander Fleming discovered this first true antibiotic.",
+   "correct": "1928",
+   "year": 1928,
+   "source_url": "https://en.wikipedia.org/wiki/Penicillin"
+  },
+  {
+   "qtype": "year_guess",
+   "category": "history",
+   "difficulty": 1,
+   "prompt": "On its maiden voyage, this ocean liner sank after striking an iceberg.",
+   "correct": "1912",
+   "year": 1912,
+   "source_url": "https://en.wikipedia.org/wiki/Titanic"
+  },
+  {
+   "qtype": "year_guess",
+   "category": "screen",
+   "difficulty": 1,
+   "prompt": "Apple unveiled this touchscreen smartphone, reshaping the industry.",
+   "correct": "2007",
+   "year": 2007,
+   "source_url": "https://en.wikipedia.org/wiki/iPhone"
+  },
+  {
+   "qtype": "year_guess",
+   "category": "history",
+   "difficulty": 2,
+   "prompt": "This boy pharaoh's nearly intact tomb was discovered.",
+   "correct": "1922",
+   "year": 1922,
+   "source_url": "https://en.wikipedia.org/wiki/Tutankhamun"
+  },
+  {
+   "qtype": "year_guess",
+   "category": "history",
+   "difficulty": 1,
+   "prompt": "This barrier dividing a German city was opened and torn down.",
+   "correct": "1989",
+   "year": 1989,
+   "source_url": "https://en.wikipedia.org/wiki/Berlin_Wall"
+  },
+  {
    "qtype": "thread",
    "category": "wildcard",
-   "difficulty": 5,
+   "difficulty": 1,
    "prompt": "What is the thread that ties them all together?",
-   "correct": "The Voyage",
-   "source_url": "https://en.wikipedia.org/wiki/1989_Speedway_Under-21_World_Championship",
+   "correct": "The Cosmos",
+   "source_url": "https://en.wikipedia.org/wiki/Saturn",
    "chain": [
     {
-     "prompt": "The 1989 Individual this subject Junior this subject was the 13th edition of this subject motorcycle this subject-21 Championships..",
-     "answer": "1989 Speedway Under-21 World Championship",
-     "link": "Ties to The Voyage. Its last letter passes the thread to \u201cP\u2026\u201d."
+     "prompt": "This ringed planet is the sixth from the Sun and the second-largest in the Solar System.",
+     "answer": "Saturn",
+     "link": "Ties to The Cosmos. Its last letter passes the thread to \u201cN\u2026\u201d."
     },
     {
-     "prompt": "This subject [p\u0254\u02c8r\u0254sw\u0268] is a village in the administrative district of Gmina Choroszcz, within Bia\u0142ystok County, Podlaskie Voivodeship, in north-eastern Poland..",
-     "answer": "Poros\u0142y",
-     "link": "Ties to The Voyage. Its last letter passes the thread to \u201cY\u2026\u201d."
+     "prompt": "This astronaut became the first person to walk on the Moon in 1969.",
+     "answer": "Neil Armstrong",
+     "link": "Ties to The Cosmos. Its last letter passes the thread to \u201cG\u2026\u201d."
     },
     {
-     "prompt": "This subject comprises a group of parallel, linear wetlands, with a collective this subject of 59\u00a0km2, on the Swan Coastal Plain of south-west Western Australia between the cities of Mandurah and Bunbury.",
-     "answer": "Yalgorup Important Bird Area",
-     "link": "Ties to The Voyage. Its last letter passes the thread to \u201cA\u2026\u201d."
+     "prompt": "This Italian astronomer improved the telescope and discovered the four largest moons of Jupiter.",
+     "answer": "Galileo Galilei",
+     "link": "Ties to The Cosmos. Its last letter passes the thread to \u201cI\u2026\u201d."
     },
     {
-     "prompt": "The 2020 this subject was this subject match of the 2019\u201320 this subject, the 29th season of this subject League's main club football tournament organised by UAFA, and the 2nd season since it was renamed from this subject Championship to this subject.",
-     "answer": "2020 Arab Club Champions Cup final",
-     "link": "Ties to The Voyage. Its last letter passes the thread to \u201cL\u2026\u201d."
+     "prompt": "The most volcanically active body known, this moon orbits Jupiter.",
+     "answer": "Io",
+     "link": "Ties to The Cosmos. Its last letter passes the thread to \u201cO\u2026\u201d."
     },
     {
-     "prompt": "L'this subject is a municipality in the comarca of Alt Empord\u00e0, Girona, Catalonia, Spain, on the coastline of the Costa Brava..",
-     "answer": "L'Armentera",
-     "link": "Ties to The Voyage. The final stitch \u2014 now name the thread."
+     "prompt": "This constellation of bright stars, including Betelgeuse and Rigel, depicts a hunter.",
+     "answer": "Orion",
+     "link": "Ties to The Cosmos. The final stitch \u2014 now name the thread."
     }
    ],
-   "theme": "The Voyage",
+   "theme": "The Cosmos",
+   "theme_choices": [
+    "Egypt",
+    "The Cosmos",
+    "Film Noir",
+    "The Deep Sea"
+   ]
+  },
+  {
+   "qtype": "thread",
+   "category": "geography",
+   "difficulty": 5,
+   "prompt": "What is the thread that ties them all together?",
+   "correct": "Egypt",
+   "source_url": "https://en.wikipedia.org/wiki/Giza",
+   "chain": [
+    {
+     "prompt": "This plateau outside Cairo is the site of the Great Pyramid.",
+     "answer": "Giza",
+     "link": "Ties to Egypt. Its last letter passes the thread to \u201cA\u2026\u201d."
+    },
+    {
+     "prompt": "This jackal-headed Egyptian god watched over mummification and the dead.",
+     "answer": "Anubis",
+     "link": "Ties to Egypt. Its last letter passes the thread to \u201cS\u2026\u201d."
+    },
+    {
+     "prompt": "Stretching across North Africa beside the Nile, it is the largest hot desert on Earth.",
+     "answer": "Sahara",
+     "link": "Ties to Egypt. Its last letter passes the thread to \u201cA\u2026\u201d."
+    },
+    {
+     "prompt": "This pharaoh tried to refocus Egyptian worship on the sun disk Aten.",
+     "answer": "Akhenaten",
+     "link": "Ties to Egypt. Its last letter passes the thread to \u201cN\u2026\u201d."
+    },
+    {
+     "prompt": "The pyramids of Giza rise beside this great river, the lifeblood of ancient Egypt.",
+     "answer": "Nile",
+     "link": "Ties to Egypt. The final stitch \u2014 now name the thread."
+    }
+   ],
+   "theme": "Egypt",
    "theme_choices": [
     "The Voyage",
-    "The Carnival",
     "Egypt",
+    "The Deep Sea",
     "The Cosmos"
    ]
   }

@@ -228,6 +228,9 @@ def forge_clues(facts: list[dict]) -> list[dict]:
                 "correct": subject,
                 "image_url": f.get("image_url"),
                 "source_url": f.get("source_url"),
+                # carried for THE THREAD's notability gate; ignored by the DB
+                # upsert (not a question column) and dropped from the seed export.
+                "source": f.get("source"),
                 # THE BOARD theme tags (meta-only; not a stored column — the
                 # frontend derives the day's theme, this just lets a DB consumer
                 # group by it). See BOARD_THEME_KEYWORDS / lib/themes.ts.
@@ -396,9 +399,21 @@ def forge_thread(clues: list[dict], rng: random.Random) -> list[dict]:
     """
     by_theme: dict[str, list[dict]] = {}
     for q in clues:
+        # Notability gate: chains must read as recognizable, so the broad
+        # random-article Wikipedia sweep (obscure SSSIs, minor houses) is barred
+        # from threads — only structured/curated sources seed a chain a player
+        # can actually name.
+        # ponytail: source allowlist by exclusion; if the wikipedia ingest ever
+        #   pulls notable articles, swap this for a per-fact notability flag.
+        if q.get("source") == "wikipedia":
+            continue
         for t in (q.get("meta") or {}).get("board_themes", []):
-            if t in THREAD_THEME_NAMES:  # skip 'library' — not a master theme
-                by_theme.setdefault(t, []).append(q)
+            if t not in THREAD_THEME_NAMES:  # skip 'library' — not a master theme
+                continue
+            # never let an answer give away the theme (e.g. "Egypt" in the Egypt thread)
+            if THREAD_THEME_NAMES[t].lower() in q["correct"].lower():
+                continue
+            by_theme.setdefault(t, []).append(q)
 
     out = []
     for theme, pool in by_theme.items():
