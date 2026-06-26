@@ -1,5 +1,10 @@
 # PARLOR v3 — Ideas
 
+> **Superseded for shipping by [`ROADMAP.md`](ROADMAP.md)** (brainstormed
+> 2026-06-26). This file remains the menu; the roadmap is what v3 actually
+> builds. See also [`GAMES.md`](GAMES.md), [`PIPELINE.md`](PIPELINE.md),
+> [`PLATFORM.md`](PLATFORM.md), [`PHASE_PROMPTS.md`](PHASE_PROMPTS.md).
+
 Direction ideas for the era after `v2.0.0`. This is a **menu, not a plan** — raw
 material for a future brainstorm/roadmap, deliberately wider than what will ship.
 Grounded in the v2 codebase as it actually stands (see `docs/v2/` for the v2
