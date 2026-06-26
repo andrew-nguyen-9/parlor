@@ -13,7 +13,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: [wikipedia, wikipedia_pkg, deezer, sleeper, espn, tmdb, restcountries, opentdb, curated, manual]
+              values: [wikipedia, wikipedia_pkg, wikidata, dbpedia, deezer, sleeper, espn, tmdb, restcountries, opentdb, jservice, quizapi, curated, manual]
       - name: category
         tests:
           - not_null
