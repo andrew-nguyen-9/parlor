@@ -141,6 +141,38 @@ provenance (`source_url`) on every fact.
 `selftest.py`. **END STATE:** no music clue shows the answer in its image; ≥2 new
 music qtypes forged + tested; seed bank regenerated.
 
+### Root cause + fix (landed)
+
+**The leak.** `music_ingest.py` attached the **album cover** (`cover_xl`,
+`…/images/cover/…`) as `image_url` on the album-year fact. Covers render the
+artist/album **name as text**, so when `forge_clues` reused that fact (THE BOARD:
+answer = the masked subject), the answer sat in plain view in the image — and 100
+committed `deezer.jsonl` rows carried cover URLs, so a re-ingest alone wasn't enough.
+
+**Two-part fix:**
+1. **Forge-time sanitizer** — `_strip_leaky_music_art` (called at the top of
+   `forge_all`) nulls `image_url` on `category=="music"` facts whose URL contains
+   `/images/cover/`, keeping `/images/artist/` portraits (faces, no title text).
+   This sanitizes the **existing** bronze at forge time, so the seed bank is clean
+   without a live re-ingest.
+2. **Clean source** — the album-year fact now uses the artist portrait `pic`, not
+   the cover, so new bronze carries no cover URLs.
+
+**Music depth (4 new keyless recipes, all reusing existing renderers — no frontend
+change):** record **label**, **featured artist** (parsed from `feat.` track titles),
+and **genre** emit `meta.answer_field` facts that `forge_multiple_choice` consumes;
+**BPM** emits `numeric_unit="BPM"` facts that `forge_higher_lower` consumes
+(`bpm>0` guard — Deezer's bpm is often unset). One `/album/{id}` + one `/track/{id}`
+call per chart artist; every fact keeps `source_url`.
+
+**Guards (`selftest.py`):** per-field forge asserts (label/genre/featured MC + BPM
+HL), a forge-level leak guard (no music question carries `/images/cover/` art) and a
+not-over-stripped guard (portraits survive), plus a seed-bank leak guard.
+
+**Outcome:** live Deezer ingest (zero-auth) + `export_seed.py --from-bronze`. Music
+questions in the seed bank **150 → 256** (MC 18 → 45; BPM higher_lower added);
+**0** music images carry cover art (246 portraits); full `selftest` green.
+
 ---
 
 # New sources & quality (Wave D)
