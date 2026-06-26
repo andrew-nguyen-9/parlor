@@ -246,6 +246,39 @@ def main() -> None:
         check("compaction keeps original timestamp for unchanged facts",
               row_a["_ingested_at"] == "t1")
 
+    # ── bronze→staging source contract (§3.11) ───────────────────────────────
+    # The dbt accepted_values test on stg_facts.source is a hand-kept allow-list
+    # that gates the whole publish. When a new ingest writes a source the list
+    # doesn't know, the nightly dies at the dbt step — and Séance/Ladder, which
+    # are server-generated with no seed fallback, go dark. Catch that drift here,
+    # offline and before commit, against the same allow-list dbt enforces.
+    import yaml
+
+    from common import RAW_DIR
+    schema = yaml.safe_load(
+        (REPO_ROOT / "transform" / "models" / "staging" / "schema.yml").read_text()
+    )
+    accepted: set[str] = set()
+    for m in schema["models"]:
+        for col in m.get("columns", []) if m["name"] == "stg_facts" else []:
+            if col["name"] != "source":
+                continue
+            for t in col.get("tests", []):
+                if isinstance(t, dict) and "accepted_values" in t:
+                    accepted = {str(v).lower() for v in t["accepted_values"]["values"]}
+    bronze_sources: set[str] = set()
+    for f in RAW_DIR.glob("*.jsonl"):
+        for line in f.read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            s = json.loads(line).get("source")
+            if s is not None:
+                bronze_sources.add(str(s).lower())
+    unknown = bronze_sources - accepted
+    check("bronze sources all in dbt accepted_values (else transform gates publish)",
+          not unknown, f"unlisted sources: {sorted(unknown)}")
+
     if args.core_only:
         if FAILURES:
             print(f"\n{len(FAILURES)} failure(s)")
