@@ -4,11 +4,19 @@ import Link from "next/link";
 import { useMemo } from "react";
 import {
   CATEGORIES,
+  CATEGORY_GLYPH,
   CATEGORY_HEX,
   CATEGORY_LABEL,
   type Category,
 } from "@/lib/types";
 import { weakestCategory } from "@/lib/weakspot";
+import {
+  COLLECTION,
+  collection,
+  collectionProgress,
+  monthGrid,
+  nextToCollect,
+} from "@/lib/collection";
 import {
   ACHIEVEMENTS,
   ROOMS,
@@ -20,19 +28,10 @@ import {
   type Room,
 } from "@/lib/profile";
 
-const ROOM_LABEL: Record<Room, string> = {
-  board: "Codex",
-  clock: "Chronos",
-  wedges: "Fractures",
-  streak: "Ignite",
-  map: "Atlas Obscura",
-  daily: "The Gauntlet",
-  jukebox: "The Jukebox",
-  gallery: "The Gallery",
-  blitz: "The Blitz",
-  connections: "The Connections",
-  mystery: "Sanctum Mysterii",
-};
+// room display names — single source is the collection catalog
+const ROOM_LABEL = Object.fromEntries(
+  COLLECTION.map((c) => [c.room, c.label]),
+) as Record<Room, string>;
 
 /** last 12 weeks of play-activity, GitHub-style. */
 function Heatmap({ days }: { days: string[] }) {
@@ -63,6 +62,35 @@ function Heatmap({ days }: { days: string[] }) {
   );
 }
 
+/** This month's completed-days grid — Sun-first, today ringed. */
+function Calendar({ weeks }: { weeks: ReturnType<typeof monthGrid> }) {
+  const dow = ["S", "M", "T", "W", "T", "F", "S"];
+  return (
+    <div className="grid grid-cols-7 gap-1.5">
+      {dow.map((d, i) => (
+        <span key={i} className="microlabel text-center text-muted">
+          {d}
+        </span>
+      ))}
+      {weeks.flat().map((c) => (
+        <div
+          key={c.iso}
+          title={c.inMonth ? c.iso : undefined}
+          className={`flex aspect-square items-center justify-center rounded-md text-[11px] tabular ${
+            c.today ? "ring-2 ring-wildcard" : ""
+          } ${c.inMonth ? (c.played ? "font-black" : "text-muted") : "opacity-0"}`}
+          style={{
+            background: c.inMonth ? (c.played ? "#b07aff" : "#1c1c2e") : "transparent",
+            color: c.inMonth && c.played ? "#161122" : undefined,
+          }}
+        >
+          {c.inMonth ? c.day : ""}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ProfileDashboard() {
   const { profile } = useProfile();
   const level = levelFromXp(profile.xp);
@@ -70,6 +98,15 @@ export default function ProfileDashboard() {
   const streak = dayStreak(profile.days);
   const totalPlays = Object.values(profile.plays).reduce((s, n) => s + (n ?? 0), 0);
   const weak = weakestCategory(profile.cat);
+  const cards = collection(profile);
+  const prog = collectionProgress(profile);
+  const next = nextToCollect(profile);
+  const weeks = monthGrid(profile.days);
+  const monthName = new Date().toLocaleString("en-US", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 
   return (
     <div>
@@ -103,6 +140,82 @@ export default function ProfileDashboard() {
         <Stat label="games played" value={totalPlays} />
         <Stat label="day streak" value={`${streak}🔥`} />
         <Stat label="badges" value={`${profile.achievements.length}/${ACHIEVEMENTS.length}`} />
+      </div>
+
+      {/* the return loop — a deck to complete + this month's calendar */}
+      <div className="mt-6 rounded-2xl border border-line bg-surface p-6">
+        <div className="flex items-end justify-between">
+          <p className="microlabel">the deck</p>
+          <p className="microlabel tabular text-wildcard">
+            {prog.have}/{prog.total} collected
+          </p>
+        </div>
+
+        {/* this month */}
+        <div className="mt-4 rounded-xl border border-line p-4">
+          <p className="microlabel mb-3 text-muted">{monthName}</p>
+          <Calendar weeks={weeks} />
+        </div>
+
+        {/* the cards — collected vs still locked */}
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {cards.map((c) =>
+            c.owned ? (
+              <Link
+                key={c.room}
+                href={c.href}
+                className="rounded-xl border p-3 transition hover:bg-bg"
+                style={{ borderColor: CATEGORY_HEX[c.accent] }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-black">{c.label}</span>
+                  <span className="text-lg" style={{ color: CATEGORY_HEX[c.accent] }}>
+                    {CATEGORY_GLYPH[c.accent]}
+                  </span>
+                </div>
+                <p className="microlabel mt-1 text-muted">
+                  {c.plays} play{c.plays === 1 ? "" : "s"}
+                  {c.best ? ` · best ${c.best.toLocaleString()}` : ""}
+                </p>
+              </Link>
+            ) : (
+              <Link
+                key={c.room}
+                href={c.href}
+                className="rounded-xl border border-line p-3 opacity-50 transition hover:opacity-100"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-black text-muted">{c.label}</span>
+                  <span className="text-lg text-muted">🔒</span>
+                </div>
+                <p className="microlabel mt-1 text-muted">collect →</p>
+              </Link>
+            ),
+          )}
+        </div>
+
+        {/* come-back nudge: the next card to add */}
+        {next ? (
+          <Link
+            href={next.href}
+            className="mt-4 flex items-center justify-between rounded-xl border p-4 transition hover:bg-bg"
+            style={{ borderColor: CATEGORY_HEX[next.accent] }}
+          >
+            <span>
+              <span className="microlabel" style={{ color: CATEGORY_HEX[next.accent] }}>
+                next card
+              </span>
+              <span className="ml-2 text-sm font-black">{next.label}</span>
+            </span>
+            <span style={{ color: CATEGORY_HEX[next.accent] }}>
+              {CATEGORY_GLYPH[next.accent]} →
+            </span>
+          </Link>
+        ) : (
+          <p className="mt-4 text-center text-sm font-black text-wildcard">
+            Full deck — every room collected ♦♥♣♠
+          </p>
+        )}
       </div>
 
       {/* activity heatmap */}
