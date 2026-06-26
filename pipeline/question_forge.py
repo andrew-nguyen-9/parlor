@@ -42,6 +42,7 @@ from common import (
     upsert_daily_set,
     upsert_questions,
 )
+from distractor_quality import closest
 
 MIN_HL_GAP_RATIO = 0.25  # higher/lower pairs must differ by ≥25% — never a coin flip
 MIN_SEANCE_CLUES = 3     # minimum facts per subject to forge a séance question
@@ -193,7 +194,11 @@ def forge_multiple_choice(facts: list[dict], rng: random.Random) -> list[dict]:
             continue
         for f in rows:
             answer = f["meta"]["answer"]
-            distractors = rng.sample([a for a in answers if a != answer], 3)
+            # §3.12: sample distractors *close* to the answer (same era/magnitude/
+            # shape), not just any sibling, so the right option doesn't stand out.
+            distractors = closest(answer, [a for a in answers if a != answer], 3, rng)
+            if distractors is None:
+                continue
             prompt = f["fact_text"].replace(answer, "_____")
             if "_____" not in prompt:
                 continue
@@ -280,27 +285,14 @@ def _clue_distractors(
     deduped and excluding anything that collapses onto the answer. Same-category
     keeps them similar in kind (a constellation sits next to constellations, not a
     rapper) — the old board built choices from every category, so the right answer
-    stuck out. Returns None when the category can't field 3 distinct alternatives;
-    the board then falls back to its client-side picker."""
-    seen = {subject.strip().lower()}
-    candidates: list[str] = []
-    for s in pool.get(category, []):
-        k = s.strip().lower()
-        if k in seen:
-            continue
-        seen.add(k)
-        candidates.append(s)
-    if len(candidates) < 3:
+    stuck out. §3.12 tightens it further via `closest`: a year draws nearby years,
+    a number draws the same order of magnitude, a name draws like-shaped names —
+    so no option is the trivially separable odd-one-out. Returns None when the
+    category can't field 3 distinct alternatives; the board then falls back to its
+    client-side picker."""
+    distractors = closest(subject, pool.get(category, []), 3, rng)
+    if distractors is None:
         return None
-    # Tighten similarity: prefer same-category subjects of a like *shape* —
-    # close in word count and length — so a one-word name draws other one-word
-    # names, not "Arkansas Highway 183". Sample from the closest slice (not the
-    # single nearest) to keep variety. Pure entity-type matching would need
-    # typed facts; this shape heuristic gets most of the way for free.
-    words, length = len(subject.split()), len(subject)
-    candidates.sort(key=lambda s: (abs(len(s.split()) - words), abs(len(s) - length)))
-    near = candidates[: max(3, min(len(candidates), 12))]
-    distractors = rng.sample(near, 3)
     choices = [*distractors, subject]
     rng.shuffle(choices)
     return choices

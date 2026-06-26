@@ -177,6 +177,35 @@ def main() -> None:
           bool(trivia_mc) and set(trivia_mc[0]["choices"]) ==
           {"Inception", "Tenet", "Interstellar", "Memento"})
 
+    # ── §3.12 distractor closeness ───────────────────────────────────────────
+    # Distractors must sit *close* to the answer (same era/magnitude/shape) so the
+    # right option isn't guessable by being the odd one out. The closeness
+    # heuristic lives in distractor_quality; assert it (a) catches obvious
+    # outliers, (b) repairs a mixed pool, and (c) the forge emits no separable set.
+    import random as _random
+
+    from distractor_quality import closest as _closest
+    from distractor_quality import separable_reason
+    check("gate flags a type outlier (year among names)",
+          separable_reason(["Paris", "London", "Berlin", "1999"], "1999") is not None)
+    check("gate flags a magnitude outlier (7-fig among single digits)",
+          separable_reason(["1500000", "12", "9", "11"], "1500000") is not None)
+    check("gate passes a tight same-magnitude set",
+          separable_reason(["1500000", "1200000", "900000", "1100000"], "1500000") is None)
+    _d = _closest("1500000", ["1200000", "900000", "1100000", "5", "12", "9"], 3, _random.Random(1))
+    check("closest repairs a mixed-magnitude pool",
+          _d is not None and separable_reason([*_d, "1500000"], "1500000") is None, f"{_d}")
+    # every distractor set the forge SYNTHESISES (clue + meta-answer MC; not the
+    # hand-authored trivia set) must be non-separable.
+    synth = [q for q in qs
+             if q["qtype"] in ("multiple_choice", "clue")
+             and isinstance(q.get("choices"), list) and len(q["choices"]) == 4
+             and q["correct"] != "Inception"]
+    sep = [(q["correct"], separable_reason(q["choices"], q["correct"])) for q in synth]
+    sep = [s for s in sep if s[1]]
+    check("forge synthesises no trivially-separable distractor sets",
+          not sep, f"{len(sep)}/{len(synth)} separable e.g. {sep[:2]}")
+
     for q in qs:
         if q["qtype"] == "seance":
             clues = q.get("clues") or []
@@ -356,6 +385,20 @@ def main() -> None:
         )
         check("≥3 categories have a board-ready difficulty spread",
               cats_with_board_spread >= 3, f"{cats_with_board_spread} categories")
+
+        # ── §3.12 distractor closeness (regression tripwire) ──────────────────
+        # Across the whole bank, trivially-separable MC/clue sets must stay rare.
+        # The forge synthesises zero (asserted above on live output); the residual
+        # here is third-party trivia whose hand-authored answer happens to read as
+        # a number/year ("2002" the song, "+44" the band) — not a synthesis fault.
+        # A spike means our distractor logic regressed.
+        from distractor_quality import separable_reason as _sep
+        mc = [q for q in bank if q["qtype"] in ("multiple_choice", "clue")
+              and isinstance(q.get("choices"), list) and len(q["choices"]) == 4]
+        seps = [q for q in mc if _sep(q["choices"], q["correct"])]
+        share = len(seps) / len(mc) if mc else 0.0
+        check("seed-bank trivially-separable distractor share ≤ 3%",
+              share <= 0.03, f"{len(seps)}/{len(mc)} ({share:.1%})")
     else:
         check("seed bank exists", False, str(seed_path))
 
