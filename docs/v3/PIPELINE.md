@@ -16,9 +16,9 @@ offline gate — run it before committing.
 **Symptom:** the nightly fails at the **dbt transform step**. `transform/` is the
 DuckDB+dbt project: bronze JSONL → `stg_facts` → marts (`mart_question_bank`,
 `mart_category_stats`), with schema tests gating publish. A failure here gates the
-whole publish. Séance and Ladder are **server-generated and Neon-archived with no
-seed fallback** (by design), so when publish is gated they get no data and the
-rooms go dark.
+whole publish. (See the **DAG note** below — the original "Séance + Ladder go
+dark" framing turned out not to match the workflow wiring; the real victim is the
+seed-bank refresh.)
 
 **Approach — `superpowers:systematic-debugging` FIRST, do not guess:**
 1. Reproduce: from inside `transform/`, run `dbt build --profiles-dir .`. Capture
@@ -35,8 +35,61 @@ rooms go dark.
 change. **END STATE:** `dbt build` green locally; `selftest` green; root cause +
 fix written back into this section; Séance + Ladder get data.
 
-> Fill in the documented root cause here once 3.11 lands. ⟵ (placeholder for the
-> implementing session)
+### Root cause (landed)
+
+**Contract drift in the dbt source allow-list.** The `accepted_values` test on
+`stg_facts.source` (`transform/models/staging/schema.yml`) is a hand-maintained
+allow-list. It was written in the first build and never updated as new ingests
+landed:
+
+- `pipeline/curated_ingest.py` writes `source="curated"` (29 rows in committed
+  bronze) — **not** in the list.
+- `pipeline/wiki_pkg_ingest.py` writes `source="wikipedia_pkg"` (run nightly) —
+  also not in the list.
+
+`curated` rows in `data/raw/curated.jsonl` therefore fail the test. dbt's
+`build` runs tests *between* layers, so a failed staging test **SKIPs** both
+marts (`mart_question_bank`, `mart_category_stats`) — they never materialize.
+Reproduce: `cd transform && dbt build --profiles-dir .` → `FAIL 1
+accepted_values_stg_facts_source…`, then `SKIP` ×8.
+
+### Fix (landed)
+
+1. **`transform/models/staging/schema.yml`** — added `wikipedia_pkg` and
+   `curated` to the `source` allow-list (the two real, registered ingests it was
+   missing). `dbt build` → `PASS=16`, marts materialize 1733 facts across all 6
+   categories.
+2. **Guard — `pipeline/selftest.py`** (`"bronze sources all in dbt
+   accepted_values"`): reads the same allow-list out of `schema.yml` and asserts
+   every `source` present in `data/raw/*.jsonl` is in it. Runs in both `selftest`
+   and `selftest --core-only`, so adding an ingest with a new source literal now
+   **fails the offline gate before commit** instead of dying in the nightly's dbt
+   step. Verified: dropping `curated` from the list flips the check to `✗ …
+   unlisted sources: ['curated']`, exit 1.
+
+**Why a guard, not just a fix:** the allow-list will drift again the next time
+someone adds an ingest. The guard ties bronze → the dbt contract at the offline
+gate everyone runs before committing, so the break surfaces loudly and early.
+
+### DAG note (correction to the symptom framing)
+
+The premise that "the transform failure takes **Séance + Ladder** dark" does
+**not** hold against the current `etl_daily.yml` wiring, and this is worth a look:
+
+- The `puzzles` job (which generates Séance + Ladder) is `needs: ratecap` —
+  **independent of `transform`/`publish`**. A red transform job does not stop it.
+- `lib/seance.ts` / `lib/ladder.ts` generate from flavor packs (`seanceFlavor`,
+  `ladderFlavor`) + the date-seeded RNG and upsert straight to Neon. They read
+  **no** marts, seed bank, or bronze. They only go dark when `DATABASE_URL` is
+  unset (by design — no seed fallback).
+
+**What the transform failure actually gated:** the `publish` job
+(`needs: transform`) — forge questions, refresh `frontend/public/seed-questions.json`,
+commit bronze. So the real victim is the **main six rooms' offline seed bank**
+going stale, plus the whole run going red (the `notify-failure` issue). If the
+intent is for Séance/Ladder to depend on the transform/publish output, that's a
+**v3.0 wiring gap** in `etl_daily.yml` (a shared file, out of this segment's
+scope) — flagged here rather than silently changed.
 
 ---
 
