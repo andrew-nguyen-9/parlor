@@ -36,6 +36,7 @@ def synthetic_facts() -> list[dict]:
             fact_text=f"Artist {i} has {(i + 1) * 1_000_000:,} fans on Deezer.",
             numeric_value=(i + 1) * 1_000_000.0, numeric_unit="Deezer fans",
             popularity=10.0 * i, source_url="https://example.com",
+            image_url="https://cdn-images.dzcdn.net/images/artist/def/1000x1000-000.jpg",
         ))
         facts.append(make_fact(
             source="wikipedia", category="history", subject=f"Event {i}",
@@ -76,6 +77,32 @@ def synthetic_facts() -> list[dict]:
             fact_text=f'Artist {i} released the album "Album {i}" in {1990 + i * 3}.',
             year=1990 + i * 3,
             numeric_value=float(i + 1), numeric_unit="Deezer albums",
+            popularity=10.0 * i, source_url="https://example.com",
+            image_url="https://cdn-images.dzcdn.net/images/cover/abc/1000x1000-000.jpg",
+        ))
+        # §3.13 music depth: label / genre / featured-artist MC + BPM higher_lower
+        facts.append(make_fact(
+            source="deezer", category="music", subject=f"Artist {i}",
+            fact_text=f'Artist {i}\'s album "Album {i}" was released on the label Label {i}.',
+            popularity=10.0 * i, source_url="https://example.com",
+            meta={"answer_field": "label", "answer": f"Label {i}"},
+        ))
+        facts.append(make_fact(
+            source="deezer", category="music", subject=f"Artist {i}",
+            fact_text=f'Artist {i}\'s album "Album {i}" is categorized as Genre {i}.',
+            popularity=10.0 * i, source_url="https://example.com",
+            meta={"answer_field": "genre", "answer": f"Genre {i}"},
+        ))
+        facts.append(make_fact(
+            source="deezer", category="music", subject=f"Artist {i}",
+            fact_text=f'On the track "Song {i}", Artist {i} features Guest {i}.',
+            popularity=10.0 * i, source_url="https://example.com",
+            meta={"answer_field": "featured_artist", "answer": f"Guest {i}"},
+        ))
+        facts.append(make_fact(
+            source="deezer", category="music", subject=f"Track {i}",
+            fact_text=f'"Track {i}" by Artist {i} has a tempo of {80 + i * 50} BPM.',
+            numeric_value=float(80 + i * 50), numeric_unit="BPM",
             popularity=10.0 * i, source_url="https://example.com",
         ))
 
@@ -131,6 +158,18 @@ def main() -> None:
     check("forge produces seance", "seance" in types)
     check("forge produces ladder", "ladder" in types)
     check("forge produces thread", "thread" in types)
+
+    mc_corrects = {q["correct"] for q in qs if q["qtype"] == "multiple_choice"}
+    check("forge produces music label MC", any(c.startswith("Label ") for c in mc_corrects))
+    check("forge produces music genre MC", any(c.startswith("Genre ") for c in mc_corrects))
+    check("forge produces music featured-artist MC", any(c.startswith("Guest ") for c in mc_corrects))
+    check("forge produces music BPM higher_lower",
+          any(q["qtype"] == "higher_lower" and q.get("unit") == "BPM" for q in qs))
+    music_qs = [q for q in qs if q.get("category") == "music"]
+    check("forge strips album-cover art from music questions (leak)",
+          all("/images/cover/" not in (q.get("image_url") or "") for q in music_qs))
+    check("forge preserves music artist portraits (not over-stripped)",
+          any("/images/artist/" in (q.get("image_url") or "") for q in music_qs))
 
     for q in qs:
         if q["qtype"] == "where":
@@ -352,6 +391,9 @@ def main() -> None:
         check("seed bank has year_guess fuel for THE CLOCK", len(yg) >= 6, f"{len(yg)} found")
         check("year_guess prompts don't leak the year",
               all(str(q.get("year")) not in q["prompt"] for q in yg))
+        music_bank = [q for q in bank if q.get("category") == "music"]
+        check("seed bank: no music image leaks the answer (no album covers)",
+              all("/images/cover/" not in (q.get("image_url") or "") for q in music_bank))
         # THE CLOCK's audio rounds must play offline: melody facts (no audio files)
         # carry a synthesizable note list + a year to guess.
         au = [q for q in bank if q["qtype"] == "audio_guess"]

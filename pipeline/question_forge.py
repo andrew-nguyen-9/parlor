@@ -718,9 +718,20 @@ def load_facts_from_db(conn) -> list[dict]:
     return fetch_all(conn, "select * from facts", limit=20000)
 
 
+def _strip_leaky_music_art(facts: list[dict]) -> None:
+    """Album covers embed the artist/album name as text; in a music clue
+    (answer = the masked subject) that hands the answer over in the image.
+    Strip cover art from music facts — keep /images/artist/ portraits (faces,
+    no title text, a fair visual clue)."""
+    for f in facts:
+        if f.get("category") == "music" and "/images/cover/" in (f.get("image_url") or ""):
+            f["image_url"] = None
+
+
 def forge_all(facts: list[dict], seed: int = 0) -> list[dict]:
     rng = random.Random(seed)
     assign_difficulty(facts)
+    _strip_leaky_music_art(facts)  # §3.13: album covers leak the answer in clue mode
     clues = forge_clues(facts, rng)
     questions = (
         forge_year_guess(facts)
