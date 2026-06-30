@@ -14,6 +14,8 @@ import {
   buildDailyWedges,
   shatterMirror,
   ghostQuip,
+  wedgeShareText,
+  wedgeShareLine,
   GHOST_NAME,
   type MirrorShard,
 } from "@/lib/wedges";
@@ -175,6 +177,7 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
   const [secondsLeft, setSecondsLeft] = useState(QUESTION_SECONDS);
   const [points, setPoints] = useState(0);
   const [flash, setFlash] = useState<number | null>(null); // last speed-bonus "+N"
+  const [reinforce, setReinforce] = useState<string | null>(null); // just-won answer, shown on the NEXT prompt
   const [copied, setCopied] = useState(false);
   const [toasts, setToasts] = useState<Achievement[]>([]);
   const [burst, setBurst] = useState(0);
@@ -183,18 +186,22 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
 
   const queue = phase === "main" ? mainQueue : daily.bonus;
 
-  // Advance past any locked-out categories (their wedge is complete).
-  const visibleIdx = useMemo(() => {
-    let i = idx;
-    while (i < queue.length && locked.has(queue[i].category)) i++;
-    return i;
-  }, [idx, queue, locked]);
-
-  const q = queue[visibleIdx];
+  const q = queue[idx];
   const order = useMemo(() => (q ? dailyChoices(q) : []), [q]);
   const wonRing = earned.size === 6;
-  const mainDone = phase === "main" && (wonRing || visibleIdx >= queue.length);
-  const over = phase === "bonus" && visibleIdx >= queue.length;
+  const mainDone = phase === "main" && (wonRing || idx >= queue.length);
+  const over = phase === "bonus" && idx >= queue.length;
+
+  // Skip forward past any locked-out categories (their wedge is already
+  // filled). Only called when actually ADVANCING (next/toBonus) — never
+  // reactively while the current question is still on screen, otherwise
+  // answering correctly would swap the question out from under the player
+  // before they click "next".
+  function skipLocked(start: number, list: Question[], lockedSet: Set<Category>): number {
+    let i = start;
+    while (i < list.length && lockedSet.has(list[i].category)) i++;
+    return i;
+  }
 
   function start() {
     setStarted(true);
@@ -207,6 +214,7 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
     setSecondsLeft(QUESTION_SECONDS);
     setPoints(0);
     setFlash(null);
+    setReinforce(null);
     setCopied(false);
     recorded.current = false;
     stats.current = {};
@@ -244,18 +252,22 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
   }
 
   function next() {
+    // Reinforcement: carry the just-won answer onto the NEXT prompt so the
+    // player sees what they correctly answered again before moving on.
+    setReinforce(picked === q.correct ? q.correct : null);
     setPicked(null);
     setQuip(null);
     setFlash(null);
     setSecondsLeft(QUESTION_SECONDS);
-    setIdx(visibleIdx + 1);
+    setIdx(skipLocked(idx + 1, queue, locked));
   }
 
   function toBonus() {
     setPhase("bonus");
-    setIdx(0);
+    setIdx(skipLocked(0, daily.bonus, locked));
     setPicked(null);
     setQuip(null);
+    setReinforce(null);
     setSecondsLeft(QUESTION_SECONDS);
   }
 
@@ -379,12 +391,21 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
       columns: 3,
     };
     const card = buildShare(result);
+    // The actual wedge colours + how many questions the run took — the room's
+    // own social artifact (sits alongside, not instead of, the generic §3.0
+    // hit/miss tiers `card` already carries for the OG link).
+    const questionsTaken = Object.values(stats.current).reduce(
+      (n, s) => n + (s?.total ?? 0),
+      0,
+    );
+    const wedgeLine = wedgeShareLine(earned);
+    const shareText = `${card.title}\n${wedgeShareText(earned, questionsTaken)}\n${card.url}`;
     const shareResult = () => {
       try {
         if (typeof navigator !== "undefined" && navigator.share) {
-          void navigator.share({ text: card.text, url: card.url }).catch(() => {});
+          void navigator.share({ text: shareText, url: card.url }).catch(() => {});
         } else {
-          void navigator.clipboard?.writeText(card.text);
+          void navigator.clipboard?.writeText(shareText);
         }
       } catch {
         /* clipboard/share unavailable — silently no-op */
@@ -406,11 +427,12 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
             <span className="tabular-nums font-black text-sports">{points}</span> points
           </p>
 
-          {/* The filled-ring emoji — the §3.3 social artifact. */}
+          {/* The filled-ring emoji — wedge colours, ❌ for any missing. */}
           <p className="microlabel mt-6 text-muted">your ring</p>
           <div className={`mt-1 ${styles.ringShare}`} aria-label="filled wedge ring">
-            {card.grid}
+            {wedgeLine}
           </div>
+          <p className="microlabel mt-1 text-muted">{questionsTaken} questions</p>
 
           <LeaderboardPanel room="wedges" score={earned.size} accent="sports" />
           <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -500,6 +522,12 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
               }}
             />
           </div>
+
+          {reinforce && (
+            <p className="microlabel mt-3 text-sports">
+              ✓ correct: <span className="font-bold">{reinforce}</span>
+            </p>
+          )}
 
           <p className="display mt-4 text-2xl leading-tight sm:text-3xl">{q.prompt}</p>
 

@@ -4,6 +4,8 @@ import {
   buildDailyWedges,
   shatterMirror,
   ghostQuip,
+  wedgeShareLine,
+  wedgeShareText,
   PER_CATEGORY_MAIN,
   GHOST_QUIPS,
 } from "./wedges";
@@ -100,5 +102,28 @@ describe("ghostQuip", () => {
   it("is deterministic for the same salt and stays in range", () => {
     expect(ghostQuip("miss-x")).toBe(ghostQuip("miss-x"));
     expect(GHOST_QUIPS).toContain(ghostQuip("anything"));
+  });
+});
+
+describe("wedgeShareLine / wedgeShareText", () => {
+  it("shows a colour square per earned category, in CATEGORIES order", () => {
+    const earned = new Set<(typeof CATEGORIES)[number]>(CATEGORIES);
+    const line = wedgeShareLine(earned);
+    expect([...line]).toHaveLength(6);
+    expect(line).not.toContain("❌");
+  });
+
+  it("shows ❌ for each missing wedge on an incomplete game", () => {
+    const earned = new Set<(typeof CATEGORIES)[number]>(["sports", "music"]);
+    const line = wedgeShareLine(earned);
+    expect([...line].filter((c) => c === "❌")).toHaveLength(4);
+    expect([...line].filter((c) => c !== "❌")).toHaveLength(2);
+  });
+
+  it("appends the question count, singular vs plural", () => {
+    const earned = new Set<(typeof CATEGORIES)[number]>(CATEGORIES);
+    expect(wedgeShareText(earned, 1)).toContain("in 1 question");
+    expect(wedgeShareText(earned, 9)).toContain("in 9 questions");
+    expect(wedgeShareText(earned, 9)).toContain(wedgeShareLine(earned));
   });
 });

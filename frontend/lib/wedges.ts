@@ -127,3 +127,31 @@ export const GHOST_QUIPS: string[] = [
 export function ghostQuip(salt: string, n = GHOST_QUIPS.length): string {
   return GHOST_QUIPS[hashKey(salt) % n];
 }
+
+// ── Wedge-colour share string (E5) ───────────────────────────────────────
+// Six colour squares (one per category) for the post-game clipboard share —
+// distinct from lib/share.ts's generic hit/near/miss/blank tiers; these are
+// THIS room's actual wedge colours. Earned wedges show their square, missing
+// ones show ❌ so an incomplete ring is legible at a glance.
+// ponytail: hue-approximated to the 6 standard colour-square emoji (no
+// teal/pink square exists) — CATEGORY_GLYPH stays the exact colour-blind-safe
+// channel; this is just the social artifact.
+const WEDGE_SQUARE: Record<Category, string> = {
+  history: "🟧",
+  music: "🟥",
+  sports: "🟩",
+  screen: "🟦",
+  geography: "🟪",
+  wildcard: "🟫",
+};
+
+/** One square per category: earned shows its colour, missing shows ❌. */
+export function wedgeShareLine(earned: Set<Category>): string {
+  return CATEGORIES.map((c) => (earned.has(c) ? WEDGE_SQUARE[c] : "❌")).join("");
+}
+
+/** Full clipboard line: wedge colours + how many questions the run took. */
+export function wedgeShareText(earned: Set<Category>, questionsTaken: number): string {
+  const noun = questionsTaken === 1 ? "question" : "questions";
+  return `${wedgeShareLine(earned)} in ${questionsTaken} ${noun}`;
+}
