@@ -50,7 +50,11 @@ the Phase-2 Delta Lake mirror lab (never the serving path).
 - daily/shared game setups must use `lib/rng.ts` date-seeded PRNG (SSR/client
   consistency); free shuffles only inside click handlers or effects
 - THE MAP renders offline via `world-atlas` land polygons (`components/WorldMap.tsx`)
-  — never add tile-server dependencies
+  — the polygon fallback is REQUIRED and must always work with zero network. The
+  ONE sanctioned exception: an env-gated hybrid raster basemap (keyless, no API
+  key, no tile-pyramid dependency) that upgrades the view when reachable and
+  silently falls back to the polygons when not. Don't add anything else
+  tile-server-shaped; the offline path must never depend on it.
 - category colors come from `lib/types.ts` `CATEGORY_HEX` + tailwind safelist
 
 ### Database
