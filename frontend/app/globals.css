@@ -17,8 +17,8 @@
    the media query isn't needed and there's no hydration flash. ── */
 :root {
   color-scheme: dark;
-  --c-bg: 21 4 9;
-  --c-surface: 36 16 26;
+  --c-bg: 33 12 20; /* candlelit maroon — lifted off near-black for legibility */
+  --c-surface: 48 22 34; /* raised panel, kept clearly above the brighter bg */
   --c-line: 74 34 51;
   --c-ink: 240 230 207;
   --c-muted: 154 122 120;
@@ -33,11 +33,23 @@
   --body-grad:
     radial-gradient(120% 80% at 50% -10%, rgba(201, 162, 74, 0.16) 0%, rgba(110, 31, 43, 0.08) 32%, transparent 60%),
     radial-gradient(80% 60% at 50% 110%, rgba(110, 31, 43, 0.14) 0%, transparent 60%);
+  /* THE GOLD SHEET — one viewport-anchored light source. Every gold class clips
+     this same gradient with `background-attachment: fixed`, so all gilt on the
+     page samples one shared coordinate space lit from a single specular spot
+     (top-left), not a per-element / cursor-driven highlight. Static by design.
+     Defined here in :root; light theme inherits it (gold reads on both). */
+  --gold-sheet:
+    radial-gradient(120% 100% at 30% 0%,
+      #fff7d6 0%,
+      #f3da94 13%,
+      #d9b157 36%,
+      #b8862e 68%,
+      #976c27 100%);
 }
 
 [data-theme="light"] {
   color-scheme: light;
-  --c-bg: 237 228 203; /* parchment base */
+  --c-bg: 228 217 183; /* parchment base — slightly deeper for warmth + texture */
   --c-surface: 250 244 227; /* raised panel (lighter than bg) */
   --c-line: 206 184 142; /* brass hairline */
   --c-ink: 58 26 32; /* deep burgundy-brown text */
@@ -123,6 +135,19 @@ body {
   background-size: 3px 3px;
 }
 
+/* Light theme reuses the same grain layer but as PARCHMENT FIBRE: two offset
+   brass-toned mottle grids (instead of white dots) read as a subtle aged-paper
+   texture over the parchment base. Stronger opacity than the dark grain since
+   it must show on a light ground. */
+[data-theme="light"] .noise::after {
+  opacity: 0.45;
+  background-image:
+    radial-gradient(circle, rgba(120, 92, 50, 0.13) 0.5px, transparent 0.6px),
+    radial-gradient(circle, rgba(150, 120, 70, 0.09) 0.5px, transparent 0.6px);
+  background-size: 3px 3px, 7px 7px;
+  background-position: 0 0, 2px 3px;
+}
+
 /* ── Drifting glow blob ── */
 .glow {
   position: fixed;
@@ -167,19 +192,17 @@ body {
   75%       { opacity: 0.88; }
 }
 
-/* ── Gold shimmer sweep ── */
-@keyframes gold-shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
-}
-
+/* Gold text clips THE GOLD SHEET (see --gold-sheet) — one static light source,
+   identical plumbing to `.gilt`. No per-element shimmer: that gave every title
+   its own moving highlight, the multi-source look §3.2 removes. */
 .gold-text {
-  background: linear-gradient(90deg, #b8902e 0%, #d4af37 40%, #f5c518 60%, #b8902e 100%);
-  background-size: 200% auto;
+  background: var(--gold-sheet);
+  background-attachment: fixed;
+  background-size: cover;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gold-shimmer 3s linear infinite;
+  color: transparent;
 }
 
 /* ── Brass nameplate rule ── */
@@ -263,7 +286,6 @@ body {
   .animate-marquee,
   .animate-flicker,
   .page-enter,
-  .gold-text,
   .clock-pendulum,
   .eye-glow {
     animation: none !important;
@@ -533,15 +555,11 @@ body {
 .deck-corner-bl { left: 0.55rem; bottom: 0.5rem; }
 .deck-corner-br { right: 0.55rem; bottom: 0.5rem; }
 
-/* Pip field + the Ace emblem share one cursor-driven gold (set in --mx/--my). */
+/* Pip field + the Ace emblem clip THE GOLD SHEET — same single light source as
+   all other gilt (was a per-card cursor-driven radial). */
 .deck-pip,
 .deck-ace-emblem {
-  background-image: radial-gradient(
-    circle at var(--mx, 50%) var(--my, 32%),
-    #fff3c4 0%,
-    #c08c2a 12%,
-    #8a5a1e 45%
-  );
+  background: var(--gold-sheet);
   background-attachment: fixed;
   background-size: cover;
   -webkit-background-clip: text;
@@ -723,18 +741,14 @@ body {
 
 /* ── Secret-order flourishes ─────────────────────────────────────────────── */
 
-/* Gilt foil: one global, cursor-driven light source — no static sheen. A single
-   viewport-pinned radial (--mx/--my from GoldSheen) is bright gold at the pointer
-   and falls to antique gold away from it, so all gilt on the page is lit from the
-   same moving point. Defaults centre it (SSR / reduced-motion / no pointer). */
+/* Gilt foil: THE canonical gold render. Clips THE GOLD SHEET (--gold-sheet) with
+   `background-attachment: fixed`, so every `.gilt` element on the page reveals
+   the same viewport-anchored gold gradient lit from one static specular point —
+   one window, not a per-element or cursor-driven highlight (§3.2). This is the
+   design-system contract: rooms render gold by adding `class="gilt"` to text/
+   icon-font elements; no other gold treatment. */
 .gilt {
-  background-image: radial-gradient(
-    circle at var(--mx, 50%) var(--my, 32%),
-    #fff6d2 0%,
-    #f0d488 12%,
-    #d4ac52 30%,
-    #b8862e 70%
-  );
+  background: var(--gold-sheet);
   background-attachment: fixed;
   background-size: cover;
   -webkit-background-clip: text;

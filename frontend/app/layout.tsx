@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Cinzel } from "next/font/google";
-import GoldSheen from "@/components/GoldSheen";
 import SiteFooter from "@/components/SiteFooter";
 import ThemeToggle from "@/components/ThemeToggle";
 import { GAME_ROOMS, SITE_URL } from "@/lib/rooms";
@@ -98,7 +97,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <GoldSheen />
         {children}
         <SiteFooter />
         <ThemeToggle />

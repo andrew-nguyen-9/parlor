@@ -36,7 +36,6 @@ const config: Config = {
         marquee: "marquee 40s linear infinite",
         drift: "drift 18s ease-in-out infinite alternate",
         flicker: "flicker 4s ease-in-out infinite",
-        "gold-shimmer": "gold-shimmer 3s linear infinite",
       },
       keyframes: {
         marquee: {
@@ -53,10 +52,6 @@ const config: Config = {
           "50%": { opacity: "0.75" },
           "52%": { opacity: "0.95" },
           "75%": { opacity: "0.88" },
-        },
-        "gold-shimmer": {
-          "0%": { backgroundPosition: "-200% center" },
-          "100%": { backgroundPosition: "200% center" },
         },
       },
     },
