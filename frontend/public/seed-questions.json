@@ -4104,7 +4104,7 @@
     "Addis Ababa",
     "Bras\u00edlia",
     "New Delhi",
-    "Jakarta"
+    "Beijing"
    ],
    "image_url": "https://flagcdn.com/in.svg",
    "source_url": "https://www.openstreetmap.org/relation/304716",
@@ -4140,8 +4140,8 @@
    "prompt": "_____ is the capital of Brazil.",
    "correct": "Bras\u00edlia",
    "choices": [
-    "Cairo",
     "Dhaka",
+    "Cairo",
     "Beijing",
     "Bras\u00edlia"
    ],
@@ -4178,9 +4178,9 @@
    "prompt": "Malik Willis (QB, MIA) played college football at _____.",
    "correct": "Liberty",
    "choices": [
-    "Houston",
+    "Alabama",
     "Baylor",
-    "Florida",
+    "Georgia",
     "Liberty"
    ],
    "source_url": "https://sleeper.com",
@@ -4196,10 +4196,10 @@
    "prompt": "Zavion Thomas (WR, CHI) played college football at _____.",
    "correct": "LSU",
    "choices": [
-    "Alabama",
+    "Clemson",
     "LSU",
-    "Georgia",
-    "Baylor"
+    "Liberty",
+    "Oregon"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -4215,9 +4215,9 @@
    "correct": "Iowa",
    "choices": [
     "Iowa",
-    "USC",
+    "SMU",
     "LSU",
-    "Oregon"
+    "Baylor"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -4232,10 +4232,10 @@
    "prompt": "Taylen Green (QB, CLE) played college football at _____.",
    "correct": "Arkansas",
    "choices": [
+    "Houston",
     "Clemson",
-    "Alabama",
     "Arkansas",
-    "Kentucky"
+    "Virginia"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -4250,10 +4250,10 @@
    "prompt": "Jam Miller (RB, NE) played college football at _____.",
    "correct": "Alabama",
    "choices": [
-    "Oregon",
-    "Liberty",
+    "Kentucky",
+    "Florida",
     "Alabama",
-    "Florida"
+    "Houston"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -4468,7 +4468,7 @@
    "choices": [
     "Sandwitches",
     "Jive/Legacy",
-    "Roc-A-Fella",
+    "CM/Republic",
     "Cinderella"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/0ace078361ed30f1179e3fdba22932af/1000x1000-000000-80-0-0.jpg",
@@ -4487,7 +4487,7 @@
    "choices": [
     "Warner Records",
     "Rancho Humilde",
-    "Parlophone UK",
+    "XL Recordings",
     "Lynyrd Skynyrd"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/171bf1e106d8a72d999146f6ace4ecc3/1000x1000-000000-80-0-0.jpg",
@@ -4505,8 +4505,8 @@
    "correct": "American",
    "choices": [
     "Columbia",
+    "Whethan",
     "Reprise",
-    "Polydor",
     "American"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/67460cdb0b52bfde1b807650958058d6/1000x1000-000000-80-0-0.jpg",
@@ -4525,8 +4525,8 @@
    "choices": [
     "Eminem Catalog PS",
     "Twenty One Pilots",
-    "Walt Disney Records",
-    "Megan Thee Stallion"
+    "Megan Thee Stallion",
+    "Walt Disney Records"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/0f30bbd33a680030054af004d698d6ac/1000x1000-000000-80-0-0.jpg",
    "source_url": "https://www.deezer.com/album/125748",
@@ -4562,7 +4562,7 @@
    "correct": "Jakarta",
    "choices": [
     "Tokyo",
-    "Dhaka",
+    "Cairo",
     "Jakarta",
     "Abuja"
    ],
@@ -4581,8 +4581,8 @@
    "correct": "Manila",
    "choices": [
     "Islamabad",
-    "Beijing",
-    "Jakarta",
+    "Cairo",
+    "Tokyo",
     "Manila"
    ],
    "image_url": "https://flagcdn.com/ph.svg",
@@ -4599,7 +4599,7 @@
    "prompt": "_____ is the capital of Bangladesh.",
    "correct": "Dhaka",
    "choices": [
-    "Beijing",
+    "Jakarta",
     "Manila",
     "Tokyo",
     "Dhaka"
@@ -4638,7 +4638,7 @@
    "choices": [
     "Arkansas",
     "Notre Dame",
-    "Georgia",
+    "Liberty",
     "Michigan State"
    ],
    "source_url": "https://sleeper.com",
@@ -4654,10 +4654,10 @@
    "prompt": "Greg Dulcich (TE, MIA) played college football at _____.",
    "correct": "UCLA",
    "choices": [
-    "Oregon",
+    "Baylor",
     "UCLA",
     "LSU",
-    "USC"
+    "SMU"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -4672,9 +4672,9 @@
    "prompt": "Seth McGowan (RB, IND) played college football at _____.",
    "correct": "Kentucky",
    "choices": [
-    "Georgia",
+    "Liberty",
     "Florida",
-    "Clemson",
+    "Houston",
     "Kentucky"
    ],
    "source_url": "https://sleeper.com",
@@ -4709,9 +4709,9 @@
    "correct": "Virginia",
    "choices": [
     "Virginia",
-    "Clemson",
+    "Houston",
     "Arkansas",
-    "Liberty"
+    "Georgia"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -4927,7 +4927,7 @@
    "correct": "Mercury Records/Republic Owned",
    "choices": [
     "Mercury Records/Republic Owned",
-    "Fueled By Ramen/ADA/ATL",
+    "Rimas Entertainment LLC",
     "19-2000 (Soulchild Remix)",
     "Universal Motown Records Group"
    ],
@@ -4965,7 +4965,7 @@
    "correct": "Streamline/Interscope",
    "choices": [
     "Films/Games",
-    "CM/Republic",
+    "Roc-A-Fella",
     "Streamline/Interscope",
     "Sandwitches"
    ],
@@ -4984,7 +4984,7 @@
    "correct": "Polydor Records",
    "choices": [
     "Polydor Records",
-    "Rancho Humilde",
+    "101 Distribution",
     "Prajin Records",
     "Warner Records"
    ],
@@ -5022,9 +5022,9 @@
    "correct": "Beijing",
    "choices": [
     "Beijing",
-    "Bras\u00edlia",
-    "Cairo",
-    "Dhaka"
+    "Manila",
+    "Dhaka",
+    "Cairo"
    ],
    "image_url": "https://flagcdn.com/cn.svg",
    "source_url": "https://www.openstreetmap.org/relation/270056",
@@ -5042,8 +5042,8 @@
    "choices": [
     "Islamabad",
     "Tokyo",
-    "Dhaka",
-    "Beijing"
+    "Cairo",
+    "Jakarta"
    ],
    "image_url": "https://flagcdn.com/jp.svg",
    "source_url": "https://www.openstreetmap.org/relation/382313",
@@ -5059,7 +5059,7 @@
    "prompt": "_____ is the capital of Nigeria.",
    "correct": "Abuja",
    "choices": [
-    "Jakarta",
+    "Beijing",
     "Tokyo",
     "Islamabad",
     "Abuja"
@@ -5096,8 +5096,8 @@
    "prompt": "Ryan Flournoy (WR, DAL) played college football at _____.",
    "correct": "Southeast Missouri State",
    "choices": [
-    "Georgia",
-    "Kentucky",
+    "Liberty",
+    "Virginia",
     "Cincinnati",
     "Southeast Missouri State"
    ],
@@ -5114,10 +5114,10 @@
    "prompt": "Colbie Young (WR, CIN) played college football at _____.",
    "correct": "Georgia",
    "choices": [
-    "Kentucky",
-    "Florida",
+    "Oregon",
+    "Houston",
     "Georgia",
-    "Houston"
+    "Alabama"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -5133,9 +5133,9 @@
    "correct": "Cincinnati",
    "choices": [
     "Cincinnati",
-    "Virginia",
+    "Kentucky",
     "Arkansas",
-    "Clemson"
+    "Houston"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -5150,7 +5150,7 @@
    "prompt": "Caleb Douglas (WR, MIA) played college football at _____.",
    "correct": "Texas Tech",
    "choices": [
-    "Georgia",
+    "Liberty",
     "Texas Tech",
     "Cincinnati",
     "Notre Dame"
@@ -5170,8 +5170,8 @@
    "choices": [
     "Virginia",
     "Houston",
-    "Clemson",
-    "Georgia"
+    "Florida",
+    "Liberty"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -5388,10 +5388,10 @@
    "prompt": "_____'s album \u201cPull up Late\u201d was released on the label _____.",
    "correct": "Megan Thee Stallion",
    "choices": [
-    "Def Jam Recordings",
+    "2Pac Greatest Hits",
     "Megan Thee Stallion",
     "My Chemical Romance",
-    "2Pac Greatest Hits"
+    "Def Jam Recordings"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/55a20b812fec74d0a72d870545fc2123/1000x1000-000000-80-0-0.jpg",
    "source_url": "https://www.deezer.com/album/44678391",
@@ -5427,7 +5427,7 @@
    "correct": "Def Jam Recordings",
    "choices": [
     "Tyler, The Creator",
-    "Walt Disney Records",
+    "Megan Thee Stallion",
     "Def Jam Recordings",
     "Twenty One Pilots"
    ],
@@ -5445,8 +5445,8 @@
    "prompt": "Peso Pluma's album \u201cSpiral\u201d was released on the label _____.",
    "correct": "Prajin Records",
    "choices": [
-    "Parlophone UK",
     "XL Recordings",
+    "Polydor Records",
     "Prajin Records",
     "Warner Records"
    ],
@@ -5485,7 +5485,7 @@
    "choices": [
     "Manila",
     "Islamabad",
-    "Beijing",
+    "Jakarta",
     "Tokyo"
    ],
    "image_url": "https://flagcdn.com/pk.svg",
@@ -5504,7 +5504,7 @@
    "choices": [
     "Bras\u00edlia",
     "Addis Ababa",
-    "Jakarta",
+    "Beijing",
     "Washington, D.C."
    ],
    "image_url": "https://flagcdn.com/et.svg",
@@ -5521,9 +5521,9 @@
    "prompt": "_____ is the capital of Russia.",
    "correct": "Moscow",
    "choices": [
-    "Abuja",
-    "Cairo",
+    "Beijing",
     "Jakarta",
+    "Tokyo",
     "Moscow"
    ],
    "image_url": "https://flagcdn.com/ru.svg",
@@ -5560,9 +5560,9 @@
    "prompt": "Cade Klubnik (QB, NYJ) played college football at _____.",
    "correct": "Clemson",
    "choices": [
-    "Alabama",
+    "Houston",
     "Florida",
-    "Georgia",
+    "Liberty",
     "Clemson"
    ],
    "source_url": "https://sleeper.com",
@@ -5579,8 +5579,8 @@
    "correct": "Cincinnati",
    "choices": [
     "Cincinnati",
-    "Liberty",
-    "Kentucky",
+    "Georgia",
+    "Virginia",
     "Arkansas"
    ],
    "source_url": "https://sleeper.com",
@@ -5633,10 +5633,10 @@
    "prompt": "Malik Benson (WR, LV) played college football at _____.",
    "correct": "Oregon",
    "choices": [
-    "UCLA",
-    "Alabama",
+    "Kentucky",
+    "Houston",
     "Oregon",
-    "Texas"
+    "Liberty"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -5850,8 +5850,8 @@
    "prompt": "Fall Out Boy's album \u201cEvening Out With Your Girlfriend\u201d was released on the label _____.",
    "correct": "Many Hats Distribution",
    "choices": [
-    "Megan Thee Stallion",
-    "Rimas Entertainment LLC",
+    "Walt Disney Records",
+    "Fueled By Ramen/ADA/ATL",
     "Top Dawg Entertainment",
     "Many Hats Distribution"
    ],
@@ -5982,8 +5982,8 @@
    "prompt": "Deshaun Watson (QB, CLE) played college football at _____.",
    "correct": "Clemson",
    "choices": [
-    "Liberty",
-    "Kentucky",
+    "Georgia",
+    "Oregon",
     "Clemson",
     "Florida"
    ],
@@ -6036,8 +6036,8 @@
    "prompt": "Malik Davis (RB, DAL) played college football at _____.",
    "correct": "Florida",
    "choices": [
-    "Houston",
-    "Kentucky",
+    "Alabama",
+    "Oregon",
     "Virginia",
     "Florida"
    ],
@@ -6054,9 +6054,9 @@
    "prompt": "Matt Hibner (TE, BAL) played college football at _____.",
    "correct": "SMU",
    "choices": [
-    "Baylor",
+    "Oregon",
     "SMU",
-    "Iowa",
+    "UCLA",
     "USC"
    ],
    "source_url": "https://sleeper.com",
@@ -6311,9 +6311,9 @@
    "correct": "Top Dawg Entertainment",
    "choices": [
     "Top Dawg Entertainment",
-    "Rimas Entertainment LLC",
     "Fueled By Ramen/ADA/ATL",
-    "Megan Thee Stallion"
+    "Rimas Entertainment LLC",
+    "Walt Disney Records"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/8ced041da2bed70d5715f0860956169b/1000x1000-000000-80-0-0.jpg",
    "source_url": "https://www.deezer.com/album/7594233",
@@ -6330,7 +6330,7 @@
    "correct": "SAWGOD/Columbia",
    "choices": [
     "Alternative",
-    "Roc-A-Fella",
+    "CM/Republic",
     "$uicideboy$",
     "SAWGOD/Columbia"
    ],
@@ -6385,9 +6385,9 @@
    "prompt": "Michael Trigg (TE, DAL) played college football at _____.",
    "correct": "Baylor",
    "choices": [
-    "Texas",
+    "Liberty",
     "Oregon",
-    "UCLA",
+    "Kentucky",
     "Baylor"
    ],
    "source_url": "https://sleeper.com",
@@ -6440,10 +6440,10 @@
    "prompt": "MarShawn Lloyd (RB, GB) played college football at _____.",
    "correct": "USC",
    "choices": [
-    "Oregon",
+    "Baylor",
     "USC",
     "LSU",
-    "UCLA"
+    "Iowa"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -6679,7 +6679,7 @@
    "choices": [
     "Rap/Hip Hop",
     "Oliver Tree",
-    "Asian Music",
+    "Latin Music",
     "Post Malone"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/bb76c2ee3b068726ab4c37b0aabdb57a/1000x1000-000000-80-0-0.jpg",
@@ -6698,7 +6698,7 @@
    "choices": [
     "Polydor",
     "Shakira",
-    "Reprise",
+    "Whethan",
     "Bassoon"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/fe9eb4463ea87452e84ed97e0c86b878/1000x1000-000000-80-0-0.jpg",
@@ -6718,7 +6718,7 @@
     "Warner Records",
     "Miracle Tones",
     "Rancho Humilde",
-    "Parlophone UK"
+    "XL Recordings"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/4886905210739af3438990897bad3a98/1000x1000-000000-80-0-0.jpg",
    "source_url": "https://www.deezer.com/album/81763",
@@ -6736,7 +6736,7 @@
    "choices": [
     "Twenty One Pilots",
     "Ben (Single Version)",
-    "Megan Thee Stallion",
+    "Walt Disney Records",
     "Tyler, The Creator"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/2e6d4d494a7b7b2c4bea2ccefad368f5/1000x1000-000000-80-0-0.jpg",
@@ -6753,10 +6753,10 @@
    "prompt": "Olivia Rodrigo's album \u201cBizaardvark (Music from the TV Series)\u201d was released on the label _____.",
    "correct": "Walt Disney Records",
    "choices": [
-    "Def Jam Recordings",
+    "2Pac Greatest Hits",
     "Walt Disney Records",
     "Tyler, The Creator",
-    "2Pac Greatest Hits"
+    "Def Jam Recordings"
    ],
    "image_url": "https://cdn-images.dzcdn.net/images/artist/2c9e480317183c037eaebcd7ba96daf4/1000x1000-000000-80-0-0.jpg",
    "source_url": "https://www.deezer.com/album/14230222",
@@ -6844,10 +6844,10 @@
    "prompt": "Isaiah Bond (WR, CLE) played college football at _____.",
    "correct": "Texas",
    "choices": [
-    "Oregon",
     "Baylor",
+    "UCLA",
     "Texas",
-    "Alabama"
+    "Liberty"
    ],
    "source_url": "https://sleeper.com",
    "tags": [
@@ -7431,7 +7431,7 @@
    "correct": "Rap/Hip Hop",
    "choices": [
     "Post Malone",
-    "Asian Music",
+    "Latin Music",
     "The Beatles",
     "Rap/Hip Hop"
    ],
@@ -7449,7 +7449,7 @@
    "prompt": "Michael Jackson's album \u201cBen\u201d was released on the label _____.",
    "correct": "Motown",
    "choices": [
-    "Reprise",
+    "Whethan",
     "Eminem",
     "Motown",
     "Future"
@@ -7469,7 +7469,7 @@
    "correct": "Darkroom",
    "choices": [
     "Rubyworks",
-    "Polydor",
+    "Reprise",
     "Gorillaz",
     "Darkroom"
    ],
@@ -7488,7 +7488,7 @@
    "correct": "BIGHIT MUSIC",
    "choices": [
     "Jingle Bells",
-    "Parlophone UK",
+    "Sleep Token",
     "BIGHIT MUSIC",
     "Taylor Swift"
    ],
@@ -16441,58 +16441,206 @@
   },
   {
    "qtype": "thread",
-   "category": "screen",
+   "category": "wildcard",
    "difficulty": 1,
    "prompt": "What is the thread that ties them all together?",
-   "correct": "The Cosmos",
+   "correct": "Figures",
    "source_url": "https://opentdb.com",
    "chain": [
     {
-     "prompt": "Who portrayed Han Solo in the Star Wars main film series?",
-     "answer": "Harrison Ford",
-     "link": "Ties to The Cosmos. Its last letter passes the thread to \u201cD\u2026\u201d."
+     "prompt": "The character Wario was first introduced in which game of this subject video game franchise?",
+     "answer": "Super Mario Land 2: 6 Golden Coins (1992)",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cS\u2026\u201d."
     },
     {
-     "prompt": "Ringo Starr of The Beatles mainly played what instrument?",
-     "answer": "Drums",
-     "link": "Ties to The Cosmos. Its last letter passes the thread to \u201cS\u2026\u201d."
+     "prompt": "What was the name given to Japanese military dictators who ruled the country through the 12th and 19th Century?",
+     "answer": "Shogun",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cN\u2026\u201d."
     },
     {
-     "prompt": "This ringed planet is the sixth from the Sun and the second-largest in the Solar System.",
-     "answer": "Saturn",
-     "link": "Ties to The Cosmos. Its last letter passes the thread to \u201cN\u2026\u201d."
+     "prompt": "For what reason would a spotted hyena \"laugh\"?",
+     "answer": "Nervousness",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cS\u2026\u201d."
     },
     {
-     "prompt": "This astronaut became the first person to walk on the Moon in 1969.",
-     "answer": "Neil Armstrong",
-     "link": "Ties to The Cosmos. Its last letter passes the thread to \u201cG\u2026\u201d."
+     "prompt": "What is the name of Eragon's dragon in \"Eragon\"?",
+     "answer": "Saphira",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cA\u2026\u201d."
     },
     {
-     "prompt": "This Italian astronomer improved the telescope and discovered the four largest moons of Jupiter.",
-     "answer": "Galileo Galilei",
-     "link": "Ties to The Cosmos. Its last letter passes the thread to \u201cI\u2026\u201d."
+     "prompt": "Which country has the international vehicle registration letter 'A'?",
+     "answer": "Austria",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cA\u2026\u201d."
     },
     {
-     "prompt": "The most volcanically active body known, this moon orbits Jupiter.",
-     "answer": "Io",
-     "link": "Ties to The Cosmos. Its last letter passes the thread to \u201cO\u2026\u201d."
+     "prompt": "This NASA program first landed astronauts on the Moon between 1969 and 1972.",
+     "answer": "Apollo",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cO\u2026\u201d."
     },
     {
-     "prompt": "This constellation of bright stars, including Betelgeuse and Rigel, depicts a hunter.",
-     "answer": "Orion",
-     "link": "Ties to The Cosmos. The final stitch \u2014 now name the thread."
+     "prompt": "What is the SI unit for resistance?",
+     "answer": "Ohms",
+     "link": "The final stitch \u2014 now name the thread."
     }
    ],
-   "theme": "The Cosmos",
+   "theme": "Figures",
    "theme_choices": [
-    "The Deep Sea",
-    "The Voyage",
-    "Film Noir",
-    "The Cosmos"
+    "Teams",
+    "Figures",
+    "Places",
+    "Mountains"
+   ],
+   "tags": [
+    "domain:wildcard",
+    "type:subject"
+   ]
+  },
+  {
+   "qtype": "thread",
+   "category": "geography",
+   "difficulty": 5,
+   "prompt": "What is the thread that ties them all together?",
+   "correct": "Places",
+   "source_url": "https://opentdb.com",
+   "chain": [
+    {
+     "prompt": "What country is not a part of Scandinavia?",
+     "answer": "Finland",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cD\u2026\u201d."
+    },
+    {
+     "prompt": "What is the official language of Bhutan?",
+     "answer": "Dzongkha",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cA\u2026\u201d."
+    },
+    {
+     "prompt": "The mountainous Khyber Pass connects which of the two following countries?",
+     "answer": "Afghanistan and Pakistan",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cN\u2026\u201d."
+    },
+    {
+     "prompt": "The pyramids of Giza rise beside this great river, the lifeblood of ancient Egypt.",
+     "answer": "Nile",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cE\u2026\u201d."
+    },
+    {
+     "prompt": "This wrought-iron this place in Paris was completed in 1889 for a World's Fair.",
+     "answer": "Eiffel Tower",
+     "link": "The final stitch \u2014 now name the thread."
+    }
+   ],
+   "theme": "Places",
+   "theme_choices": [
+    "Titles",
+    "Athletes",
+    "Universities",
+    "Places"
+   ],
+   "tags": [
+    "domain:geography",
+    "type:place"
+   ]
+  },
+  {
+   "qtype": "thread",
+   "category": "screen",
+   "difficulty": 5,
+   "prompt": "What is the thread that ties them all together?",
+   "correct": "Titles",
+   "source_url": "https://opentdb.com",
+   "chain": [
+    {
+     "prompt": "At which university do \"The Big Bang Theory\" characters Mr. Wolowitz and Drs. Cooper, Hofstadter and Koothrappali work?",
+     "answer": "Caltech",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cH\u2026\u201d."
+    },
+    {
+     "prompt": "Who portrayed Han Solo in the Star Wars main film series?",
+     "answer": "Harrison Ford",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cD\u2026\u201d."
+    },
+    {
+     "prompt": "Who was the winner of \"Big Brother\" Season 10?",
+     "answer": "Dan Gheesling",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cG\u2026\u201d."
+    },
+    {
+     "prompt": "Who directed the 1973 film \"American Graffiti\"?",
+     "answer": "George Lucas",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cS\u2026\u201d."
+    },
+    {
+     "prompt": "In which African country was the 2006 film 'Blood Diamond' mostly set in?",
+     "answer": "Sierra Leone",
+     "link": "The final stitch \u2014 now name the thread."
+    }
+   ],
+   "theme": "Titles",
+   "theme_choices": [
+    "Titles",
+    "Teams",
+    "Cities",
+    "Countries"
    ],
    "tags": [
     "domain:screen",
     "type:title"
+   ]
+  },
+  {
+   "qtype": "thread",
+   "category": "music",
+   "difficulty": 3,
+   "prompt": "What is the thread that ties them all together?",
+   "correct": "Artists",
+   "source_url": "https://www.deezer.com/artist/564",
+   "chain": [
+    {
+     "prompt": "This artist released the album \u201cMusic Of The Sun\u201d in 2005.",
+     "answer": "Rihanna",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cA\u2026\u201d."
+    },
+    {
+     "prompt": "This artist has 68 albums on Deezer.",
+     "answer": "Ariana Grande",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cE\u2026\u201d."
+    },
+    {
+     "prompt": "This artist released the album \u201cIf You Have To\u201d in 2021.",
+     "answer": "Ella Langley",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cY\u2026\u201d."
+    },
+    {
+     "prompt": "This artist's album \u201cBefore I Go (Reloaded)\u201d is categorized as Rap/Hip Hop.",
+     "answer": "YoungBoy Never Broke Again",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cN\u2026\u201d."
+    },
+    {
+     "prompt": "This artist's album \u201cHold It Down\u201d is categorized as Alternative.",
+     "answer": "Noah Kahan",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cN\u2026\u201d."
+    },
+    {
+     "prompt": "Who is the primary lyricist for Canadian progressive rock band Rush?",
+     "answer": "Neil Peart",
+     "link": "A stitch in the same weave. Its last letter passes the thread to \u201cT\u2026\u201d."
+    },
+    {
+     "prompt": "This artist released the album \u201cUNDERTALE Soundtrack\u201d in 2015.",
+     "answer": "Toby Fox",
+     "link": "The final stitch \u2014 now name the thread."
+    }
+   ],
+   "theme": "Artists",
+   "theme_choices": [
+    "Figures",
+    "Places",
+    "Artists",
+    "Athletes"
+   ],
+   "tags": [
+    "domain:music",
+    "type:artist"
    ]
   }
  ]
