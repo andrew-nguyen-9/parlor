@@ -36,6 +36,7 @@ FIELDS = [
     "chain",       # thread: [{prompt, answer, link}]
     "theme",       # thread: master theme (final answer)
     "theme_choices",  # thread: final-guess choices (theme included)
+    "tags",        # §6.x: answer domain/type/era tags (text[])
 ]
 
 

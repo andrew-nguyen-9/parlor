@@ -23,6 +23,7 @@ create table if not exists facts (
   source_url    text,                           -- provenance, always kept
   popularity    double precision,               -- 0-100 source signal → difficulty engine
   meta          jsonb default '{}'::jsonb,      -- raw API payload slice
+  tags          text[],                         -- §6.x: domain/type/era tags (reserved; forge tags questions)
   created_at    timestamptz default now(),
   updated_at    timestamptz default now()
 );
@@ -60,6 +61,7 @@ create table if not exists questions (
   chain         jsonb,                          -- thread: [{prompt,answer,link}] last-letter→first-letter
   theme         text,                           -- thread: master theme (the final answer)
   theme_choices jsonb,                          -- thread: ["theme", distractors...] for the final guess
+  tags          text[],                         -- §6.x: answer domain/type/era tags (tag-aware distractors)
   created_at    timestamptz default now()
 );
 
