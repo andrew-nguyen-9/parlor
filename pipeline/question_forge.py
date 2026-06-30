@@ -39,6 +39,7 @@ from common import (
     content_hash,
     fetch_all,
     get_db,
+    normalize_date,
     upsert_daily_set,
     upsert_questions,
 )
@@ -179,9 +180,12 @@ def forge_higher_lower(facts: list[dict], rng: random.Random) -> list[dict]:
     return out
 
 
-def forge_multiple_choice(facts: list[dict], rng: random.Random) -> list[dict]:
+def forge_multiple_choice(facts: list[dict], rng: random.Random,
+                          pools: Pools | None = None) -> list[dict]:
     """Facts tagged with meta.answer_field carry a (question, answer) pair;
-    distractors are sibling answers from the same field + category."""
+    distractors are sibling answers from the same field + category, widened by
+    the typed/name/date pools (§6.2/6.6/6.7) and ranked by tag overlap."""
+    pools = pools or Pools(facts)
     pool: dict[tuple[str, str], list[dict]] = {}
     for f in facts:
         field = (f.get("meta") or {}).get("answer_field")
@@ -195,9 +199,14 @@ def forge_multiple_choice(facts: list[dict], rng: random.Random) -> list[dict]:
             continue
         for f in rows:
             answer = f["meta"]["answer"]
-            # §3.12: sample distractors *close* to the answer (same era/magnitude/
-            # shape), not just any sibling, so the right option doesn't stand out.
-            distractors = closest(answer, [a for a in answers if a != answer], 3, rng)
+            # §3.12/§6.2: distractors must sit *close* to the answer (same era/
+            # magnitude/shape) AND share tags (same Latin-inventor kind), drawn
+            # from the union of siblings + same-type/name/date pools.
+            atype = answer_type(answer, category, field, f.get("source"))
+            atags = answer_tags(f["fact_text"], answer, category, f.get("year"), atype)
+            siblings = [a for a in answers if a != answer]
+            cands = distractor_candidates(answer, atype, siblings, pools, rng)
+            distractors = closest(answer, cands, 3, rng, tag_overlap=_overlap_fn(atags, pools))
             if distractors is None:
                 continue
             prompt = f["fact_text"].replace(answer, "_____")
@@ -280,18 +289,19 @@ def forge_where(facts: list[dict]) -> list[dict]:
 
 
 def _clue_distractors(
-    subject: str, category: str, pool: dict[str, list[str]], rng: random.Random
+    subject: str, category: str, pool: dict[str, list[str]],
+    rng: random.Random, pools: Pools, fact: dict
 ) -> list[str] | None:
     """3 plausible wrong answers for a clue: other subjects from the SAME category,
-    deduped and excluding anything that collapses onto the answer. Same-category
-    keeps them similar in kind (a constellation sits next to constellations, not a
-    rapper) — the old board built choices from every category, so the right answer
-    stuck out. §3.12 tightens it further via `closest`: a year draws nearby years,
-    a number draws the same order of magnitude, a name draws like-shaped names —
-    so no option is the trivially separable odd-one-out. Returns None when the
-    category can't field 3 distinct alternatives; the board then falls back to its
+    widened by the same-TYPE pool (§6.6) and ranked by tag overlap (§6.2), so a
+    constellation sits next to constellations and a Latin inventor next to other
+    Latin inventors. §3.12's `closest` still gates closeness/separability. Returns
+    None when no clean set of 3 can be formed; the board then falls back to its
     client-side picker."""
-    distractors = closest(subject, pool.get(category, []), 3, rng)
+    atype = answer_type(subject, category, source=fact.get("source"))
+    atags = answer_tags(fact.get("fact_text", ""), subject, category, fact.get("year"), atype)
+    cands = distractor_candidates(subject, atype, pool.get(category, []), pools, rng)
+    distractors = closest(subject, cands, 3, rng, tag_overlap=_overlap_fn(atags, pools))
     if distractors is None:
         return None
     choices = [*distractors, subject]
@@ -299,10 +309,12 @@ def _clue_distractors(
     return choices
 
 
-def forge_clues(facts: list[dict], rng: random.Random | None = None) -> list[dict]:
+def forge_clues(facts: list[dict], rng: random.Random | None = None,
+                pools: Pools | None = None) -> list[dict]:
     """Jeopardy-style: the fact sentence becomes the clue, the subject the answer.
     Only facts whose text doesn't leak the subject verbatim qualify."""
     rng = rng or random.Random(0)
+    pools = pools or Pools(facts)
     # per-category subject pool for same-category multiple-choice distractors
     subjects_by_cat: dict[str, list[str]] = {}
     for f in facts:
@@ -316,7 +328,7 @@ def forge_clues(facts: list[dict], rng: random.Random | None = None) -> list[dic
         clue = mask_subject(f["fact_text"], subject, f)
         if clue is None:
             continue
-        choices = _clue_distractors(subject, f["category"], subjects_by_cat, rng)
+        choices = _clue_distractors(subject, f["category"], subjects_by_cat, rng, pools, f)
         out.append(
             {
                 "content_hash": content_hash("clue", f["content_hash"]),
@@ -679,6 +691,171 @@ def mask_subject(text: str, subject: str, fact: dict) -> str | None:
     return masked
 
 
+# ── F2: answer tags + typed/name/date distractor pools (§6.2,6.5,6.6,6.7) ────
+# One tagger + one candidate builder feed ONE ranking (closest, tag-overlap
+# biased). The four "sources" (typed pool, name pool, date pool, category
+# siblings) are just unioned inputs — not four parallel engines.
+
+# Answer-TYPE detection (§6.6). Field/source from the fact win; otherwise a few
+# text keywords; otherwise the category default. Types the data can actually
+# tell apart — the rest fall back to the category class.
+# ponytail: keyword classifier; widen _TYPE_KEYWORDS as new geo/edu sources land.
+_TYPE_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("university", ("university", "college", "institute", "polytechnic")),
+    ("mountain", ("mount ", "mountain", " peak", "massif")),
+    ("river", ("river",)),
+    ("geo-feature", (" lake", "lake ", " sea", "ocean", "gulf of", "bay of",
+                     "strait", "desert", " island", "volcano", "glacier")),
+)
+
+
+def answer_type(answer: str, category: str, field: str | None = None,
+                source: str | None = None) -> str | None:
+    if field in ("capital", "city"):
+        return "city"
+    if field in ("college", "university", "school"):
+        return "university"
+    a = (answer or "").lower()
+    for t, toks in _TYPE_KEYWORDS:
+        if any(tok in a for tok in toks):
+            return t
+    if category == "geography":
+        return "country" if source == "restcountries" else "place"
+    if category == "sports":
+        return "athlete" if source == "sleeper" else "sports-team"
+    return {"music": "artist", "screen": "title",
+            "history": "subject", "wildcard": "subject"}.get(category)
+
+
+def _era_tag(year: int | None) -> str | None:
+    """A decade era tag from any normalized year (§ tag vocabulary)."""
+    if not year or year < 1000:
+        return None
+    return f"era:{year // 10 * 10}s"
+
+
+def answer_tags(prompt: str, answer: str, category: str,
+                year: int | None, atype: str | None) -> list[str]:
+    """Tags an answer carries: domain (category + board themes), type, era.
+    Reuses tag_board_themes (drops the always-true 'library' fallback)."""
+    tags = [f"domain:{category}"]
+    tags += [t for t in tag_board_themes(prompt, answer) if t != "library"]
+    if atype:
+        tags.append(f"type:{atype}")
+    era = _era_tag(year)
+    if era:
+        tags.append(era)
+    return sorted(set(tags))
+
+
+def _name_pools(facts: list[dict]) -> tuple[list[str], list[str]]:
+    """First-name / last-name reference tables (§6.7) from multi-word person-ish
+    subjects, so a first-only or last-only answer can draw same-kind name
+    distractors."""
+    first: list[str] = []
+    last: list[str] = []
+    for f in facts:
+        if f.get("category") not in ("sports", "music", "history", "screen"):
+            continue
+        words = _name_words(f["subject"])
+        if len(words) >= 2:
+            first.append(words[0])
+            last.append(words[-1])
+    return list(dict.fromkeys(first)), list(dict.fromkeys(last))
+
+
+def name_distractors(answer: str, first: list[str], last: list[str]) -> list[str]:
+    """Same-kind name distractors for a single-word (first-only OR last-only)
+    answer. Surnames win the ambiguous case — they're the usual masked answer."""
+    words = _name_words(answer)
+    if len(words) != 1:
+        return []
+    a = words[0]
+    in_first, in_last = a in first, a in last
+    if in_last and not in_first:
+        return [n for n in last if n != a]
+    if in_first and not in_last:
+        return [n for n in first if n != a]
+    return [n for n in last if n != a]
+
+
+def date_distractors(answer: str, n: int, rng: random.Random) -> list[str]:
+    """Plausible same-grammar date distractors (§6.5) for a date answer: perturb
+    the year(s) by ±1..15, keeping the answer's exact grammar. [] if not a date."""
+    norm = normalize_date(answer)
+    if norm is None:
+        return []
+    years = [int(y) for y in re.findall(r"\d{4}", norm)]
+    if not years:
+        return []
+    deltas = [d for d in range(-15, 16) if d != 0]
+    rng.shuffle(deltas)
+    out: list[str] = []
+    seen = {norm}
+    for d in deltas:
+        cand = norm
+        for y in years:
+            cand = re.sub(rf"\b{y}\b", str(y + d), cand, count=1)
+        if cand not in seen:
+            seen.add(cand)
+            out.append(cand)
+        if len(out) >= n:
+            break
+    return out
+
+
+class Pools:
+    """Distractor reference tables built once per forge run (§6.6/6.7): answers
+    grouped by detected type, first/last name pools, and a tag map per candidate
+    string (so tag overlap is a dict lookup, not a recompute)."""
+
+    def __init__(self, facts: list[dict]):
+        self.type_pools: dict[str, list[str]] = {}
+        self.tag_of: dict[str, list[str]] = {}
+        seen: set[tuple[str, str]] = set()
+
+        def add(text: str, answer: str, category: str, year: int | None,
+                field: str | None, source: str | None) -> None:
+            if not answer:
+                return
+            atype = answer_type(answer, category, field, source)
+            self.tag_of.setdefault(answer, answer_tags(text, answer, category, year, atype))
+            if atype and (atype, answer) not in seen:
+                seen.add((atype, answer))
+                self.type_pools.setdefault(atype, []).append(answer)
+
+        for f in facts:
+            cat, src = f["category"], f.get("source")
+            txt, yr = f.get("fact_text", ""), f.get("year")
+            add(txt, f["subject"], cat, yr, None, src)
+            meta = f.get("meta") or {}
+            if meta.get("answer"):
+                add(txt, meta["answer"], cat, yr, meta.get("answer_field"), src)
+
+        self.first_names, self.last_names = _name_pools(facts)
+
+
+def distractor_candidates(answer: str, atype: str | None,
+                          siblings: list[str], pools: Pools,
+                          rng: random.Random) -> list[str]:
+    """Union the four distractor sources for `answer` (§6.2 approach): category
+    siblings ∪ same-type pool ∪ name pool ∪ date pool. Ranking happens in
+    closest() — this only assembles the candidate set."""
+    cands = list(siblings)
+    if atype:
+        cands += pools.type_pools.get(atype, [])
+    cands += name_distractors(answer, pools.first_names, pools.last_names)
+    cands += date_distractors(answer, 8, rng)
+    return cands
+
+
+def _overlap_fn(atags: list[str], pools: Pools):
+    """closest()'s tag_overlap callback: shared-tag count between the answer and
+    a candidate (more shared tags = better distractor)."""
+    aset = set(atags)
+    return lambda c: len(aset & set(pools.tag_of.get(c, [])))
+
+
 # ── daily board (deterministic, shared) ─────────────────────────────────────
 def _clue_quality(q: dict) -> float:
     """§3.18 score forge_all stashed in meta; 0.5 if absent (hand-built rows)."""
@@ -743,12 +920,13 @@ def forge_all(facts: list[dict], seed: int = 0) -> list[dict]:
     rng = random.Random(seed)
     assign_difficulty(facts)
     _strip_leaky_music_art(facts)  # §3.13: album covers leak the answer in clue mode
-    clues = forge_clues(facts, rng)
+    pools = Pools(facts)  # §6.6/6.7: typed + name reference tables, built once
+    clues = forge_clues(facts, rng, pools)
     questions = (
         forge_year_guess(facts)
         + forge_audio(facts)
         + forge_higher_lower(facts, rng)
-        + forge_multiple_choice(facts, rng)
+        + forge_multiple_choice(facts, rng, pools)
         + forge_trivia(facts, rng)
         + clues
         + forge_where(facts)
@@ -759,8 +937,12 @@ def forge_all(facts: list[dict], seed: int = 0) -> list[dict]:
     # §3.18: tag each question with a quality/ambiguity score the board sorts on.
     # Lives in meta (forge-only, not a DB column) — board selection happens here
     # at forge time, so the score never needs to round-trip through Postgres.
+    # §6.x: also tag each question with its answer's domain/type/era tags (a
+    # stored text[] column, exported to the seed bank for tag-aware consumers).
     for q in questions:
         q.setdefault("meta", {})["quality"] = quality_score(q)
+        atype = answer_type(q["correct"], q["category"])
+        q["tags"] = answer_tags(q["prompt"], q["correct"], q["category"], q.get("year"), atype)
     return questions
 
 

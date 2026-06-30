@@ -254,6 +254,84 @@ def main() -> None:
     check("forge synthesises no trivially-separable distractor sets",
           not sep, f"{len(sep)}/{len(synth)} separable e.g. {sep[:2]}")
 
+    # ── F2: answer tags + typed/name/date distractor pools (§6.2,6.5,6.6,6.7) ──
+    import random
+
+    from common import DATE_GRAMMAR, normalize_date
+    from question_forge import (
+        BOARD_THEME_KEYWORDS,
+        Pools,
+        _name_pools,
+        date_distractors,
+        distractor_candidates,
+        name_distractors,
+    )
+    BOARD_KEYS = set(BOARD_THEME_KEYWORDS)
+
+    # 1. every forged question carries domain/type/era tags (a non-empty list).
+    check("every question carries answer tags",
+          all(isinstance(q.get("tags"), list) and q["tags"] for q in qs))
+    check("every question's tags include a domain tag",
+          all(any(t.startswith("domain:") for t in q["tags"]) for q in qs))
+    check("tag vocabulary uses domain/type/era prefixes (+ board themes)",
+          all(t.startswith(("domain:", "type:", "era:")) or t in BOARD_KEYS
+              for q in qs for t in q["tags"]))
+
+    # 2. tag-aware distractors: synthesized clue distractors share ≥1 tag with the
+    # answer (more shared tags rank first — §6.2). Checked against the same tag
+    # map the forge ranked on.
+    _pools = Pools(facts)
+    clue_qs = [q for q in qs if q["qtype"] == "clue" and isinstance(q.get("choices"), list)]
+    shared = [
+        q for q in clue_qs
+        if all(set(_pools.tag_of.get(q["correct"], [])) & set(_pools.tag_of.get(c, []))
+               for c in q["choices"] if c != q["correct"] and c in _pools.tag_of)
+    ]
+    check("clue distractors share ≥1 tag with the answer",
+          clue_qs and len(shared) / len(clue_qs) >= 0.8,
+          f"{len(shared)}/{len(clue_qs)}")
+
+    # 3. typed answer pools (§6.6): capitals pool as 'city', countries as 'country',
+    # and distractor_candidates draws from the same-type pool.
+    check("typed pool groups capitals as city",
+          any(a.startswith("Capital ") for a in _pools.type_pools.get("city", [])))
+    check("typed pool groups countries as country",
+          any(a.startswith("Country ") for a in _pools.type_pools.get("country", [])))
+    _cands = distractor_candidates("Country 0", "country", [], _pools, random.Random(0))
+    check("distractor_candidates draws from the same-type pool",
+          any(c.startswith("Country ") and c != "Country 0" for c in _cands))
+
+    # 4. date standardization (§6.5): the normalizer emits exactly the fixed
+    # grammar, rejects non-dates, and date distractors keep that grammar.
+    _date_cases = ["1990", "1990-1995", "1990-03-05", "06/12/1900",
+                   "March 5, 1990", "March 1990", "Mar 1990", "March 1990 - June 1991"]
+    check("normalize_date emits the fixed grammar for every shape",
+          all(DATE_GRAMMAR.match(normalize_date(c) or "") for c in _date_cases),
+          f"{[normalize_date(c) for c in _date_cases]}")
+    check("normalize_date rejects non-dates",
+          normalize_date("hello") is None and normalize_date("Apollo 11") is None)
+    _dd = date_distractors("March 5, 1990", 3, random.Random(0))
+    check("date distractors keep the answer's grammar",
+          len(_dd) == 3 and all(DATE_GRAMMAR.match(x) for x in _dd)
+          and "March 5, 1990" not in _dd, f"{_dd}")
+
+    # 5. name reference tables (§6.7): person answers split into first/last pools;
+    # a last-only answer sources distractors from the surname pool.
+    _people = [
+        make_fact(source="sleeper", category="sports", subject="Patrick Mahomes",
+                  fact_text="x", source_url="https://e.com"),
+        make_fact(source="sleeper", category="sports", subject="Lionel Messi",
+                  fact_text="x", source_url="https://e.com"),
+        make_fact(source="curated", category="history", subject="Marie Curie",
+                  fact_text="x", source_url="https://e.com"),
+    ]
+    _first, _last = _name_pools(_people)
+    check("name pools split first vs last names",
+          "Patrick" in _first and "Mahomes" in _last and "Messi" in _last)
+    _nd = name_distractors("Mahomes", _first, _last)
+    check("a last-only answer draws surname distractors",
+          "Messi" in _nd and "Curie" in _nd and "Mahomes" not in _nd, f"{_nd}")
+
     for q in qs:
         if q["qtype"] == "seance":
             clues = q.get("clues") or []

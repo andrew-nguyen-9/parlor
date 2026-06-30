@@ -72,6 +72,7 @@ export interface Question {
   chain?: ThreadLink[];           // thread: ordered last-letter→first-letter links
   theme?: string;                 // thread: the master theme (the final answer)
   theme_choices?: string[];       // thread: optional choices for the final guess (theme included)
+  tags?: string[];                // §6.x: answer domain/type/era tags, e.g. ["domain:music","type:artist","era:1990s"]
 }
 
 export const CATEGORIES: Category[] = [

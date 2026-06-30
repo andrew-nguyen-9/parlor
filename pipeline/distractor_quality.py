@@ -75,11 +75,20 @@ def distance(a: str, b: str) -> float:
 
 
 def closest(
-    answer: str, candidates: list[str], k: int, rng: random.Random
+    answer: str,
+    candidates: list[str],
+    k: int,
+    rng: random.Random,
+    tag_overlap=None,
 ) -> list[str] | None:
     """k distractors closest to `answer`, deduped and excluding it. Prefers
     same-axis candidates (a year draws years); falls back to all uniques when an
-    axis can't field k so we still return a full set. None when < k uniques."""
+    axis can't field k so we still return a full set. None when < k uniques.
+
+    §6.2: when `tag_overlap(candidate) -> int` is given, candidates that share
+    more tags with the answer rank first (more shared tags = better), with axis
+    closeness as the tiebreak — so "a Latin inventor" draws other Latin inventors
+    before generic same-axis siblings."""
     seen = {answer.strip().lower()}
     uniq: list[str] = []
     for c in candidates:
@@ -93,7 +102,10 @@ def closest(
     axis = classify(answer)[0]
     same = [c for c in uniq if classify(c)[0] == axis]
     pool = same if len(same) >= k else uniq
-    pool.sort(key=lambda c: distance(answer, c))
+    if tag_overlap is not None:
+        pool.sort(key=lambda c: (-tag_overlap(c), distance(answer, c)))
+    else:
+        pool.sort(key=lambda c: distance(answer, c))
     tight = pool[:k]  # the k strictly-closest — lowest possible outlier risk
     wide = pool[: max(k, min(len(pool), 3 * k))]  # widen for variety...
     pick = rng.sample(wide, k)

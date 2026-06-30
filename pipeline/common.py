@@ -14,6 +14,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 import uuid
@@ -332,6 +333,81 @@ def content_hash(*parts: str) -> str:
     return hashlib.sha256("||".join(p.strip().lower() for p in parts).encode()).hexdigest()[:32]
 
 
+# ── date standardization (§6.5) ──────────────────────────────────────────────
+# ONE normalizer for every date the pipeline emits, so a date answer can draw
+# plausible same-grammar distractors (a date answer next to other dates, not a
+# year next to two place-names). The fixed output grammar is exactly five shapes:
+#   Month Day, Year  |  Month Year  |  Month, Year - Month, Year  |  Year-Year  |  Year
+import calendar  # noqa: E402  (kept local to the date helpers)
+
+_MONTH_NAME = list(calendar.month_name)  # ["", "January", ... "December"]
+_MONTHS = {m.lower(): i for i, m in enumerate(calendar.month_name) if m}
+_MONTHS.update({m.lower(): i for i, m in enumerate(calendar.month_abbr) if m})
+
+# Matches any string already in the fixed grammar — the selftest gate uses this.
+DATE_GRAMMAR = re.compile(
+    r"^(?:"
+    r"[A-Z][a-z]+ \d{1,2}, \d{4}"                  # Month Day, Year
+    r"|[A-Z][a-z]+ \d{4}"                           # Month Year
+    r"|[A-Z][a-z]+, \d{4} - [A-Z][a-z]+, \d{4}"     # Month, Year - Month, Year
+    r"|\d{4}-\d{4}"                                 # Year-Year
+    r"|\d{4}"                                       # Year
+    r")$"
+)
+
+
+def _is_year(y: int) -> bool:
+    return 1000 <= y <= 2100
+
+
+def normalize_date(s: str | None) -> str | None:
+    """Coerce a date string into the fixed grammar above, or None if it isn't a
+    recognizable date. Slash dates are read US-style (m/d/y).
+    # ponytail: m/d/y assumption — flip the two groups below if a source ships d/m/y."""
+    if not s:
+        return None
+    t = str(s).strip()
+
+    # Month range "March 1990 - June 1991" → "March, 1990 - June, 1991" (check first: it has a dash)
+    m = re.fullmatch(r"([A-Za-z]+)\.?\s+(\d{4})\s*[-–—]\s*([A-Za-z]+)\.?\s+(\d{4})", t)
+    if m and m.group(1).lower() in _MONTHS and m.group(3).lower() in _MONTHS:
+        return (f"{_MONTH_NAME[_MONTHS[m.group(1).lower()]]}, {int(m.group(2))} - "
+                f"{_MONTH_NAME[_MONTHS[m.group(3).lower()]]}, {int(m.group(4))}")
+    # already-formatted month range "March, 1990 - June, 1991"
+    m = re.fullmatch(r"([A-Za-z]+),\s+(\d{4})\s*[-–—]\s*([A-Za-z]+),\s+(\d{4})", t)
+    if m and m.group(1).lower() in _MONTHS and m.group(3).lower() in _MONTHS:
+        return (f"{_MONTH_NAME[_MONTHS[m.group(1).lower()]]}, {int(m.group(2))} - "
+                f"{_MONTH_NAME[_MONTHS[m.group(3).lower()]]}, {int(m.group(4))}")
+    # Year range "1990-1995"
+    m = re.fullmatch(r"(\d{4})\s*[-–—]\s*(\d{4})", t)
+    if m and _is_year(int(m.group(1))) and _is_year(int(m.group(2))):
+        return f"{int(m.group(1))}-{int(m.group(2))}"
+    # ISO "1990-03-05"
+    m = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", t)
+    if m:
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if _is_year(y) and 1 <= mo <= 12:
+            return f"{_MONTH_NAME[mo]} {d}, {y}"
+    # Slash "06/12/1990" (m/d/y)
+    m = re.fullmatch(r"(\d{1,2})/(\d{1,2})/(\d{4})", t)
+    if m:
+        mo, d, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if _is_year(y) and 1 <= mo <= 12 and 1 <= d <= 31:
+            return f"{_MONTH_NAME[mo]} {d}, {y}"
+    # "Month D, YYYY" / "Month D YYYY"
+    m = re.fullmatch(r"([A-Za-z]+)\.?\s+(\d{1,2}),?\s+(\d{4})", t)
+    if m and m.group(1).lower() in _MONTHS and _is_year(int(m.group(3))):
+        return f"{_MONTH_NAME[_MONTHS[m.group(1).lower()]]} {int(m.group(2))}, {int(m.group(3))}"
+    # "Month YYYY"
+    m = re.fullmatch(r"([A-Za-z]+)\.?\s+(\d{4})", t)
+    if m and m.group(1).lower() in _MONTHS and _is_year(int(m.group(2))):
+        return f"{_MONTH_NAME[_MONTHS[m.group(1).lower()]]} {int(m.group(2))}"
+    # Bare year
+    if re.fullmatch(r"\d{4}", t) and _is_year(int(t)):
+        return t
+    return None
+
+
 def make_fact(
     *,
     source: str,
@@ -469,7 +545,7 @@ _QUESTION_COLS = (
     "content_hash", "qtype", "category", "difficulty", "prompt", "correct",
     "choices", "year", "value_a", "value_b", "subject_a", "subject_b", "unit",
     "lat", "lng", "image_url", "source_url", "clues", "candidates",
-    "chain", "theme", "theme_choices",
+    "chain", "theme", "theme_choices", "tags",
 )
 _QUESTION_JSONB = {"choices", "clues", "candidates", "chain", "theme_choices"}
 
