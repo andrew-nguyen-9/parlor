@@ -10,6 +10,18 @@ import { project, unproject, type LatLng } from "@/lib/geo";
 // renders, so the Google Map path (which never mounts WorldMap) skips it entirely.
 let LAND_PATH_CACHE = "";
 
+// Hybrid basemap (E7 — Atlas Obscura, the one sanctioned tile-dep exception):
+// a single keyless, no-auth raster world map, equirectangular projection (2:1,
+// same as our viewBox) so it drops in with zero reprojection math. Hotlinked
+// from upload.wikimedia.org (already an allowlisted image host, see
+// next.config.mjs), no API key, no slippy-tile pyramid, no new npm dependency.
+// We *probe* it; the vector land polygons below remain the default render and
+// the ONLY thing offline play ever depends on — raster is a progressive
+// upgrade, never a requirement.
+const RASTER_WORLD_URL =
+  "https://upload.wikimedia.org/wikipedia/commons/8/83/Equirectangular_projection_SW.jpg";
+let RASTER_OK_CACHE: boolean | null = null;
+
 // Equirectangular has no wrap handling, so a ring that crosses the antimeridian
 // (e.g. Antarctica, Chukotka, Fiji) has consecutive vertices whose longitude
 // jumps ~+180 → ~-180. Drawing an `L` between them sweeps a horizontal line
@@ -45,6 +57,7 @@ export default function WorldMap({
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [landPath, setLandPath] = useState(LAND_PATH_CACHE);
+  const [raster, setRaster] = useState(RASTER_OK_CACHE);
 
   useEffect(() => {
     if (LAND_PATH_CACHE) {
@@ -65,6 +78,35 @@ export default function WorldMap({
         .join("");
       setLandPath(LAND_PATH_CACHE);
     });
+  }, []);
+
+  // Env-gated raster probe: skip outright when the browser already knows it's
+  // offline; otherwise try the basemap with a timeout so a slow/dead network
+  // can't hang the upgrade — either way the vector path above is already
+  // rendering, so there's nothing to block on.
+  useEffect(() => {
+    if (RASTER_OK_CACHE !== null) {
+      setRaster(RASTER_OK_CACHE);
+      return;
+    }
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      RASTER_OK_CACHE = false;
+      setRaster(false);
+      return;
+    }
+    let settled = false;
+    const img = new Image();
+    const settle = (ok: boolean) => {
+      if (settled) return;
+      settled = true;
+      RASTER_OK_CACHE = ok;
+      setRaster(ok);
+    };
+    img.onload = () => settle(true);
+    img.onerror = () => settle(false);
+    img.src = RASTER_WORLD_URL;
+    const timeout = setTimeout(() => settle(false), 4000);
+    return () => clearTimeout(timeout);
   }, []);
 
   // keyboard crosshair (a11y 2.14): focus the map, arrow-keys move a reticle,
@@ -114,8 +156,20 @@ export default function WorldMap({
       aria-label="World map. Click to place your guess, or focus and use arrow keys to move the reticle and Enter to drop the pin."
       className={`w-full rounded-2xl border border-line bg-surface ${disabled ? "" : "cursor-crosshair"}`}
     >
-      {landPath && (
-        <path d={landPath} fill="#0d0d18" stroke="#1a1a2e" strokeWidth="0.3" />
+      {raster ? (
+        // viewBox is already equirectangular 360x180 so the source stretches
+        // in 1:1 with no reprojection — pin math below is untouched.
+        <image
+          href={RASTER_WORLD_URL}
+          x={0}
+          y={0}
+          width={360}
+          height={180}
+          preserveAspectRatio="none"
+          opacity={0.85}
+        />
+      ) : (
+        landPath && <path d={landPath} fill="#0d0d18" stroke="#1a1a2e" strokeWidth="0.3" />
       )}
       {g && t && (
         <line

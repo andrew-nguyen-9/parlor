@@ -31,11 +31,17 @@ from __future__ import annotations
 import argparse
 import math
 
-from common import CACHE_DIR, console, dump_raw, get_json_conditional, get_db, make_fact, upsert_facts
+from common import CACHE_DIR, console, dump_raw, get_json, get_json_conditional, get_db, make_fact, upsert_facts
 
 # restcountries v3 data published in their open-source GitHub repo — zero auth.
 API = "https://raw.githubusercontent.com/restcountries/restcountries/master/src/main/resources/countriesV3.json"
 _GEO_CACHE = CACHE_DIR / "restcountries_github_cache.json"
+
+# MediaWiki geosearch — keyless, finds the nearest notable Wikipedia article to
+# a coordinate. Used to enrich a capital's bare "X is the capital of Y" fact
+# with an actual landmark + Wikipedia prose (forge_where just needs lat/lng on
+# any fact, regardless of category, so this flows straight into THE MAP).
+WIKI_API = "https://en.wikipedia.org/w/api.php"
 
 
 def _popularity(population: int) -> float:
@@ -88,10 +94,56 @@ def facts_for_country(c: dict) -> list[dict]:
     return out
 
 
+def wiki_landmark_fact(near: str, lat: float, lng: float) -> dict | None:
+    """Nearest notable Wikipedia article to a coordinate, as a richer `where`
+    fact: real prose + the landmark's own (more precise) coordinates, instead
+    of the bare "X is the capital of Y" line. Returns None on any miss — the
+    capital fact from facts_for_country() already covers the country, so a
+    landmark is a bonus, never a requirement."""
+    try:
+        geo = get_json(WIKI_API, params={
+            "action": "query", "format": "json", "list": "geosearch",
+            "gscoord": f"{lat}|{lng}", "gsradius": "10000", "gslimit": "1",
+        })
+        hits = geo.get("query", {}).get("geosearch", [])
+        if not hits:
+            return None
+        hit = hits[0]
+        title = hit["title"]
+        page = get_json(WIKI_API, params={
+            "action": "query", "format": "json", "titles": title,
+            "prop": "extracts|pageimages", "exintro": True, "explaintext": True,
+            "piprop": "thumbnail", "pithumbsize": "300",
+        })
+    except Exception as e:
+        console.print(f"[dim]wiki landmark miss near {near}: {type(e).__name__}[/dim]")
+        return None
+
+    pages = page.get("query", {}).get("pages", {})
+    if not pages:
+        return None
+    p = next(iter(pages.values()))
+    extract = (p.get("extract") or "").strip()
+    if len(extract) < 40:
+        return None
+    return make_fact(
+        source="wikipedia", category="geography", subject=title,
+        fact_text=extract.split(". ")[0] + ".",
+        lat=hit.get("lat", lat), lng=hit.get("lon", lng),
+        image_url=(p.get("thumbnail") or {}).get("source"),
+        source_url=f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}",
+        popularity=50.0,
+        meta={"answer_field": "landmark", "answer": title, "near": near},
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--min-population", type=int, default=1_000_000,
                     help="skip microstates below this population (distractor quality)")
+    ap.add_argument("--wiki-landmarks", type=int, default=15,
+                    help="number of capitals to enrich with a Wikipedia landmark "
+                         "fact (0 disables; capped to keep the geosearch sweep cheap)")
     args = ap.parse_args()
 
     console.rule("[bold]Geography ingest — restcountries (GitHub mirror)")
@@ -108,13 +160,28 @@ def main() -> None:
         )
 
     facts: list[dict] = []
+    capitals: list[tuple[str, float, float, int]] = []  # name, lat, lng, population
     for c in countries:
-        if (c.get("population") or 0) < args.min_population:
+        population = c.get("population") or 0
+        if population < args.min_population:
             continue
         try:
             facts.extend(facts_for_country(c))
         except Exception as e:
             console.print(f"[yellow]skip {(c.get('name') or {}).get('common')}: {e}[/yellow]")
+            continue
+        latlng = c.get("latlng") or []
+        capital = (c.get("capital") or [None])[0]
+        if capital and len(latlng) == 2:
+            capitals.append((capital, float(latlng[0]), float(latlng[1]), population))
+
+    if args.wiki_landmarks:
+        console.rule(f"[bold]Wikipedia landmark enrichment — top {args.wiki_landmarks} capitals")
+        capitals.sort(key=lambda t: t[3], reverse=True)
+        for capital, lat, lng, _pop in capitals[: args.wiki_landmarks]:
+            fact = wiki_landmark_fact(capital, lat, lng)
+            if fact:
+                facts.append(fact)
 
     dump_raw("geography", facts)
     n = upsert_facts(get_db(), facts)
