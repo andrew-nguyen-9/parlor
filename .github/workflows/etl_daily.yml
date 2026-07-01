@@ -61,6 +61,15 @@ jobs:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
     steps:
       - uses: actions/checkout@v4
+      # Bootstrap the DB before any write. schema.sql is fully idempotent
+      # (every object is `if not exists`) and kept current with db/migrations,
+      # so a fresh Neon self-heals instead of dying with UndefinedTable. psql
+      # ships on ubuntu-latest. No DATABASE_URL ⇒ DB-less mode, skip.
+      - name: Apply schema (idempotent)
+        if: ${{ env.DATABASE_URL != '' }}
+        run: psql "$DATABASE_URL" -f db/schema.sql
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -207,6 +216,11 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
+      # Runs parallel to `extract`, so it can't rely on that job's schema apply —
+      # bootstrap here too. Idempotent, so double-apply on the shared DB is a no-op.
+      - name: Apply schema (idempotent)
+        if: ${{ env.DATABASE_URL != '' }}
+        run: psql "$DATABASE_URL" -f db/schema.sql
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
