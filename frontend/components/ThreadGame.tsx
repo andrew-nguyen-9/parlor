@@ -64,6 +64,12 @@ function passingLetter(answer: string): string {
   return (letters || answer).slice(-1).toUpperCase();
 }
 
+/** First A-Z char of an answer — the letter a preceding link would pass forward. */
+function firstLetter(answer: string): string {
+  const letters = answer.replace(/[^a-zA-Z]/g, "");
+  return (letters || answer).slice(0, 1).toUpperCase();
+}
+
 /** Forgiving match: trimmed equality, substring either way, or first-word hit. */
 function isMatch(guess: string, answer: string): boolean {
   const g = guess.trim().toLowerCase();
@@ -98,6 +104,8 @@ export default function ThreadGame({
   );
   const [active, setActive] = useState(0);
   const [input, setInput] = useState("");
+  const [attempts, setAttempts] = useState(0); // wrong tries on the active link
+  const [retry, setRetry] = useState<string | null>(null);
   const [hintUsed, setHintUsed] = useState(false);
   const [phase, setPhase] = useState<"chain" | "final" | "done">("chain");
   const [themeGuess, setThemeGuess] = useState<string | null>(null);
@@ -121,6 +129,8 @@ export default function ThreadGame({
   function resolve(state: Resolved) {
     setNodes((ns) => ns.map((n, i) => (i === active ? { ...n, state } : n)));
     setInput("");
+    setAttempts(0);
+    setRetry(null);
     setHintUsed(false);
     if (active + 1 >= chain.length) {
       sfxPianoChord();
@@ -134,7 +144,15 @@ export default function ThreadGame({
     if (nodes[active]?.state !== "pending") return;
     if (!isMatch(input, nodes[active].link.answer)) {
       sfxWrong();
-      resolve("miss"); // a wrong guess unravels the link — the answer is shown
+      // First miss is forgiven — one wrong guess shouldn't kill the loosest
+      // input in the game. The second wrong guess unravels the link.
+      if (attempts < 1) {
+        setAttempts(1);
+        setInput("");
+        setRetry("not quite — one more stitch");
+        return;
+      }
+      resolve("miss"); // the answer is shown
       return;
     }
     sfxCorrect();
@@ -261,6 +279,18 @@ export default function ThreadGame({
                     <p className="text-lg font-medium leading-snug text-ink">
                       {n.link.prompt}
                     </p>
+                    {/* Letter-chain tell: only when the forged chain actually
+                        passes the prior answer's last letter into this one. */}
+                    {active > 0 &&
+                      passingLetter(nodes[active - 1].link.answer) ===
+                        firstLetter(n.link.answer) && (
+                        <p className="microlabel mt-2 text-smoke">
+                          begins with &ldquo;{firstLetter(n.link.answer)}&rdquo;
+                        </p>
+                      )}
+                    {retry && (
+                      <p className="microlabel mt-2 text-music">{retry}</p>
+                    )}
                     {hintUsed && (
                       <p className={`${styles.hintChip} microlabel mt-2`} style={{ color: THREAD_HEX }}>
                         hint · passes the thread on “{passingLetter(n.link.answer)}…”

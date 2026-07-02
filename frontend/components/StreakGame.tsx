@@ -9,6 +9,7 @@ import {
   buildStreakDeck,
 } from "@/lib/streak";
 import { buildShare, type Tier } from "@/lib/share";
+import { shuffled } from "@/lib/rng";
 import { usePractice } from "@/lib/usePractice";
 import PracticeBar from "@/components/PracticeBar";
 import styles from "./StreakGame.module.css";
@@ -79,6 +80,7 @@ export default function StreakGame({ pool }: { pool: Question[] }) {
   const [copied, setCopied] = useState(false);
   const [toasts, setToasts] = useState<Achievement[]>([]);
   const recorded = useRef(false);
+  const firstRun = useRef(true); // first light of the session = the day-seeded deck
 
   useEffect(() => {
     setBest(Number(localStorage.getItem(BEST_KEY) ?? 0));
@@ -123,6 +125,16 @@ export default function StreakGame({ pool }: { pool: Question[] }) {
     return () => cancelAnimationFrame(raf);
   }, [phase, streak, q, lose]);
 
+  // Auto-advance after a correct call — the accelerating timer otherwise resets
+  // to a standstill on every reveal. Clicking "next pair" still skips ahead; a
+  // reduced-motion preference keeps advancement manual.
+  useEffect(() => {
+    if (phase !== "reveal-win" || reduced) return;
+    const t = setTimeout(() => next(), 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, reduced]);
+
   // cursor-following glow on the darkness finish
   function onPointerMove(e: React.PointerEvent) {
     if (phase !== "reveal-loss" || reduced) return;
@@ -133,7 +145,11 @@ export default function StreakGame({ pool }: { pool: Question[] }) {
   }
 
   function start() {
-    setDeck(buildStreakDeck(pool));
+    // First light of the day = the shared, day-seeded deck (everyone comparable).
+    // Every relight reshuffles (Math.random in a click handler — legal, and it
+    // stops a known-answer deck from farming best-streak/leaderboard).
+    setDeck(firstRun.current ? buildStreakDeck(pool) : shuffled(pool, Math.random));
+    firstRun.current = false;
     setStreak(0);
     setPhase("guessing");
     recorded.current = false;

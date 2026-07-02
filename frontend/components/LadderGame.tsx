@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import type { LadderPuzzle, GridRung } from "@/lib/ladder";
+import type { LadderPuzzle, GridRung, SequenceRung } from "@/lib/ladder";
 import { buildShare, type Tier } from "@/lib/share";
 import { sfxDoorLatch, sfxWrong, sfxPianoChord, sfxGlassClink } from "@/lib/sound";
 import styles from "./LadderGame.module.css";
@@ -84,6 +84,7 @@ function Climb({ puzzle, reduce }: { puzzle: LadderPuzzle; reduce: boolean }) {
   const [clean, setClean] = useState<boolean[]>(() => puzzle.rungs.map(() => true));
   const [shake, setShake] = useState(false);
   const [won, setWon] = useState(false);
+  const [ruleFlash, setRuleFlash] = useState<string | null>(null); // the just-cracked sequence rule
   const startedAt = useRef(Date.now());
 
   const rung = puzzle.rungs[idx];
@@ -150,6 +151,11 @@ function Climb({ puzzle, reduce }: { puzzle: LadderPuzzle; reduce: boolean }) {
       return;
     }
     sfxDoorLatch();
+    // Reveal the sequence's true generator — the biggest missing feedback beat.
+    if (rung.type === "sequence") {
+      setRuleFlash(rung.rule);
+      setTimeout(() => setRuleFlash(null), 3500);
+    }
     if (idx + 1 >= puzzle.rungs.length) {
       setWon(true);
       sfxPianoChord();
@@ -199,6 +205,17 @@ function Climb({ puzzle, reduce }: { puzzle: LadderPuzzle; reduce: boolean }) {
           />
         ))}
       </div>
+
+      {ruleFlash && (
+        <motion.p
+          initial={reduce ? {} : { opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-3 rounded-lg border px-4 py-2 text-center text-sm"
+          style={{ borderColor: `${ACCENT}66`, background: `${ACCENT}1a`, color: ACCENT }}
+        >
+          the Trickster&rsquo;s rule: <span className="font-medium">{ruleFlash}</span>
+        </motion.p>
+      )}
 
       <motion.div
         animate={shake ? { x: [0, -10, 10, -7, 7, 0] } : { x: 0 }}
@@ -453,6 +470,10 @@ function Summit({
 }) {
   const [copied, setCopied] = useState(false);
   const perfect = collapses === 0;
+  // Every sequence rung's true generator, revealed now that the climb is done.
+  const rules = puzzle.rungs
+    .filter((r): r is SequenceRung => r.type === "sequence")
+    .map((r) => r.rule);
   const best = useMemo(() => {
     try {
       return Number(localStorage.getItem(BEST_KEY) || 0);
@@ -497,6 +518,16 @@ function Summit({
         </p>
       )}
       <p className="text-2xl tracking-[0.2em]">{card.grid}</p>
+      {rules.length > 0 && (
+        <div className="w-full rounded-xl border border-line bg-surface/60 p-3 text-left">
+          <p className="microlabel mb-1 text-smoke">the Trickster&rsquo;s rules</p>
+          <ul className="space-y-0.5 text-sm text-muted">
+            {rules.map((r, i) => (
+              <li key={i}>· {r}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <button
         onClick={() =>
           navigator.clipboard?.writeText(card.text).then(() => {

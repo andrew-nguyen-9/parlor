@@ -61,7 +61,7 @@ export default function ClockGame({
   const { practiceMode, togglePractice, saved, saveQ, removeQ, isSaved } = usePractice();
   const { record } = useProfile();
 
-  const [rounds] = useState(initialRounds);
+  const [rounds, setRounds] = useState(initialRounds);
   const [i, setI] = useState(0);
   const [locked, setLocked] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
@@ -206,6 +206,18 @@ export default function ClockGame({
   }
 
   function restart() {
+    // Replay = practice: draw fresh rounds from the unused pool (Math.random is
+    // fine here — click handler, not an SSR path) and NEVER re-record, so a
+    // replay can't farm the leaderboard on a known-answer deck.
+    const used = new Set(rounds.map((r) => r.prompt));
+    const fresh = (pool ?? []).filter((qq) => !used.has(qq.prompt));
+    const source =
+      fresh.length >= rounds.length
+        ? fresh
+        : pool && pool.length >= rounds.length
+          ? pool
+          : rounds;
+    setRounds(shuffled(source, Math.random).slice(0, rounds.length));
     setI(0);
     setLocked(false);
     setHintUsed(false);
@@ -215,7 +227,7 @@ export default function ClockGame({
     setRoundBonus(0);
     setOffs([]);
     setCopied(false);
-    recorded.current = false;
+    recorded.current = true; // practice replays never re-record
   }
 
   if (done) {
@@ -392,7 +404,9 @@ export default function ClockGame({
             >
               <span style={{ color: dialHex }}>⌛</span>
               <span className="microlabel" style={{ color: dialHex }}>
-                In {calendar.name}, the answer reads {labelFor(calendar.key, truth)}
+                In {calendar.name}, the answer falls between{" "}
+                {labelFor(calendar.key, truth - (truth % 10))} and{" "}
+                {labelFor(calendar.key, truth - (truth % 10) + 9)}
               </span>
               <span className="microlabel ml-auto text-muted">max {HINT_CAP} pts</span>
             </motion.div>

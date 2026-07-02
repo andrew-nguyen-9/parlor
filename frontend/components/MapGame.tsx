@@ -10,7 +10,7 @@ import type { Civilization } from "@/lib/civilizations";
 import { MAP_HOST } from "@/lib/civilizations";
 import { usePractice } from "@/lib/usePractice";
 import PracticeBar from "@/components/PracticeBar";
-import { shuffled } from "@/lib/rng";
+import { shuffled, daySeed } from "@/lib/rng";
 import { sfx } from "@/lib/sound";
 import { haptic } from "@/lib/haptics";
 import { useProfile, type Achievement } from "@/lib/profile";
@@ -84,6 +84,26 @@ export default function MapGame({
   const raf = useRef<number>();
   const startedAt = useRef(0);
 
+  const dayKey = `parlor:map:${daySeed()}`;
+
+  // Restore a completed daily run so a reload lands on the finish screen (the
+  // Gauntlet lock pattern) — no replaying the day-seeded rounds for a fresh
+  // leaderboard post. Hydrate after mount so SSR renders the empty board.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(dayKey);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { score: number; results: RoundResult[] };
+      setScore(saved.score);
+      setResults(saved.results ?? []);
+      recorded.current = true; // already recorded when first completed
+      setDone(true);
+    } catch {
+      /* private mode / bad JSON — play fresh */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (!done || recorded.current) return;
     recorded.current = true;
@@ -97,6 +117,14 @@ export default function MapGame({
     }
     const unlocked = record({ room: "map", score, xp: score });
     if (unlocked.length) setToasts(unlocked);
+    // Persist the real daily run (never a practice replay) so it locks.
+    if (!practiceMode) {
+      try {
+        localStorage.setItem(dayKey, JSON.stringify({ score, results }));
+      } catch {
+        /* storage unavailable — in-memory only */
+      }
+    }
   }, [done, score, rounds.length, record]);
 
   if (rounds.length === 0) {
@@ -346,12 +374,14 @@ export default function MapGame({
             >
               {copied ? "copied ✓" : "share expedition"}
             </button>
-            <button
-              onClick={() => restart()}
-              className="microlabel rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg"
-            >
-              new expedition
-            </button>
+            {practiceMode && (
+              <button
+                onClick={() => restart()}
+                className="microlabel rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg"
+              >
+                new expedition
+              </button>
+            )}
             {practiceMode && pool && pool.length > 5 && (
               <button
                 onClick={() => {

@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { buildBoardColumns, type BoardColumn } from "@/lib/board";
 import { CATEGORY_HEX, CATEGORY_LABEL, type Category, type Question } from "@/lib/types";
 import { liberalMatch } from "@/lib/fuzzy";
+import { mulberry32, shuffled, hashKey } from "@/lib/rng";
 import { usePractice } from "@/lib/usePractice";
 import PracticeBar from "@/components/PracticeBar";
 import { sfx } from "@/lib/sound";
@@ -58,6 +59,10 @@ export default function BoardGame({
 
   // Board state
   const [mode, setMode] = useState<GameMode>("easy");
+  // Mode is captured per-cell at openCell so a mid-clue toggle can't cheat the
+  // hard-mode 2× stake (or swap a hard cell to easy MC after seeing the prompt).
+  const [cellMode, setCellMode] = useState<GameMode>("easy");
+  const hardCount = useRef(0); // hard cells answered → share-text badge
   const [score, setScore] = useState(0);
   const [open, setOpen] = useState<[number, number] | null>(null);
   const [states, setStates] = useState<Record<string, CellState>>({});
@@ -138,7 +143,9 @@ export default function BoardGame({
     setWagerStep(isDD(c, r));
     if (isDD(c, r)) setWager(Math.min(wagerCap(), 1000));
 
-    if (mode === "easy") {
+    const m = mode;
+    setCellMode(m);
+    if (m === "easy") {
       const cell = columns[c].cells[r];
       const correct = cell.correct;
       // Prefer the forge's same-category distractors (sampled from the whole
@@ -146,7 +153,9 @@ export default function BoardGame({
       // answers in THIS column (also same category), then any board answer —
       // always deduped so the options can't collapse into repeats.
       if (cell.choices && cell.choices.length >= 2) {
-        setChoices(cell.choices);
+        // Deterministic, prompt-keyed shuffle — same board for everyone, no
+        // stable-slot leakage, no per-player Math.random on a shared game.
+        setChoices(shuffled(cell.choices, mulberry32(hashKey(cell.prompt))));
       } else {
         const seen = new Set([correct.trim().toLowerCase()]);
         const pool: string[] = [];
@@ -167,7 +176,10 @@ export default function BoardGame({
   function judge(correct: boolean) {
     if (!open) return;
     const [c, r] = open;
-    const stake = isDD(c, r) ? wager : cellValue(r);
+    // Hard mode pays double the cell value; the daily-double wager is never
+    // multiplied (it's already a free bet).
+    const stake = isDD(c, r) ? wager : cellValue(r) * (cellMode === "hard" ? 2 : 1);
+    if (cellMode === "hard" && !isDD(c, r)) hardCount.current += 1;
     const cat = columns[c].cells[r].category;
     const st = stats.current[cat] ?? { correct: 0, total: 0 };
     stats.current[cat] = { correct: st.correct + (correct ? 1 : 0), total: st.total + 1 };
@@ -223,11 +235,14 @@ export default function BoardGame({
       maxScore: columns.length * 3000, // 200+400+600+800+1000 per column
       columns: columns.length,
     });
+    // Badge the hard-mode cells cleared (2× stakes) into the share blob.
+    const text =
+      hardCount.current > 0 ? `${card.text}\n⚔ ${hardCount.current} hard ×2` : card.text;
     try {
       if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share({ title: card.title, text: card.text, url: card.url });
+        await navigator.share({ title: card.title, text, url: card.url });
       } else {
-        await navigator.clipboard.writeText(card.text);
+        await navigator.clipboard.writeText(text);
         setShareMsg("copied!");
         setTimeout(() => setShareMsg(""), 2000);
       }
@@ -253,6 +268,7 @@ export default function BoardGame({
     closeModal();
     recorded.current = false;
     stats.current = {};
+    hardCount.current = 0;
   }
 
   return (
@@ -534,6 +550,9 @@ export default function BoardGame({
                       <span className="microlabel" style={{ color: CATEGORY_HEX[openQ.category] }}>
                         {themedLabel(theme, openQ.category, CATEGORY_LABEL[openQ.category])} · $
                         {isDD(open[0], open[1]) ? wager : cellValue(open[1])}
+                        {cellMode === "hard" && !isDD(open[0], open[1]) && (
+                          <span className="ml-1.5 text-music">×2</span>
+                        )}
                       </span>
                       {isDD(open[0], open[1]) && (
                         <span className="microlabel text-history">★ daily double · ${wager}</span>
@@ -625,7 +644,7 @@ export default function BoardGame({
                           )}
                         </div>
                       </div>
-                    ) : mode === "easy" ? (
+                    ) : cellMode === "easy" ? (
                       /* Easy — multiple choice */
                       <div className={`mt-5 grid gap-2.5 sm:grid-cols-2 ${TEXT_SIZE_CLASS[settings.textSize]}`}>
                         {choices.map((choice) => {
