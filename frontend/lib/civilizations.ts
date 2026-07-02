@@ -151,7 +151,9 @@ export const CIVILIZATIONS: Civilization[] = [
     name: "Indus Valley",
     era: "c. 3300–1300 BCE",
     accent: "#7040a8",
-    glyph: "卐",
+    // River-wave glyph — the civilization is named for the Indus. (The historic
+    // seal glyph read as a swastika out of context, so it stays out of the UI.)
+    glyph: "≋",
     site: { lat: 27.3, lng: 68.1 }, // Mohenjo-daro
     siteName: "Mohenjo-daro (Pakistan)",
     questions: [

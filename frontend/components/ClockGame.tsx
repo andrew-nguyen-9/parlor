@@ -584,6 +584,9 @@ function ClockFace({
   className?: string;
 }) {
   const ticks = Array.from({ length: 60 });
+  // Round trig output so server- and client-rendered SVG attributes are
+  // byte-identical (raw doubles can differ in the last bit → hydration warning).
+  const px = (n: number) => Math.round(n * 1000) / 1000;
   return (
     <div className={`relative ${className ?? ""}`}>
       <svg viewBox="0 0 200 270" className="w-full" role="img" aria-label="grandfather clock">
@@ -604,10 +607,10 @@ function ClockFace({
           return (
             <line
               key={k}
-              x1={100 + r1 * Math.sin(a)}
-              y1={85 - r1 * Math.cos(a)}
-              x2={100 + r2 * Math.sin(a)}
-              y2={85 - r2 * Math.cos(a)}
+              x1={px(100 + r1 * Math.sin(a))}
+              y1={px(85 - r1 * Math.cos(a))}
+              x2={px(100 + r2 * Math.sin(a))}
+              y2={px(85 - r2 * Math.cos(a))}
               stroke={k % 5 === 0 ? accent : `${accent}66`}
               strokeWidth={k % 5 === 0 ? 1.6 : 0.8}
             />
@@ -617,8 +620,8 @@ function ClockFace({
         {truthAngle !== null && (
           <line
             x1="100" y1="85"
-            x2={100 + 50 * Math.sin((truthAngle * Math.PI) / 180)}
-            y2={85 - 50 * Math.cos((truthAngle * Math.PI) / 180)}
+            x2={px(100 + 50 * Math.sin((truthAngle * Math.PI) / 180))}
+            y2={px(85 - 50 * Math.cos((truthAngle * Math.PI) / 180))}
             stroke="#2d9155" strokeWidth="2.5" strokeLinecap="round"
             strokeDasharray="3 3"
           />
@@ -626,15 +629,15 @@ function ClockFace({
         {/* hour hand */}
         <line
           x1="100" y1="85"
-          x2={100 + 30 * Math.sin((hourAngle * Math.PI) / 180)}
-          y2={85 - 30 * Math.cos((hourAngle * Math.PI) / 180)}
+          x2={px(100 + 30 * Math.sin((hourAngle * Math.PI) / 180))}
+          y2={px(85 - 30 * Math.cos((hourAngle * Math.PI) / 180))}
           stroke="#e7dcc8" strokeWidth="4" strokeLinecap="round"
         />
         {/* minute hand = the selector */}
         <line
           x1="100" y1="85"
-          x2={100 + 48 * Math.sin((minuteAngle * Math.PI) / 180)}
-          y2={85 - 48 * Math.cos((minuteAngle * Math.PI) / 180)}
+          x2={px(100 + 48 * Math.sin((minuteAngle * Math.PI) / 180))}
+          y2={px(85 - 48 * Math.cos((minuteAngle * Math.PI) / 180))}
           stroke={accent} strokeWidth="2.5" strokeLinecap="round"
         />
         <circle cx="100" cy="85" r="4" fill={accent} />
