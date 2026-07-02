@@ -22,16 +22,33 @@ export function nextTag(tag: SuspectTag): SuspectTag {
   return ORDER[(i + 1) % ORDER.length];
 }
 
+/** Reverse cycle (C12): blank → cleared → prime → potential → blank — undoes an overshoot. */
+export function prevTag(tag: SuspectTag): SuspectTag {
+  const i = ORDER.indexOf(tag);
+  return ORDER[(i - 1 + ORDER.length) % ORDER.length];
+}
+
 export default function MysteryStatusPill({
   tag,
   onCycle,
+  onReverse,
 }: {
   tag: SuspectTag;
   onCycle: () => void;
+  onReverse?: () => void;
 }) {
   return (
     <button
       onClick={onCycle}
+      onContextMenu={
+        onReverse
+          ? (e) => {
+              e.preventDefault();
+              onReverse();
+            }
+          : undefined
+      }
+      title="tap to cycle · long-press / right-click to step back"
       className={`microlabel rounded-full border px-3 py-1 text-[10px] transition ${
         tag ? STYLE[tag] : "border-line text-muted hover:border-gold hover:text-gold"
       }`}

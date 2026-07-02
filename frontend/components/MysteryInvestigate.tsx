@@ -17,7 +17,7 @@ import {
   type MysteryCase,
 } from "@/lib/mystery";
 import { score, type MysteryAttempt, type MysteryScoreResult } from "@/lib/mysteryScore";
-import MysteryStatusPill, { nextTag, type SuspectTag } from "./MysteryStatusPill";
+import MysteryStatusPill, { nextTag, prevTag, type SuspectTag } from "./MysteryStatusPill";
 import AchievementToast from "./AchievementToast";
 import styles from "./Mystery.module.css";
 
@@ -65,6 +65,11 @@ export default function MysteryInvestigate({
   const [hovered, setHovered] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Achievement[]>([]);
   const startedAt = useRef(Date.now());
+  // E2.6 #1 — visible timer + running score. Ticks once a second on the client
+  // only (mounts after "begin", so no SSR/hydration clock mismatch). Makes the
+  // hidden time penalty honest and the speed loop legible (fixes C8).
+  const [nowMs, setNowMs] = useState(startedAt.current);
+  const elapsedSec = Math.floor((nowMs - startedAt.current) / 1000);
 
   // Player's elimination grid, in E2a's Mark vocabulary (the accused cell is not
   // an elimination, so it reads "unknown" for checkpoint accounting).
@@ -105,6 +110,25 @@ export default function MysteryInvestigate({
 
   const paidClues = Math.max(0, revealed - 1 - freeGiven);
 
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  // Running score = the live base ceiling after paid-clue + time penalties
+  // (mirrors lib/mysteryScore); the table bonus is only settled at submit.
+  const runningScore = Math.max(0, 1000 - CLUE_COST * paidClues - Math.floor(elapsedSec / 5));
+  const clock = `${Math.floor(elapsedSec / 60)}:${(elapsedSec % 60).toString().padStart(2, "0")}`;
+
+  // E2.6 #4 — motive/weapon racks strike as the revealed clues rule options out.
+  const struckMotives = useMemo(
+    () => new Set(mystery.clues.slice(0, revealed).flatMap((c) => c.eliminatesMotives)),
+    [mystery.clues, revealed],
+  );
+  const struckWeapons = useMemo(
+    () => new Set(mystery.clues.slice(0, revealed).flatMap((c) => c.eliminatesWeapons)),
+    [mystery.clues, revealed],
+  );
+
   function cycleCell(r: number, h: number) {
     setCells((prev) => {
       const next = prev.map((row) => row.slice());
@@ -122,6 +146,10 @@ export default function MysteryInvestigate({
 
   function cycleTag(id: string) {
     setTags((t) => ({ ...t, [id]: nextTag(t[id]) }));
+    sfxGlassClink();
+  }
+  function reverseTag(id: string) {
+    setTags((t) => ({ ...t, [id]: prevTag(t[id]) }));
     sfxGlassClink();
   }
   function toggleDone(stage: number) {
@@ -180,7 +208,15 @@ export default function MysteryInvestigate({
           </p>
           <h2 className="display gilt mt-0.5 text-2xl leading-tight sm:text-3xl">{mystery.title}</h2>
         </div>
-        <div className="flex items-center gap-4 text-right">
+        <div className="flex items-center gap-3 text-right sm:gap-4">
+          <div>
+            <p className="microlabel text-muted">time</p>
+            <p className="display tabular text-lg text-ink" aria-live="off">{clock}</p>
+          </div>
+          <div>
+            <p className="microlabel text-muted">score</p>
+            <p className="display tabular text-lg text-gold">{runningScore}</p>
+          </div>
           <div>
             <p className="microlabel text-muted">cells cleared</p>
             <p className="display tabular text-lg text-ink">{correctElim}</p>
@@ -349,7 +385,11 @@ export default function MysteryInvestigate({
                               <span className="text-lg">{s.emoji}</span>
                               <span className="text-[12px] leading-tight text-ink">{pretty(s.id)}</span>
                             </button>
-                            <MysteryStatusPill tag={tags[s.id]} onCycle={() => cycleTag(s.id)} />
+                            <MysteryStatusPill
+                              tag={tags[s.id]}
+                              onCycle={() => cycleTag(s.id)}
+                              onReverse={() => reverseTag(s.id)}
+                            />
                             <AnimatePresence>
                               {open && (
                                 <motion.div
@@ -397,8 +437,8 @@ export default function MysteryInvestigate({
 
           {/* MOTIVE + WEAPON */}
           <div className="grid gap-4 sm:grid-cols-2">
-            <ChipPicker label="motive" pool={mystery.motivePool} value={motiveGuess} onPick={setMotiveGuess} />
-            <ChipPicker label="weapon" pool={mystery.weaponPool} value={weaponGuess} onPick={setWeaponGuess} />
+            <ChipPicker label="motive" pool={mystery.motivePool} struck={struckMotives} value={motiveGuess} onPick={setMotiveGuess} />
+            <ChipPicker label="weapon" pool={mystery.weaponPool} struck={struckWeapons} value={weaponGuess} onPick={setWeaponGuess} />
           </div>
 
           {/* ACCUSATION */}
@@ -432,27 +472,34 @@ function ChipPicker({
   pool,
   value,
   onPick,
+  struck,
 }: {
   label: string;
   pool: string[];
   value: string | null;
   onPick: (v: string) => void;
+  struck?: Set<number>;
 }) {
   return (
     <div>
       <p className="microlabel mb-1.5 text-muted">{label}</p>
       <div className="flex flex-wrap gap-1.5">
-        {pool.map((opt) => {
+        {pool.map((opt, i) => {
           const on = value === opt;
+          const ruledOut = struck?.has(i) ?? false;
+          // Still selectable — the evidence rules it out, but a gamble is a gamble.
           return (
             <button
               key={opt}
               type="button"
               onClick={() => onPick(opt)}
+              title={ruledOut ? "the clues rule this out" : undefined}
               className={`rounded-full border px-3 py-1.5 text-[12px] transition ${
                 on
                   ? "border-gold bg-gold/15 text-gold"
-                  : "border-line text-ink/80 hover:border-gold/40 hover:text-ink"
+                  : ruledOut
+                    ? "border-line/40 text-muted/50 line-through hover:text-muted"
+                    : "border-line text-ink/80 hover:border-gold/40 hover:text-ink"
               }`}
             >
               {opt}

@@ -32,7 +32,18 @@ function verdictSummary(
   const trueScene = mystery.scene;
 
   if (result.won) {
-    return "Flawless. You named every culprit, the exact room, and the precise hour. The Order is satisfied.";
+    return "Flawless. Every culprit, the room, the hour, the motive and the weapon. The Order is satisfied.";
+  }
+  // Who/where/when right but a fifth axis (motive or weapon) betrayed the case.
+  if (whoCorrect && whereCorrect && whenCorrect) {
+    const misses: string[] = [];
+    if (attempt.motiveGuess != null && attempt.motiveGuess !== mystery.motive)
+      misses.push(`the motive was ${mystery.motive}`);
+    if (attempt.weaponGuess != null && attempt.weaponGuess !== mystery.weapon)
+      misses.push(`the weapon was ${mystery.weapon}`);
+    return `So close — the who, room and hour were all right, but ${
+      misses.join(" and ") || "a detail slipped"
+    }.`;
   }
   if (whoCorrect && whereCorrect && !whenCorrect) {
     return `You knew who and where — but the hour eluded you. The crime happened at ${trueHour}, not ${guessedHour}.`;
@@ -70,11 +81,12 @@ export default function MysteryVerdict({
   // One tier per clue — a clue left unread is a 🟩 (efficient), a clue spent is a
   // 🟨 (a deduction used). The grid, OG card and link all route through the §3.0
   // share seam (lib/share.ts); only the verdict headline is composed on top.
-  // ponytail: client Date() here, not a prop — page.tsx isn't ours to edit.
+  // C11: use the case's own date, not the client clock — a share posted after
+  // midnight must still name the case it was played on.
   const tiers: Tier[] = mystery.clues.map((_, i) => (i < attempt.cluesRevealed ? "near" : "hit"));
   const card = buildShare({
     room: "/mystery",
-    date: new Date().toISOString().slice(0, 10),
+    date: mystery.date,
     tiers,
     score: result.total,
     columns: mystery.clues.length,
@@ -148,7 +160,11 @@ export default function MysteryVerdict({
             );
           })}
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-line pt-4 text-sm">
+        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-line pt-4 text-sm sm:grid-cols-4">
+          <div>
+            <p className="microlabel text-muted">weapon</p>
+            <p className="text-ink">{mystery.weapon}</p>
+          </div>
           <div>
             <p className="microlabel text-muted">motive</p>
             <p className="text-ink">{mystery.motive}</p>
