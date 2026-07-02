@@ -13,7 +13,7 @@
 // Every clue reduces to a constraint on seat positions, so the solver reasons in
 // one space. Difficulty scales by N and K (see WEEKDAY).
 // ─────────────────────────────────────────────────────────────
-import { mulberry32, hashKey, shuffled } from "./rng";
+import { mulberry32, shuffled } from "./rng";
 import { SPIRIT_PACKS } from "./seanceFlavor";
 
 export type ClueType = "at" | "same" | "diff" | "order" | "neighbor";
@@ -314,6 +314,22 @@ function renderClue(
   }
 }
 
+/**
+ * Re-render every clue's prose from its structured fields. Archived DB payloads
+ * (seance_puzzles) carry text baked at generation time, so wording fixes
+ * ("left of" → "above", sentence-casing) would otherwise never reach
+ * already-archived days — and the hint system highlights those stale clues.
+ */
+export function refreshClueText(p: SeancePuzzle): SeancePuzzle {
+  return {
+    ...p,
+    clues: p.clues.map((c) => ({
+      ...c,
+      text: renderClue(c.type, c.a, c.b, c.seat, p.categories),
+    })),
+  };
+}
+
 // ── Generation ───────────────────────────────────────────────
 
 /** Build the full pool of TRUE clues about a solution, richest-first by type. */
@@ -473,6 +489,9 @@ export interface Deduction {
 /** A deduction plus the clue(s) that drive it (indices into puzzle.clues). */
 export interface Hint extends Deduction {
   clues: number[];
+  /** Set when the deduction corrects a player mark that contradicts the true
+   *  solution (the hint's cat/seat/val/mark IS the correction to make). */
+  wrong?: true;
 }
 
 export function emptyBoard(p: SeancePuzzle): Board {
@@ -563,6 +582,22 @@ const byCell = (a: Deduction, b: Deduction) =>
  * Returns null only when the board is already solved.
  */
 export function nextHint(board: Board, p: SeancePuzzle): Hint | null {
+  // Tier 0 — a mark that contradicts the true solution. Every later tier
+  // propagates the player's marks as ground truth, so a hint derived from a
+  // false premise would direct them deeper into the wrong branch (and
+  // deepHint's clue attribution collapses to a dead "grid logic" claim).
+  // Surface the bad mark itself; the returned deduction is the correction.
+  const pos = seatOf(p);
+  for (let c = 0; c < p.categories.length; c++)
+    for (let seat = 0; seat < p.n; seat++)
+      for (let v = 0; v < p.n; v++) {
+        const m = board[c][seat][v];
+        if (m === 0) continue;
+        const truth = pos[c][v] === seat;
+        if ((m === 2 && !truth) || (m === 1 && truth))
+          return { clues: [], cat: c, seat, val: v, mark: truth ? 2 : 1, wrong: true };
+      }
+
   // If the player's marks are self-contradictory, hint from a clean board so a
   // hint is still always available (the puzzle is solvable from clues alone).
   let use = board;

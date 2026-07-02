@@ -232,7 +232,9 @@ export default function BoardGame({
       date: todayISO(),
       tiers,
       score: Math.max(0, score),
-      maxScore: columns.length * 3000, // 200+400+600+800+1000 per column
+      // 200+400+600+800+1000 per column; hard mode pays 2× per cell, so its
+      // ceiling doubles (else a cleared hard board shares "28,800/15,000").
+      maxScore: columns.length * 3000 * (mode === "hard" ? 2 : 1),
       columns: columns.length,
     });
     // Badge the hard-mode cells cleared (2× stakes) into the share blob.

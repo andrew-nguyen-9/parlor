@@ -189,7 +189,8 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
   const showHint = useCallback(() => {
     const h = nextHint(board, puzzle);
     setHint(h);
-    if (h && h.clues.length) setActiveClue(h.clues[0]);
+    if (h?.wrong) setActiveClue(null); // no clue to trace — a mark is bad
+    else if (h && h.clues.length) setActiveClue(h.clues[0]);
   }, [board, puzzle]);
 
   // Scroll the primary hinted clue into view.
@@ -203,26 +204,27 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
   }, [hint, reduce]);
 
   // Flag a clue done. If it still yields deductions, confirm before dimming it.
+  // The confirm lives OUTSIDE the state updater — React requires updaters to be
+  // pure and may run them twice (StrictMode dev), double-popping the dialog.
   const toggleFlag = useCallback(
     (i: number) => {
-      setFlagged((prev) => {
-        const next = new Set(prev);
-        if (next.has(i)) {
-          next.delete(i);
-          return next;
-        }
+      if (!flagged.has(i)) {
         const n = remainingFromClue(board, puzzle, i);
         if (n > 0 && typeof window !== "undefined") {
           const ok = window.confirm(
             `${n} more elimination${n > 1 ? "s" : ""} possible with this clue. Mark it done anyway?`,
           );
-          if (!ok) return prev;
+          if (!ok) return;
         }
-        next.add(i);
+      }
+      setFlagged((prev) => {
+        const next = new Set(prev);
+        if (next.has(i)) next.delete(i);
+        else next.add(i);
         return next;
       });
     },
-    [board, puzzle],
+    [board, puzzle, flagged],
   );
 
   function submit() {
@@ -504,9 +506,13 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
 
       {hint && (
         <p className="text-center microlabel" style={{ color: ACCENT }}>
-          {hint.clues.length
-            ? "the highlighted clue points to your next move — read it, don't guess"
-            : "your marks alone already force a cell — scan the grid"}
+          {hint.wrong
+            ? `your ${hint.mark === 2 ? "✕" : "◯"} on ${
+                puzzle.categories[hint.cat].values[hint.val]
+              } in seat ${hint.seat + 1} contradicts the spirits — undo it first`
+            : hint.clues.length
+              ? "the highlighted clue points to your next move — read it, don't guess"
+              : "your marks alone already force a cell — scan the grid"}
         </p>
       )}
       <p className="text-center microlabel text-smoke">

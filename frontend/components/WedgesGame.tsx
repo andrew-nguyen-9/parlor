@@ -299,7 +299,10 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
     }
     const unlocked = record({
       room: "wedges",
-      score: points, // rank by speed-weighted points, not the 0–6 wedge count
+      // score stays on the legacy 0–6 wedge scale: the leaderboard and
+      // profile bests hold years of 0–6 entries, and speed-weighted points
+      // (hundreds) would bury them all. Points still feed xp below.
+      score: earned.size,
       xp: earned.size * 150 + (wonRing ? 300 : 0) + points,
       perCategory: stats.current,
     });
@@ -438,7 +441,7 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
           </div>
           <p className="microlabel mt-1 text-muted">{questionsTaken} questions</p>
 
-          <LeaderboardPanel room="wedges" score={points} accent="sports" />
+          <LeaderboardPanel room="wedges" score={earned.size} accent="sports" />
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button
               onClick={shareResult}

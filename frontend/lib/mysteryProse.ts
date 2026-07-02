@@ -89,7 +89,9 @@ const ALIVE_OPENERS = [
 
 const FOUND_OPENERS = [
   "raised the alarm",
-  "found the body already cold",
+  // Clue 3's template already says "the coroner puts the body already cold" —
+  // keep these openers clear of that phrase or the sentence repeats itself.
+  "discovered the body",
   "stumbled upon the scene",
   "screamed from the landing",
 ] as const;

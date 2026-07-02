@@ -84,7 +84,9 @@ export default function MapGame({
   const raf = useRef<number>();
   const startedAt = useRef(0);
 
-  const dayKey = `parlor:map:${daySeed()}`;
+  // Frozen at mount: a run started before UTC midnight must persist under the
+  // day whose seeded rounds were actually played, not the clock at finish time.
+  const dayKey = useRef(`parlor:map:${daySeed()}`).current;
 
   // Restore a completed daily run so a reload lands on the finish screen (the
   // Gauntlet lock pattern) — no replaying the day-seeded rounds for a fresh
@@ -115,17 +117,18 @@ export default function MapGame({
     } else {
       sfx.lose();
     }
-    const unlocked = record({ room: "map", score, xp: score });
-    if (unlocked.length) setToasts(unlocked);
-    // Persist the real daily run (never a practice replay) so it locks.
+    // Practice replays run the same day-seeded rounds with known answers —
+    // they never touch the profile bests, and never persist the daily lock.
     if (!practiceMode) {
+      const unlocked = record({ room: "map", score, xp: score });
+      if (unlocked.length) setToasts(unlocked);
       try {
         localStorage.setItem(dayKey, JSON.stringify({ score, results }));
       } catch {
         /* storage unavailable — in-memory only */
       }
     }
-  }, [done, score, rounds.length, record]);
+  }, [done, score, rounds.length, record, practiceMode, results, dayKey]);
 
   if (rounds.length === 0) {
     return (
@@ -366,7 +369,8 @@ export default function MapGame({
             })}
           </div>
 
-          <LeaderboardPanel room="map" score={score} accent="geography" />
+          {/* Practice replays re-run known rounds — no leaderboard posting. */}
+          {!practiceMode && <LeaderboardPanel room="map" score={score} accent="geography" />}
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button
               onClick={shareResult}

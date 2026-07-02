@@ -148,10 +148,11 @@ export default function GauntletGame({
       const result: Saved = { totalMs, tiers: results, date: new Date().toISOString().slice(0, 10) };
       localStorage.setItem(storageKey, JSON.stringify(result));
       // Wire the run into the profile/leaderboard (the only room that didn't).
-      // Records under "blitz" — the Gauntlet absorbs the Blitz sprint (header),
-      // mirroring how the Overture records under "jukebox". profile.ts is shared.
+      // Own room key: the time-derived score (600 - seconds) is a different
+      // scale from legacy Blitz correct-counts and would corrupt that board
+      // and misfire the "Blitzed" (20+ answers) achievement.
       const score = gauntletScore(totalMs);
-      record({ room: "blitz", score, xp: score });
+      record({ room: "gauntlet", score, xp: score });
       setSaved(result);
       setPhase("done");
       return;
@@ -430,7 +431,7 @@ function Results({
       <p className="display tabular text-7xl text-wildcard">{fmt(saved.totalMs)}</p>
       <p className="mt-1 text-muted">out of the temple</p>
       <p className="mt-4 text-3xl tracking-widest">{emojiGrid(saved.tiers, 5)}</p>
-      <LeaderboardPanel room="blitz" score={gauntletScore(saved.totalMs)} accent="wildcard" />
+      <LeaderboardPanel room="gauntlet" score={gauntletScore(saved.totalMs)} accent="wildcard" />
       <button
         onClick={() => onShare(saved)}
         className="microlabel mt-8 rounded-full border border-wildcard px-8 py-3 text-wildcard transition hover:bg-wildcard hover:text-bg"

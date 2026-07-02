@@ -5,6 +5,7 @@ import {
   WEEKDAY,
   emptyBoard,
   nextHint,
+  refreshClueText,
   clueDeductions,
   remainingFromClue,
   histCommit,
@@ -111,6 +112,25 @@ describe("deduction engine", () => {
     }
   });
 
+  it("a mark contradicting the solution yields a wrong-mark hint, not a derived move", () => {
+    for (const { dayIndex, date } of DAYS.slice(0, 3)) {
+      const p = generateSeance(dayIndex, date);
+      const pos = posOf(p);
+      // wrongly snuff the true cell of (cat 0, val 0) — consistent under
+      // propagation (no contradiction yet) but false against the solution
+      const board = emptyBoard(p);
+      board[0][pos[0][0]][0] = 1;
+      const h = nextHint(board, p);
+      expect(h).not.toBeNull();
+      expect(h!.wrong).toBe(true);
+      // the hint IS the correction: re-bind the truth at that cell
+      expect(h!.cat).toBe(0);
+      expect(h!.val).toBe(0);
+      expect(h!.seat).toBe(pos[0][0]);
+      expect(h!.mark).toBe(2);
+    }
+  });
+
   it("iterated hints drive the board to the full solution", () => {
     for (const { dayIndex, date } of DAYS.slice(0, 5)) {
       const p = generateSeance(dayIndex, date);
@@ -128,6 +148,17 @@ describe("deduction engine", () => {
         }
       }
     }
+  });
+
+  it("refreshClueText regenerates archived prose from clue structure", () => {
+    const { dayIndex, date } = day(20002);
+    const p = generateSeance(dayIndex, date);
+    // simulate an archived payload with stale prose baked in
+    const stale = { ...p, clues: p.clues.map((c) => ({ ...c, text: "old wording" })) };
+    const fresh = refreshClueText(stale);
+    fresh.clues.forEach((c, i) => expect(c.text).toBe(p.clues[i].text));
+    // input untouched (pure)
+    stale.clues.forEach((c) => expect(c.text).toBe("old wording"));
   });
 
   it("mark-clue-complete count matches the clue's real remaining deductions", () => {
