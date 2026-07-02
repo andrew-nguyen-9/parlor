@@ -8,7 +8,10 @@ const SYSTEM_LINKS = SYSTEM_ROOMS.filter((r) => r.path !== "/");
 export default function SiteFooter() {
   const roomLinks = GAME_ROOMS.map((room) => (
     <li key={room.path}>
-      <Link href={room.path} className="text-sm text-muted transition hover:text-ink">
+      <Link
+        href={room.path}
+        className="block py-3 text-sm text-muted transition hover:text-ink sm:py-1"
+      >
         {room.name}
       </Link>
     </li>
@@ -28,7 +31,7 @@ export default function SiteFooter() {
       <div className="mx-auto grid max-w-5xl gap-10 sm:grid-cols-[1.4fr_1fr_1fr]">
         {/* Brand + exit to an9.dev */}
         <div>
-          <Link href="/" className="flex items-center gap-3 transition hover:opacity-80">
+          <Link href="/" className="flex min-h-[44px] items-center gap-3 transition hover:opacity-80">
             <img
               src="/logo-96.png?v=2"
               alt="The Parlor"
@@ -54,7 +57,7 @@ export default function SiteFooter() {
         <nav aria-label="Rooms">
           <p className="microlabel mb-3 hidden text-brass sm:block">the rooms</p>
           <details className="group sm:hidden">
-            <summary className="microlabel flex cursor-pointer list-none items-center gap-2 text-brass [&::-webkit-details-marker]:hidden">
+            <summary className="microlabel flex min-h-[44px] cursor-pointer list-none items-center gap-2 text-brass [&::-webkit-details-marker]:hidden">
               the rooms
               <span aria-hidden className="transition group-open:rotate-180">▾</span>
             </summary>
@@ -73,7 +76,7 @@ export default function SiteFooter() {
               <li key={room.path}>
                 <Link
                   href={room.path}
-                  className="text-sm text-muted transition hover:text-ink"
+                  className="block py-3 text-sm text-muted transition hover:text-ink sm:py-1"
                 >
                   {room.name}
                 </Link>

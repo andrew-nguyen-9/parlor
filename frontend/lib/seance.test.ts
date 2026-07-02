@@ -1,5 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { generateSeance, solutionCount, WEEKDAY, type Clue, type SeancePuzzle } from "./seance";
+import {
+  generateSeance,
+  solutionCount,
+  WEEKDAY,
+  emptyBoard,
+  nextHint,
+  refreshClueText,
+  clueDeductions,
+  remainingFromClue,
+  histCommit,
+  histUndo,
+  histRedo,
+  histState,
+  type Board,
+  type History,
+  type Clue,
+  type SeancePuzzle,
+} from "./seance";
 
 // (dayIndex, YYYY-MM-DD) pairs — date derived from the epoch-day so the weekday
 // the engine reads always matches dayIndex.
@@ -72,5 +89,112 @@ describe("generateSeance", () => {
       expect(p.whisper).toBe(cfg.whisper);
       for (const cat of p.categories) expect(cat.values).toHaveLength(p.n);
     }
+  });
+});
+
+describe("deduction engine", () => {
+  it("hint cites clue(s) that yield a solution-consistent move", () => {
+    for (const { dayIndex, date } of DAYS.slice(0, 4)) {
+      const p = generateSeance(dayIndex, date);
+      const pos = posOf(p);
+      const h = nextHint(emptyBoard(p), p);
+      expect(h).not.toBeNull();
+      // the move agrees with the truth: confirm ⇒ value really sits there;
+      // eliminate ⇒ it does not.
+      if (h!.mark === 2) expect(pos[h!.cat][h!.val]).toBe(h!.seat);
+      else expect(pos[h!.cat][h!.val]).not.toBe(h!.seat);
+      // a cited clue genuinely drives the move
+      for (const i of h!.clues) {
+        expect(clueDeductions(emptyBoard(p), p, i).some(
+          (d) => d.cat === h!.cat && d.seat === h!.seat && d.val === h!.val && d.mark === h!.mark,
+        )).toBe(true);
+      }
+    }
+  });
+
+  it("a mark contradicting the solution yields a wrong-mark hint, not a derived move", () => {
+    for (const { dayIndex, date } of DAYS.slice(0, 3)) {
+      const p = generateSeance(dayIndex, date);
+      const pos = posOf(p);
+      // wrongly snuff the true cell of (cat 0, val 0) — consistent under
+      // propagation (no contradiction yet) but false against the solution
+      const board = emptyBoard(p);
+      board[0][pos[0][0]][0] = 1;
+      const h = nextHint(board, p);
+      expect(h).not.toBeNull();
+      expect(h!.wrong).toBe(true);
+      // the hint IS the correction: re-bind the truth at that cell
+      expect(h!.cat).toBe(0);
+      expect(h!.val).toBe(0);
+      expect(h!.seat).toBe(pos[0][0]);
+      expect(h!.mark).toBe(2);
+    }
+  });
+
+  it("iterated hints drive the board to the full solution", () => {
+    for (const { dayIndex, date } of DAYS.slice(0, 5)) {
+      const p = generateSeance(dayIndex, date);
+      let board = emptyBoard(p);
+      for (let guard = 0; guard < 5000; guard++) {
+        const h = nextHint(board, p);
+        if (!h) break;
+        board = board.map((c) => c.map((r) => r.slice()));
+        board[h.cat][h.seat][h.val] = h.mark;
+      }
+      const pos = posOf(p);
+      for (let c = 0; c < p.categories.length; c++) {
+        for (let v = 0; v < p.n; v++) {
+          expect(board[c][pos[c][v]][v]).toBe(2); // value bound at its true seat
+        }
+      }
+    }
+  });
+
+  it("refreshClueText regenerates archived prose from clue structure", () => {
+    const { dayIndex, date } = day(20002);
+    const p = generateSeance(dayIndex, date);
+    // simulate an archived payload with stale prose baked in
+    const stale = { ...p, clues: p.clues.map((c) => ({ ...c, text: "old wording" })) };
+    const fresh = refreshClueText(stale);
+    fresh.clues.forEach((c, i) => expect(c.text).toBe(p.clues[i].text));
+    // input untouched (pure)
+    stale.clues.forEach((c) => expect(c.text).toBe("old wording"));
+  });
+
+  it("mark-clue-complete count matches the clue's real remaining deductions", () => {
+    const { dayIndex, date } = day(20001);
+    const p = generateSeance(dayIndex, date);
+    const empty = emptyBoard(p);
+    const pos = posOf(p);
+    const i = p.clues.findIndex((_, k) => remainingFromClue(empty, p, k) > 0);
+    expect(i).toBeGreaterThanOrEqual(0);
+    const ded = clueDeductions(empty, p, i);
+    expect(remainingFromClue(empty, p, i)).toBe(ded.length); // the count the UI shows == the real moves
+    for (const d of ded) {
+      if (d.mark === 2) expect(pos[d.cat][d.val]).toBe(d.seat);
+      else expect(pos[d.cat][d.val]).not.toBe(d.seat);
+    }
+  });
+});
+
+describe("undo/redo history", () => {
+  it("walks marks forward and back, and a new mark clears redo", () => {
+    let h: History<number> = { stack: [0], idx: 0 };
+    for (let k = 1; k <= 3; k++) h = histCommit(h, k); // apply 3 marks
+    let u = h;
+    for (let k = 0; k < 3; k++) u = histUndo(u);
+    expect(histState(u)).toBe(0); // undo k → initial
+    let r = u;
+    for (let k = 0; k < 3; k++) r = histRedo(r);
+    expect(histState(r)).toBe(3); // redo → restored
+    const branched = histCommit(histUndo(h), 9); // new mark after undo
+    expect(histState(branched)).toBe(9);
+    expect(histRedo(branched)).toBe(branched); // redo stack cleared
+  });
+
+  it("undo/redo saturate at the ends", () => {
+    const h: History<Board> = { stack: [[[[0]]]], idx: 0 };
+    expect(histUndo(h)).toBe(h);
+    expect(histRedo(h)).toBe(h);
   });
 });

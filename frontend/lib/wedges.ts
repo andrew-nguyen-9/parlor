@@ -15,6 +15,10 @@ import { daySeed, dailyOrder, mulberry32, hashKey } from "./rng";
 /** How many questions each category serves in the main six-wedge round. */
 export const PER_CATEGORY_MAIN = 3;
 
+/** Bonus-round cap per category — the leftover pool is a short second-chance
+ *  lap, not an endless slog (≤ CATEGORIES × this = 12 bonus questions). */
+export const PER_CATEGORY_BONUS = 2;
+
 export interface DailyWedges {
   /** category → its full daily-ordered list (shared across all players). */
   order: Record<Category, Question[]>;
@@ -52,7 +56,7 @@ export function buildDailyWedges(
     const ordered = dailyOrder(cat, byCat[cat], dayIndex);
     order[cat] = ordered;
     served[cat] = ordered.slice(0, PER_CATEGORY_MAIN);
-    bonus.push(...ordered.slice(PER_CATEGORY_MAIN));
+    bonus.push(...ordered.slice(PER_CATEGORY_MAIN, PER_CATEGORY_MAIN + PER_CATEGORY_BONUS));
   }
 
   return { order, served, bonus };

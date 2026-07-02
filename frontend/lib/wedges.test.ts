@@ -7,6 +7,7 @@ import {
   wedgeShareLine,
   wedgeShareText,
   PER_CATEGORY_MAIN,
+  PER_CATEGORY_BONUS,
   GHOST_QUIPS,
 } from "./wedges";
 import { CATEGORIES, type Question } from "./types";
@@ -75,13 +76,23 @@ describe("buildDailyWedges (lockout + bonus partitioning)", () => {
     }
   });
 
-  it("bonus is exactly the never-served remainder (no overlap, no loss)", () => {
+  it("bonus is the capped never-served slice (no overlap, ≤ cap per category)", () => {
     const w = buildDailyWedges(pool(), 20000);
     const servedSet = new Set<string>();
     for (const c of CATEGORIES) for (const s of w.served[c]) servedSet.add(s.prompt);
+    // no bonus question was already served in the main round
     for (const b of w.bonus) expect(servedSet.has(b.prompt)).toBe(false);
-    const total = Object.values(w.order).reduce((n, arr) => n + arr.length, 0);
-    expect(servedSet.size + w.bonus.length).toBe(total);
+    // each category contributes at most PER_CATEGORY_BONUS, drawn straight after
+    // its served slice; total bonus is capped, not the whole remainder
+    for (const c of CATEGORIES) {
+      const expected = w.order[c].slice(
+        PER_CATEGORY_MAIN,
+        PER_CATEGORY_MAIN + PER_CATEGORY_BONUS,
+      );
+      const got = w.bonus.filter((b) => b.category === c).map((b) => b.prompt);
+      expect(got).toEqual(expected.map((s) => s.prompt));
+    }
+    expect(w.bonus.length).toBeLessThanOrEqual(CATEGORIES.length * PER_CATEGORY_BONUS);
   });
 });
 

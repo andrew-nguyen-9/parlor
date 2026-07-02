@@ -182,6 +182,7 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
   const [toasts, setToasts] = useState<Achievement[]>([]);
   const [burst, setBurst] = useState(0);
   const recorded = useRef(false);
+  const firstRun = useRef(true); // only the first run of the session records
   const stats = useRef<Partial<Record<Category, { correct: number; total: number }>>>({});
 
   const queue = phase === "main" ? mainQueue : daily.bonus;
@@ -216,7 +217,10 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
     setFlash(null);
     setReinforce(null);
     setCopied(false);
-    recorded.current = false;
+    // First run of the session records; every "play again" on the same daily
+    // set is a replay and must not re-post to the leaderboard.
+    recorded.current = !firstRun.current;
+    firstRun.current = false;
     stats.current = {};
   }
 
@@ -295,6 +299,9 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
     }
     const unlocked = record({
       room: "wedges",
+      // score stays on the legacy 0–6 wedge scale: the leaderboard and
+      // profile bests hold years of 0–6 entries, and speed-weighted points
+      // (hundreds) would bury them all. Points still feed xp below.
       score: earned.size,
       xp: earned.size * 150 + (wonRing ? 300 : 0) + points,
       perCategory: stats.current,

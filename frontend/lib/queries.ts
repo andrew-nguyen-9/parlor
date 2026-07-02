@@ -7,7 +7,7 @@ import { unstable_cache } from "next/cache";
 import seed from "../public/seed-questions.json";
 import { getDb } from "./db";
 import type { Question, QType } from "./types";
-import { generateSeance, type SeancePuzzle } from "./seance";
+import { generateSeance, refreshClueText, type SeancePuzzle } from "./seance";
 import { generateLadder, type LadderPuzzle } from "./ladder";
 
 const SEED_BANK = (seed as { questions: Question[] }).questions;
@@ -51,7 +51,9 @@ const cachedSeance = unstable_cache(
     const sql = getDb()!;
     const rows = await sql`
       select payload from seance_puzzles where play_date = ${day} limit 1`;
-    return rows.length > 0 ? (rows[0].payload as SeancePuzzle) : null;
+    // Archived payloads bake clue prose at generation time — re-render it so
+    // wording fixes reach already-archived days (structure is unchanged).
+    return rows.length > 0 ? refreshClueText(rows[0].payload as SeancePuzzle) : null;
   },
   ["seance-puzzle"],
   { revalidate: 86_400 },

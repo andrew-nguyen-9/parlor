@@ -245,7 +245,6 @@ function BrowserCard({
   return (
     <motion.button
       type="button"
-      aria-label={`${game.name} — ${isActive ? "open" : "bring to front"}`}
       aria-hidden={!isActive}
       tabIndex={isActive ? 0 : -1}
       onClick={() => {
@@ -288,7 +287,6 @@ function SpreadGrid({
           <motion.button
             key={game.href}
             type="button"
-            aria-label={`${game.name} — open`}
             onClick={() => onSelect(gi)}
             className="deck-spread-cell deck-scene"
             initial={reduced ? false : { opacity: 0, y: 18, scale: 0.94 }}

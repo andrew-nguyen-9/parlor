@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Marquee from "@/components/Marquee";
 import Deck from "@/components/Deck";
-import type { Game } from "@/components/CardFace";
+import { GAMES } from "@/lib/games";
 import { CATEGORY_HEX } from "@/lib/types";
 import { isDbConfigured } from "@/lib/db";
 
@@ -15,111 +15,6 @@ const TICKER = [
   "south africa has three capitals",
   "the eiffel tower grows 15 cm taller in summer",
   "♦ your card has been dealt",
-];
-
-// One card per game. Suit = category; each carries exactly one Secret Order
-// character (canon owned by 2.11, GAMES.md). The Mystery is the feature card.
-const GAMES: Game[] = [
-  {
-    href: "/mystery",
-    name: "Sanctum Mysterii",
-    accent: "history",
-    character: "the Order",
-    emblem: "◉", // the all-seeing eye
-    rank: 1, // the Ace
-    blurb:
-      "A new case every night. Read the dossiers, follow the clues, and name the culprit before the candle gutters out.",
-  },
-  {
-    href: "/board",
-    name: "Codex",
-    accent: "history",
-    character: "the Host",
-    emblem: "⌘", // the open codex / page of categories
-    rank: 2,
-    blurb:
-      "Five categories, five values, one daily double. The same board for everyone, every day.",
-  },
-  {
-    href: "/clock",
-    name: "Chronos",
-    accent: "music",
-    character: "the Clockkeeper",
-    emblem: "⧗", // a clock face
-    rank: 3,
-    blurb:
-      "When did it happen? Drag the year — closer guesses, bigger points. Five rounds against the century.",
-  },
-  {
-    href: "/wedges",
-    name: "Fractures",
-    accent: "sports",
-    character: "the Ghost",
-    emblem: "⬡", // the shattered mirror's shard
-    rank: 4,
-    blurb:
-      "Six wedges, twenty questions. Fill the ring before the deck runs out — quickfire across every category.",
-  },
-  {
-    href: "/streak",
-    name: "Ignite",
-    accent: "screen",
-    character: "the Witch",
-    emblem: "✦", // the witch's kindling flame
-    rank: 5,
-    blurb:
-      "Higher or lower? Populations, box offices, fan counts. One wrong call ends the run.",
-  },
-  {
-    href: "/map",
-    name: "Atlas Obscura",
-    accent: "geography",
-    character: "the Cartographer",
-    emblem: "⌖", // drop a pin
-    rank: 6,
-    blurb:
-      "Drop a pin where it happened. Scored by the kilometer — no tile servers, no mercy.",
-  },
-  {
-    href: "/gauntlet",
-    name: "The Gauntlet",
-    accent: "wildcard",
-    character: "the Adventurer",
-    emblem: "⧈", // the day's run
-    rank: 7,
-    blurb:
-      "One round from every room, once a day, the same gauntlet for everyone. Share your line of squares.",
-  },
-  {
-    href: "/thread",
-    name: "Thread of Fate",
-    accent: "history",
-    character: "the Weaver",
-    emblem: "⌇", // a stitch of thread
-    rank: 8,
-    blurb:
-      "Follow the chain of clues. Each answer links to the next — unravel the thread before it tangles.",
-  },
-  {
-    href: "/seance",
-    name: "The Séance",
-    accent: "wildcard",
-    character: "the Medium",
-    emblem: "☍", // the spirit's moon
-    rank: 9,
-    blurb:
-      "Who or what am I? Each clue costs a point. The earliest correct answer earns the most.",
-  },
-  {
-    href: "/ladder",
-    name: "Climb of the Initiate",
-    accent: "music",
-    character: "the Trickster",
-    emblem: "☰", // the rungs
-    rank: 10,
-    blurb:
-      "Pick the closest match. Hints reveal shared attributes — category, region, magnitude. Climb the ladder.",
-  },
 ];
 
 export default function Home() {
@@ -195,9 +90,9 @@ export default function Home() {
                   >
                     {game.character}
                   </span>
-                  <h3 className="gilt display mt-1 text-lg leading-tight tracking-[0.04em]">
+                  <h2 className="gilt display mt-1 text-lg leading-tight tracking-[0.04em]">
                     {game.name}
-                  </h3>
+                  </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted">
                     {game.blurb}
                   </p>

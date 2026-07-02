@@ -66,16 +66,25 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+/* a clue row = the trace button + a "mark spent" toggle */
+.clueRow {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  border-radius: 0.5rem;
+  transition: opacity 0.15s;
+}
 .clue {
   display: flex;
   gap: 0.5rem;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   text-align: left;
   border: 1px solid transparent;
   border-radius: 0.5rem;
   padding: 0.4rem 0.55rem;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 .clue:hover {
   background: rgba(255, 255, 255, 0.03);
@@ -83,6 +92,33 @@
 .clueActive {
   border-color: currentColor;
   background: rgba(255, 255, 255, 0.05);
+}
+/* clue a hint points at — pulse the accent so the eye lands on it */
+.clueHint .clue {
+  border-color: rgba(112, 64, 168, 0.9);
+  box-shadow: 0 0 0 1px rgba(112, 64, 168, 0.45), 0 0 12px rgba(112, 64, 168, 0.3);
+}
+/* clue the player has marked spent — dimmed, still legible + reversible */
+.clueFlagged {
+  opacity: 0.4;
+}
+.flagBtn {
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  line-height: 1;
+  color: var(--smoke, #6b6478);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.flagBtn:hover {
+  color: var(--muted, #9a92a8);
+  background: rgba(255, 255, 255, 0.05);
+}
+.flagBtn[aria-pressed="true"] {
+  color: #7040a8;
 }
 
 /* ── the unified matrix ─────────────────────────────────────────────────── */
@@ -116,7 +152,7 @@
   height: 4.75rem;
   vertical-align: bottom;
   padding: 0.15rem 0 0.3rem;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 400;
 }
 .valHead > span {
@@ -130,14 +166,14 @@
 }
 
 .seatHead {
-  font-size: 0.62rem;
+  font-size: 0.66rem;
   font-weight: 400;
   white-space: nowrap;
   padding: 0 0.45rem;
   text-align: right;
 }
 .corner {
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   font-weight: 400;
   text-align: right;
   padding: 0 0.45rem 0.4rem;

@@ -18,7 +18,9 @@ export const ROOMS = [
   "wedges",
   "streak",
   "map",
-  "daily",
+  // "gauntlet" replaced the retired daily room (the route now redirects);
+  // nothing ever recorded under "daily", so the key is dropped, not migrated.
+  "gauntlet",
   "jukebox",
   "gallery",
   "blitz",

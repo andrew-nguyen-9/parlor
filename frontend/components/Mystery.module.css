@@ -18,6 +18,19 @@
   margin: 0 auto;
 }
 
+/* E2.1 — full-viewport board. RoomShell caps its column at 64rem, but the
+ * investigation wants the whole screen on large displays. Break out of the
+ * parent cap and fluidly fill the viewport (capped at 96rem, centred, with 1rem
+ * gutters). Below this width the parent column already fits, so leave it be. */
+@media (min-width: 1088px) {
+  .shell {
+    width: min(96rem, 100vw - 2rem);
+    max-width: none;
+    margin-left: calc(50% - min(48rem, 50vw - 1rem));
+    margin-right: calc(50% - min(48rem, 50vw - 1rem));
+  }
+}
+
 /* ── case bar: identity + live deduction status ──────────────────────────── */
 .caseBar {
   display: flex;

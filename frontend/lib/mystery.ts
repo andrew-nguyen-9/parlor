@@ -14,16 +14,25 @@
 //   nobody claims the scene. `deduceCulprits()` tallies that hour's `claimed`
 //   column and returns the lone occupants — no hidden field, no clue that names
 //   a name. (`Dossier.trueLocation` still records the ground truth for prose.)
-// - WHERE / WHEN: four of the seven clues each rule out a set of rooms or hours
-//   entirely (`Clue.eliminatesRooms` / `eliminatesHours`). Together they're
-//   constructed to eliminate every room but the true scene and every hour but
-//   the true murder hour. `deductionMatrix()` renders the running state of that
-//   elimination as a room×hour grid; the one cell that survives both an
-//   un-eliminated row and an un-eliminated column is `"confirmed"`.
+// - WHERE / WHEN: staged clues rule out sets of rooms or hours
+//   (`Clue.eliminatesRooms` / `eliminatesHours`). WHEN is two BRACKET clues — the
+//   victim "last seen alive" before one bound and "found cold" by a later one, so
+//   the murder falls strictly between (neither bracket alone pins it). WHERE is
+//   forensic elimination of the non-scene rooms. Together they leave every room
+//   but the true scene and every hour but the murder hour. `deductionMatrix()`
+//   renders that running elimination as a room×hour grid; the one cell surviving
+//   both an un-eliminated row and column is `"confirmed"`.
 // `verifySolvable()` (used by the room + lib/mystery.test.ts) checks all three.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { mulberry32 } from "./rng";
+import {
+  PROSE_SALT,
+  buildOpening,
+  pickAliveOpener,
+  pickFoundOpener,
+  pickTitle,
+} from "./mysteryProse";
 
 export interface Character {
   id: string;
@@ -261,6 +270,11 @@ export function generateCase(date: string): MysteryCase {
   const ringleader = culprits[0];
   addRel(ringleader, victim.id, "rival"); // ringleader ↔ victim motive thread
   for (let i = 1; i < culprits.length; i++) addRel(culprits[i], ringleader, "business partner");
+  // Red herrings (C1): give two innocents a victim tie too, so the dossiers no
+  // longer fingerprint the ringleader as "the only guest linked to the victim".
+  // Motive is deduced from the elimination clues, never from these ties, so this
+  // is pure misdirection — it cannot change WHO/MOTIVE deduction.
+  shuffle(innocents, rnd).slice(0, 2).forEach((s) => addRel(s.id, victim.id, pick(REL_KINDS, rnd)));
 
   // ── WHERE/WHEN elimination clues ────────────────────────────────────────────
   // Partition the non-scene rooms and non-murder hours so that, once all four
@@ -273,9 +287,12 @@ export function generateCase(date: string): MysteryCase {
   const roomsRound1 = nonSceneRooms.slice(0, 2);
   const roomsRound2 = nonSceneRooms.slice(2);
 
-  const nonMurderHours = shuffle(HOURS.map((_, i) => i).filter((i) => i !== hourIndex), rnd);
-  const hoursRound1 = nonMurderHours.slice(0, 2);
-  const hoursRound2 = nonMurderHours.slice(2);
+  // WHEN as bracket inference (E2.2): the victim was seen alive up to one hour and
+  // found dead by a later one, so the murder falls strictly between. Two bounding
+  // clues — neither alone pins the hour; together they leave only `hourIndex`.
+  // hourIndex is always 1..3, so both brackets are non-empty and diegetic.
+  const beforeHours = HOURS.map((_, i) => i).filter((i) => i < hourIndex); // "last seen alive after…"
+  const afterHours = HOURS.map((_, i) => i).filter((i) => i > hourIndex); //  "found cold by…"
 
   // motive/weapon decoys split across two clues each ([2] then [1]): no single
   // clue narrows an axis to one (5.7), two together do.
@@ -285,18 +302,22 @@ export function generateCase(date: string): MysteryCase {
   const weaponElimB = weaponDecoys.slice(2);
 
   // ── prose (templated, no LLM) ───────────────────────────────────────────────
-  // Deliberately never names `scene`, `HOURS[hourIndex]`, `motive`, or `weapon`
-  // — all five axes must be earned by deduction, not handed over in the opening.
+  // All flourish is drawn from a SECOND rng stream (`proseRnd`) so growing the
+  // banks never perturbs the logic stream above — same date, same puzzle, only
+  // the wording rotates. The banks are pure atmosphere and deliberately never
+  // name `scene`, `HOURS[hourIndex]`, `motive`, or `weapon`: all five axes must
+  // be earned by deduction, not handed over in the opening (guarded by tests).
   const caseNumber = caseNumberFor(date);
-  const niceDate = new Date(date + "T00:00:00Z").toLocaleDateString("en-US", {
-    month: "long", day: "numeric", year: "numeric", timeZone: "UTC",
+  const proseRnd = mulberry32(seedFromDate(date) ^ PROSE_SALT);
+  const title = pickTitle(proseRnd);
+  const opening = buildOpening(proseRnd, {
+    title: victim.title, emoji: victim.emoji, name: pretty(victim.id), trait: victim.trait,
   });
-  const title = `The ${niceDate.replace(/, \d{4}$/, "")} Case`;
-  const opening =
-    `Candlelight gutters somewhere in the house. ${victim.title}, ${victim.emoji} ${pretty(victim.id)}, ` +
-    `was found dead this evening — ${victim.trait.toLowerCase()} ` +
-    `Seven guests remain in the mansion, each with a story, and at least one with a lie. ` +
-    `The Order convenes. Where, when, why, by what hand — and whose.`;
+  // Attribute the two time-bracket clues to innocent witnesses (never a culprit,
+  // so the attribution is cohesion/flavor, never a tell).
+  const proseWitnesses = shuffle(innocents, proseRnd).map((s) => pretty(s.id));
+  const aliveWitness = proseWitnesses[0] ?? "a member of staff";
+  const foundWitness = proseWitnesses[1] ?? proseWitnesses[0] ?? "a member of staff";
 
   const none: number[] = [];
   const clue = (
@@ -311,15 +332,15 @@ export function generateCase(date: string): MysteryCase {
   const wNames = (idx: number[]) => fmtList(idx.map((i) => weaponPool[i]));
 
   const clues: Clue[] = [
-    clue(1, "Witness Statement", "What the clock did not see",
-      `Two members of staff swear nothing was amiss at ${fmtList(hoursRound1.map((i) => HOURS[i]))} — whatever befell ${pretty(victim.id)}, it was not then.`,
-      { hours: hoursRound1 }),
+    clue(1, "Witness Statement", "Last seen alive",
+      `${aliveWitness} ${pickAliveOpener(proseRnd)} at ${HOURS[hourIndex - 1]} — so whatever befell ${pretty(victim.id)}, it happened later than that.`,
+      { hours: beforeHours }),
     clue(2, "Physical Evidence", "Rooms ruled out",
       `Forensics find no sign of the struggle in ${fmtList(roomsRound1.map((i) => ROOMS[i]))}: undisturbed dust, nothing out of place. The murder did not happen there.`,
       { rooms: roomsRound1 }),
-    clue(3, "Coroner's Note", "The narrowing hour",
-      `The coroner fixes the cooling of the body and clears ${fmtList(hoursRound2.map((i) => HOURS[i]))} as well. Only one hour now fits.`,
-      { hours: hoursRound2 }),
+    clue(3, "Coroner's Note", "The body grows cold",
+      `By ${HOURS[hourIndex + 1]}, ${foundWitness} ${pickFoundOpener(proseRnd)} — the coroner puts the body already cold, so the deed was done before then. Between the two, only one hour fits.`,
+      { hours: afterHours }),
     clue(4, "Physical Evidence", "The last room standing",
       `The blood pattern is inconsistent with ${fmtList(roomsRound2.map((i) => ROOMS[i]))} too. Only one room could be the scene.`,
       { rooms: roomsRound2 }),

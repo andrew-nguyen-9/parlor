@@ -34,7 +34,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="microlabel fixed bottom-6 right-6 z-30 flex items-center gap-1.5 rounded-full border border-line bg-surface/80 px-3 py-2 backdrop-blur transition hover:border-brass"
+      className="microlabel fixed bottom-6 right-6 z-30 flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full border border-line bg-surface/80 px-3 py-2 backdrop-blur transition hover:border-brass"
       aria-label={theme === "dark" ? "switch to light theme" : "switch to dark theme"}
       title={theme === "dark" ? "daylit tour" : "candlelight"}
     >

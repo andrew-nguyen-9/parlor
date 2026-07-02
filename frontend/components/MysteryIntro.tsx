@@ -39,19 +39,13 @@ export default function MysteryIntro({
       <div className="deco-rule my-6">✦</div>
       <div className="gilt-frame candle-pool rounded-2xl bg-surface/70 p-6 sm:p-8">
         <p className="relative z-10 text-lg leading-relaxed text-ink/90">{mystery.opening}</p>
-        <div className="relative z-10 mt-6 grid grid-cols-3 gap-3 border-t border-line pt-5">
-          <div className="rounded-xl border border-line bg-bg/40 p-3 text-center">
-            <p className="microlabel text-gold">who</p>
-            <p className="display mt-1 text-xl">???</p>
-          </div>
-          <div className="rounded-xl border border-line bg-bg/40 p-3 text-center">
-            <p className="microlabel text-gold">where</p>
-            <p className="display mt-1 text-xl">???</p>
-          </div>
-          <div className="rounded-xl border border-line bg-bg/40 p-3 text-center">
-            <p className="microlabel text-gold">when</p>
-            <p className="display mt-1 text-xl">???</p>
-          </div>
+        <div className="relative z-10 mt-6 grid grid-cols-3 gap-3 border-t border-line pt-5 sm:grid-cols-5">
+          {["who", "where", "when", "motive", "weapon"].map((axis) => (
+            <div key={axis} className="rounded-xl border border-line bg-bg/40 p-3 text-center">
+              <p className="microlabel text-gold">{axis}</p>
+              <p className="display mt-1 text-xl">???</p>
+            </div>
+          ))}
         </div>
         <div className="relative z-10 mt-6 flex items-center gap-3 border-t border-line pt-5">
           <span className="text-3xl">{mystery.victim.emoji}</span>
@@ -68,7 +62,7 @@ export default function MysteryIntro({
             <div className="flex size-12 items-center justify-center rounded-full border-2 border-gold bg-surface text-2xl">
               {s.emoji}
             </div>
-            <p className="text-center text-[10px] text-ink/70">{pretty(s.id).split(" ")[0]}</p>
+            <p className="text-center text-[11px] text-ink/70">{pretty(s.id).split(" ")[0]}</p>
           </div>
         ))}
       </div>

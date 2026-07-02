@@ -6,7 +6,13 @@ import WorldMap from "@/components/WorldMap";
 import { haversineKm, type LatLng } from "@/lib/geo";
 import { CATEGORY_HEX, CATEGORY_LABEL, type Question } from "@/lib/types";
 import { buildShare, emojiGrid, type Tier } from "@/lib/share";
+import { useProfile } from "@/lib/profile";
+import LeaderboardPanel from "@/components/LeaderboardPanel";
 import styles from "./GauntletGame.module.css";
+
+// Escape time → leaderboard score (higher = faster). A 10-minute run scores 0;
+// a flawless sprint approaches 600. Pure fn so Results + record agree.
+const gauntletScore = (totalMs: number) => Math.max(0, Math.round(600 - totalMs / 1000));
 
 // THE GAUNTLET — an Indiana-Jones treasure run across the rooms. The clock runs
 // from the first trial to the last; your TIME is your score (lower is better).
@@ -54,6 +60,7 @@ export default function GauntletGame({
   rounds: Question[];
   gauntletNumber: number;
 }) {
+  const { record } = useProfile();
   const storageKey = `parlor:gauntlet:${gauntletNumber}`;
   const [phase, setPhase] = useState<Phase>("brief");
   const [i, setI] = useState(0);
@@ -140,6 +147,12 @@ export default function GauntletGame({
       const totalMs = Date.now() - startRef.current + penaltyMs;
       const result: Saved = { totalMs, tiers: results, date: new Date().toISOString().slice(0, 10) };
       localStorage.setItem(storageKey, JSON.stringify(result));
+      // Wire the run into the profile/leaderboard (the only room that didn't).
+      // Own room key: the time-derived score (600 - seconds) is a different
+      // scale from legacy Blitz correct-counts and would corrupt that board
+      // and misfire the "Blitzed" (20+ answers) achievement.
+      const score = gauntletScore(totalMs);
+      record({ room: "gauntlet", score, xp: score });
       setSaved(result);
       setPhase("done");
       return;
@@ -418,6 +431,7 @@ function Results({
       <p className="display tabular text-7xl text-wildcard">{fmt(saved.totalMs)}</p>
       <p className="mt-1 text-muted">out of the temple</p>
       <p className="mt-4 text-3xl tracking-widest">{emojiGrid(saved.tiers, 5)}</p>
+      <LeaderboardPanel room="gauntlet" score={gauntletScore(saved.totalMs)} accent="wildcard" />
       <button
         onClick={() => onShare(saved)}
         className="microlabel mt-8 rounded-full border border-wildcard px-8 py-3 text-wildcard transition hover:bg-wildcard hover:text-bg"

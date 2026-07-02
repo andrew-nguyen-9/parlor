@@ -35,7 +35,7 @@ export default async function GauntletPage() {
   const gauntletNumber = day - EPOCH + 1;
 
   return (
-    <RoomShell label="room 09 — the gauntlet" accent="wildcard">
+    <RoomShell label="room 06 — the gauntlet" accent="wildcard" href="/gauntlet">
       <GauntletGame rounds={rounds} gauntletNumber={gauntletNumber} />
     </RoomShell>
   );

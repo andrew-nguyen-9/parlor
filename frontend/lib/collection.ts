@@ -24,7 +24,7 @@ export const COLLECTION: Collectible[] = [
   { room: "wedges", label: "Fractures", accent: "sports", href: "/wedges" },
   { room: "streak", label: "Ignite", accent: "screen", href: "/streak" },
   { room: "map", label: "Atlas Obscura", accent: "geography", href: "/map" },
-  { room: "daily", label: "The Gauntlet", accent: "wildcard", href: "/gauntlet" },
+  { room: "gauntlet", label: "The Gauntlet", accent: "wildcard", href: "/gauntlet" },
   { room: "jukebox", label: "The Jukebox", accent: "music", href: "/jukebox" },
   { room: "gallery", label: "The Gallery", accent: "screen", href: "/gallery" },
   { room: "blitz", label: "The Blitz", accent: "history", href: "/blitz" },

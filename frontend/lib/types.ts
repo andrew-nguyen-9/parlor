@@ -106,7 +106,9 @@ export const CATEGORY_GLYPH: Record<Category, string> = {
   wildcard: "✧",
 };
 
-// hex values mirror tailwind.config.ts — used where Tailwind classes can't reach (SVG, inline glow)
+// Canonical category FILLS — used where Tailwind classes can't reach (SVG fills,
+// wedge fills, map pins, inline glow). Theme-invariant. Always pair with
+// CATEGORY_GLYPH/CATEGORY_LABEL (a11y 2.14), never colour alone.
 export const CATEGORY_HEX: Record<Category, string> = {
   history: "#c8852a",
   music: "#b83468",
@@ -114,4 +116,19 @@ export const CATEGORY_HEX: Record<Category, string> = {
   screen: "#2b6ab5",
   geography: "#178b99",
   wildcard: "#7040a8",
+};
+
+// Category INK — text-safe jewel tones (≥4.5:1 both themes). Resolve to the
+// --cat-* CSS vars (globals.css), so they remap dark↔light automatically. Use
+// for any colored TEXT via inline style (e.g. style={{ color: CATEGORY_INK[c] }})
+// where a Tailwind text-{cat} class can't reach. Prefer these over CATEGORY_HEX
+// for text: several fills fail AA as text. Tailwind text-/border-{cat} classes
+// already read the same vars.
+export const CATEGORY_INK: Record<Category, string> = {
+  history: "rgb(var(--cat-history))",
+  music: "rgb(var(--cat-music))",
+  sports: "rgb(var(--cat-sports))",
+  screen: "rgb(var(--cat-screen))",
+  geography: "rgb(var(--cat-geography))",
+  wildcard: "rgb(var(--cat-wildcard))",
 };
