@@ -443,3 +443,252 @@ export function generateSeance(dayIndex: number, date: string): SeancePuzzle {
     whisper: cfg.whisper,
   };
 }
+
+// ── Player-facing deduction engine (hint / mark-clue-complete) ───────────────
+// Pure functions over the player's board. The board is the same shape the UI
+// keeps: marks[cat][seat][val], 0 = unmarked, 1 = snuffed (✕), 2 = bound (◯).
+// These reuse the solver's domain propagation so a "hint" is always a real,
+// solution-consistent next step — never a guess.
+
+export type Mark = 0 | 1 | 2; // none | exclude | confirm
+export type Board = Mark[][][]; // [cat][seat][val]
+
+/** A single forced move the player can make right now. */
+export interface Deduction {
+  cat: number;
+  seat: number;
+  val: number;
+  mark: 1 | 2; // 1 = eliminate, 2 = confirm
+}
+
+/** A deduction plus the clue(s) that drive it (indices into puzzle.clues). */
+export interface Hint extends Deduction {
+  clues: number[];
+}
+
+export function emptyBoard(p: SeancePuzzle): Board {
+  return p.categories.map(() =>
+    Array.from({ length: p.n }, () => Array<Mark>(p.n).fill(0)),
+  );
+}
+
+/** Encode the player's marks as solver domains. */
+function marksToDomains(board: Board, p: SeancePuzzle): boolean[][] {
+  const n = p.n;
+  const K = p.categories.length;
+  const dom: boolean[][] = [];
+  for (let i = 0; i < K * n; i++) dom.push(Array(n).fill(true));
+  for (let c = 0; c < K; c++) {
+    for (let seat = 0; seat < n; seat++) {
+      for (let v = 0; v < n; v++) {
+        const m = board[c][seat][v];
+        if (m === 1) dom[vid(c, v, n)][seat] = false;
+        else if (m === 2) {
+          const id = vid(c, v, n);
+          for (let s = 0; s < n; s++) dom[id][s] = s === seat;
+        }
+      }
+    }
+  }
+  return dom;
+}
+
+/** Propagate marks + the given clue indices to fixpoint. null = contradiction. */
+function domsWithClues(
+  board: Board,
+  p: SeancePuzzle,
+  idxs: number[],
+): boolean[][] | null {
+  const n = p.n;
+  const K = p.categories.length;
+  const dom = marksToDomains(board, p);
+  const cons: SolveConstraint[] = [];
+  for (const i of idxs) {
+    const cl = p.clues[i];
+    if (cl.type === "at" && cl.seat !== undefined) {
+      const id = vid(cl.a.cat, cl.a.val, n);
+      for (let s = 0; s < n; s++) dom[id][s] = s === cl.seat;
+    } else {
+      cons.push({
+        type: cl.type,
+        x: vid(cl.a.cat, cl.a.val, n),
+        y: cl.b ? vid(cl.b.cat, cl.b.val, n) : undefined,
+        seat: cl.seat,
+      });
+    }
+  }
+  return propagate(dom, cons, n, K) ? dom : null;
+}
+
+/** Forced moves implied by `dom` that the player has not yet marked. */
+function deductionsFrom(dom: boolean[][], board: Board, p: SeancePuzzle): Deduction[] {
+  const n = p.n;
+  const K = p.categories.length;
+  const out: Deduction[] = [];
+  for (let c = 0; c < K; c++) {
+    for (let v = 0; v < n; v++) {
+      const id = vid(c, v, n);
+      const seats = domSeats(dom[id]);
+      for (let seat = 0; seat < n; seat++) {
+        if (!dom[id][seat] && board[c][seat][v] === 0) {
+          out.push({ cat: c, seat, val: v, mark: 1 });
+        }
+      }
+      if (seats.length === 1 && board[c][seats[0]][v] !== 2) {
+        out.push({ cat: c, seat: seats[0], val: v, mark: 2 });
+      }
+    }
+  }
+  return out;
+}
+
+const dedKey = (d: Deduction) => `${d.cat}:${d.seat}:${d.val}:${d.mark}`;
+const byCell = (a: Deduction, b: Deduction) =>
+  a.cat - b.cat || a.seat - b.seat || a.val - b.val || a.mark - b.mark;
+
+/**
+ * The next move the player can deduce, plus the clue(s) that justify it. Reveals
+ * the *clue*, not the answer — the UI highlights those clues. Prefers a move a
+ * single clue forces (most instructive); falls back to pure grid logic, then to
+ * a multi-clue step (attributing every clue whose removal loses the move).
+ * Returns null only when the board is already solved.
+ */
+export function nextHint(board: Board, p: SeancePuzzle): Hint | null {
+  // If the player's marks are self-contradictory, hint from a clean board so a
+  // hint is still always available (the puzzle is solvable from clues alone).
+  let use = board;
+  let base = domsWithClues(use, p, []);
+  if (!base) {
+    use = emptyBoard(p);
+    base = domsWithClues(use, p, [])!;
+  }
+  const baseKeys = new Set(deductionsFrom(base, use, p).map(dedKey));
+
+  // Tier 1 — a single clue forces something structural logic alone does not.
+  for (let i = 0; i < p.clues.length; i++) {
+    const dom = domsWithClues(use, p, [i]);
+    if (!dom) continue;
+    const fresh = deductionsFrom(dom, use, p)
+      .filter((d) => !baseKeys.has(dedKey(d)))
+      .sort(byCell);
+    if (fresh.length) return { clues: [i], ...fresh[0] };
+  }
+
+  // Tier 2 — pure grid logic (all-different) already forces a cell; no clue.
+  const baseDed = deductionsFrom(base, use, p).sort(byCell);
+  if (baseDed.length) return { clues: [], ...baseDed[0] };
+
+  // Tier 3 — propagation has stalled but the puzzle is still uniquely solvable,
+  // so a next move exists that needs case-analysis (search), not just
+  // propagation. Read it off the unique solution and attribute the clue(s) whose
+  // removal would make it non-forced (verified with the complete solver).
+  return deepHint(use, p);
+}
+
+/** seat-of-(cat,val) from the stored unique solution. */
+function seatOf(p: SeancePuzzle): number[][] {
+  return p.solution.map((seatToVal) => {
+    const arr = Array(p.n).fill(-1);
+    seatToVal.forEach((v, s) => (arr[v] = s));
+    return arr;
+  });
+}
+
+/**
+ * Solutions consistent with the marks, all clues (except `skip`), and one extra
+ * assumption: the OPPOSITE of `target`. If this is 0, the target move is forced.
+ */
+function countOpposite(
+  board: Board,
+  p: SeancePuzzle,
+  target: Deduction,
+  skip: number,
+): number {
+  const n = p.n;
+  const K = p.categories.length;
+  const dom = marksToDomains(board, p);
+  const cons: SolveConstraint[] = [];
+  p.clues.forEach((cl, i) => {
+    if (i === skip) return;
+    if (cl.type === "at" && cl.seat !== undefined) {
+      const id = vid(cl.a.cat, cl.a.val, n);
+      for (let s = 0; s < n; s++) dom[id][s] = s === cl.seat;
+    } else {
+      cons.push({
+        type: cl.type,
+        x: vid(cl.a.cat, cl.a.val, n),
+        y: cl.b ? vid(cl.b.cat, cl.b.val, n) : undefined,
+        seat: cl.seat,
+      });
+    }
+  });
+  const id = vid(target.cat, target.val, n);
+  if (target.mark === 2) dom[id][target.seat] = false; // assume NOT here → confirm forced iff 0
+  else for (let s = 0; s < n; s++) dom[id][s] = s === target.seat; // assume here → elim forced iff 0
+  return countSolutions(dom, cons, n, K);
+}
+
+function deepHint(board: Board, p: SeancePuzzle): Hint | null {
+  const n = p.n;
+  const K = p.categories.length;
+  const pos = seatOf(p);
+  // Prefer confirming a true seat (most progress); else eliminate a false cell.
+  let target: Deduction | null = null;
+  for (let c = 0; c < K && !target; c++)
+    for (let v = 0; v < n && !target; v++) {
+      const s = pos[c][v];
+      if (board[c][s][v] !== 2) target = { cat: c, seat: s, val: v, mark: 2 };
+    }
+  if (!target)
+    for (let c = 0; c < K && !target; c++)
+      for (let seat = 0; seat < n && !target; seat++)
+        for (let v = 0; v < n && !target; v++)
+          if (seat !== pos[c][v] && board[c][seat][v] === 0)
+            target = { cat: c, seat, val: v, mark: 1 };
+  if (!target) return null; // solved
+
+  // Clue i drives the move iff removing it lets the opposite become possible.
+  const drivers: number[] = [];
+  for (let i = 0; i < p.clues.length; i++) {
+    if (countOpposite(board, p, target, i) > 0) drivers.push(i);
+  }
+  return { clues: drivers, ...target };
+}
+
+/** Every fresh move clue `i` still yields given the current marks. */
+export function clueDeductions(board: Board, p: SeancePuzzle, i: number): Deduction[] {
+  const base = domsWithClues(board, p, []);
+  if (!base) return [];
+  const baseKeys = new Set(deductionsFrom(base, board, p).map(dedKey));
+  const dom = domsWithClues(board, p, [i]);
+  if (!dom) return [];
+  return deductionsFrom(dom, board, p).filter((d) => !baseKeys.has(dedKey(d)));
+}
+
+/** How many fresh deductions clue `i` still yields — the mark-complete warning. */
+export function remainingFromClue(board: Board, p: SeancePuzzle, i: number): number {
+  return clueDeductions(board, p, i).length;
+}
+
+// ── Undo/redo — a tiny generic snapshot stack (grids are small; ponytail) ────
+export interface History<T> {
+  stack: T[];
+  idx: number;
+}
+
+/** Commit a new state, dropping any redo branch after the cursor. */
+export function histCommit<T>(h: History<T>, next: T): History<T> {
+  const stack = h.stack.slice(0, h.idx + 1);
+  stack.push(next);
+  return { stack, idx: stack.length - 1 };
+}
+
+export function histUndo<T>(h: History<T>): History<T> {
+  return h.idx > 0 ? { stack: h.stack, idx: h.idx - 1 } : h;
+}
+
+export function histRedo<T>(h: History<T>): History<T> {
+  return h.idx < h.stack.length - 1 ? { stack: h.stack, idx: h.idx + 1 } : h;
+}
+
+export const histState = <T,>(h: History<T>): T => h.stack[h.idx];

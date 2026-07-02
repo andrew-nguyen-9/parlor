@@ -2,23 +2,28 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import type { SeancePuzzle } from "@/lib/seance";
+import {
+  emptyBoard,
+  nextHint,
+  remainingFromClue,
+  histCommit,
+  histUndo,
+  histRedo,
+  histState,
+  type SeancePuzzle,
+  type Mark,
+  type Board,
+  type Hint,
+  type History,
+} from "@/lib/seance";
 import { recordBanishing, loadGrimoire, spiritsBanished } from "@/lib/grimoire";
 import { buildShare, type GameResult, type Tier } from "@/lib/share";
 import { sfxGlassClink, sfxWrong, sfxPianoChord, sfxDoorLatch } from "@/lib/sound";
 import styles from "./SeanceGame.module.css";
 
 const ACCENT = "#7040a8"; // wildcard / the Medium
-
-type Mark = 0 | 1 | 2; // none | exclude (snuffed candle) | confirm (glowing rune)
-// marks[cat][seat][val]
-type Board = Mark[][][];
-
-function emptyBoard(p: SeancePuzzle): Board {
-  return p.categories.map(() =>
-    Array.from({ length: p.n }, () => Array<Mark>(p.n).fill(0)),
-  );
-}
+// Mark: 0 none · 1 exclude (snuffed candle) · 2 confirm (glowing rune).
+// Board = marks[cat][seat][val]. Types + emptyBoard live in lib/seance.
 
 function fmt(s: number): string {
   const m = Math.floor(s / 60);
@@ -61,8 +66,16 @@ export default function SeanceGame({
 }
 
 function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean }) {
-  const [board, setBoard] = useState<Board>(() => emptyBoard(puzzle));
-  const [whisper, setWhisper] = useState<Board>(() => emptyBoard(puzzle));
+  // The real marks live in an undo/redo history; `board` is the current frame.
+  const [hist, setHist] = useState<History<Board>>(() => ({
+    stack: [emptyBoard(puzzle)],
+    idx: 0,
+  }));
+  const board = histState(hist);
+  const canUndo = hist.idx > 0;
+  const canRedo = hist.idx < hist.stack.length - 1;
+
+  const [whisper, setWhisper] = useState<Board>(() => emptyBoard(puzzle)); // scratchpad, no history
   const [whisperMode, setWhisperMode] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [strikes, setStrikes] = useState(0);
@@ -70,6 +83,9 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
   const [shake, setShake] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeClue, setActiveClue] = useState<number | null>(null);
+  const [hint, setHint] = useState<Hint | null>(null);
+  const [flagged, setFlagged] = useState<Set<number>>(() => new Set());
+  const clueRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const startedAt = useRef(Date.now());
 
   const total = elapsed + strikes * 60;
@@ -86,45 +102,117 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
   // atmospheric pressure: vignette deepens with time (frozen if reduced-motion)
   const pressure = reduce ? 0.25 : Math.min(0.85, 0.18 + total / 900);
 
-  const setLayer = whisperMode ? setWhisper : setBoard;
-
-  // columns the selected clue names, as "cat:val" keys → highlight in the matrix.
+  // columns highlighted in the matrix: those named by the traced clue AND by the
+  // clue(s) a hint points at, as "cat:val" keys.
   const hiCols = useMemo(() => {
     const s = new Set<string>();
-    if (activeClue === null) return s;
-    const cl = puzzle.clues[activeClue];
-    if (!cl) return s;
-    s.add(`${cl.a.cat}:${cl.a.val}`);
-    if (cl.b) s.add(`${cl.b.cat}:${cl.b.val}`);
+    const add = (i: number | null) => {
+      const cl = i === null ? undefined : puzzle.clues[i];
+      if (!cl) return;
+      s.add(`${cl.a.cat}:${cl.a.val}`);
+      if (cl.b) s.add(`${cl.b.cat}:${cl.b.val}`);
+    };
+    add(activeClue);
+    hint?.clues.forEach(add);
     return s;
-  }, [activeClue, puzzle.clues]);
+  }, [activeClue, hint, puzzle.clues]);
+
+  const applyCycle = (prev: Board, c: number, seat: number, val: number): Board => {
+    const next = prev.map((cat) => cat.map((row) => row.slice()));
+    const nv: Mark = ((next[c][seat][val] + 1) % 3) as Mark;
+    next[c][seat][val] = nv;
+    // auto-propagation on confirm: snuff the rest of the row + column (only empty
+    // cells; manual marks are left intact — clear them by hand).
+    if (nv === 2) {
+      for (let s = 0; s < puzzle.n; s++)
+        if (s !== seat && next[c][s][val] === 0) next[c][s][val] = 1;
+      for (let v = 0; v < puzzle.n; v++)
+        if (v !== val && next[c][seat][v] === 0) next[c][seat][v] = 1;
+    }
+    return next;
+  };
 
   const cycle = useCallback(
     (c: number, seat: number, val: number) => {
       if (won) return;
-      const wasEmpty = board[c][seat][val] === 0;
-      setLayer((prev) => {
-        const next = prev.map((cat) => cat.map((row) => row.slice()));
-        const cur = next[c][seat][val];
-        const nv: Mark = ((cur + 1) % 3) as Mark;
-        next[c][seat][val] = nv;
-        // auto-propagation on confirm: snuff the rest of the row + column
-        // (only empty cells; manual marks are left intact — clear them by hand).
-        if (nv === 2) {
-          for (let s = 0; s < puzzle.n; s++)
-            if (s !== seat && next[c][s][val] === 0) next[c][s][val] = 1;
-          for (let v = 0; v < puzzle.n; v++)
-            if (v !== val && next[c][seat][v] === 0) next[c][seat][v] = 1;
-        }
-        return next;
-      });
-      // glass clink when a fresh cell is bound (empty → bind needs two taps; the
-      // snuff→bind transition is the one that lands on confirm).
-      if (!whisperMode && !wasEmpty && (board[c][seat][val] + 1) % 3 === 2) {
-        sfxGlassClink();
+      // glass clink when a fresh cell is bound (the snuff→bind transition).
+      const landsOnBind = (board[c][seat][val] + 1) % 3 === 2;
+      if (whisperMode) {
+        setWhisper((prev) => applyCycle(prev, c, seat, val));
+      } else {
+        setHist((h) => histCommit(h, applyCycle(histState(h), c, seat, val)));
+        setHint(null);
+        if (landsOnBind) sfxGlassClink();
       }
     },
-    [board, puzzle.n, setLayer, whisperMode, won],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [board, puzzle.n, whisperMode, won],
+  );
+
+  const undo = useCallback(() => {
+    setHist((h) => histUndo(h));
+    setHint(null);
+  }, []);
+  const redo = useCallback(() => {
+    setHist((h) => histRedo(h));
+    setHint(null);
+  }, []);
+
+  // Undo/redo keyboard shortcuts (ignored while typing in a field).
+  useEffect(() => {
+    if (won) return;
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable))
+        return;
+      if ((e.metaKey || e.ctrlKey) && (e.key === "z" || e.key === "Z")) {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [won, undo, redo]);
+
+  // Hint: reveal the clue(s) that force the next move, never the answer.
+  const showHint = useCallback(() => {
+    const h = nextHint(board, puzzle);
+    setHint(h);
+    if (h && h.clues.length) setActiveClue(h.clues[0]);
+  }, [board, puzzle]);
+
+  // Scroll the primary hinted clue into view.
+  useEffect(() => {
+    const i = hint?.clues[0];
+    if (i === undefined) return;
+    clueRefs.current[i]?.scrollIntoView({
+      block: "nearest",
+      behavior: reduce ? "auto" : "smooth",
+    });
+  }, [hint, reduce]);
+
+  // Flag a clue done. If it still yields deductions, confirm before dimming it.
+  const toggleFlag = useCallback(
+    (i: number) => {
+      setFlagged((prev) => {
+        const next = new Set(prev);
+        if (next.has(i)) {
+          next.delete(i);
+          return next;
+        }
+        const n = remainingFromClue(board, puzzle, i);
+        if (n > 0 && typeof window !== "undefined") {
+          const ok = window.confirm(
+            `${n} more elimination${n > 1 ? "s" : ""} possible with this clue. Mark it done anyway?`,
+          );
+          if (!ok) return prev;
+        }
+        next.add(i);
+        return next;
+      });
+    },
+    [board, puzzle],
   );
 
   function submit() {
@@ -208,25 +296,44 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
         {/* Clues — the corrupted message. Tap one to light up the cells it names. */}
         <div>
           <p className="microlabel mb-2 text-smoke">
-            the spirit whispers ({puzzle.clues.length}) · tap to trace
+            the spirit whispers ({puzzle.clues.length}) · tap to trace · ✓ marks a clue spent
           </p>
           <div className={styles.clues}>
             {puzzle.clues.map((cl, i) => {
               const on = activeClue === i;
+              const hinted = !!hint?.clues.includes(i);
+              const flag = flagged.has(i);
               return (
-                <button
+                <div
                   key={i}
-                  type="button"
-                  onClick={() => setActiveClue(on ? null : i)}
-                  aria-pressed={on}
-                  className={`${styles.clue} ${on ? styles.clueActive : ""} text-sm text-ink`}
-                  style={on ? { color: ACCENT } : undefined}
+                  className={`${styles.clueRow} ${flag ? styles.clueFlagged : ""} ${hinted ? styles.clueHint : ""}`}
                 >
-                  <span className="text-smoke select-none" aria-hidden>
-                    ✦
-                  </span>
-                  <span>{cl.text}</span>
-                </button>
+                  <button
+                    ref={(el) => {
+                      clueRefs.current[i] = el;
+                    }}
+                    type="button"
+                    onClick={() => setActiveClue(on ? null : i)}
+                    aria-pressed={on}
+                    className={`${styles.clue} ${on ? styles.clueActive : ""} text-sm text-ink`}
+                    style={on ? { color: ACCENT } : undefined}
+                  >
+                    <span className="text-smoke select-none" aria-hidden>
+                      ✦
+                    </span>
+                    <span>{cl.text}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleFlag(i)}
+                    aria-pressed={flag}
+                    aria-label={flag ? "clue marked spent — restore it" : "mark clue spent"}
+                    title={flag ? "restore clue" : "mark clue spent"}
+                    className={styles.flagBtn}
+                  >
+                    {flag ? "✓" : "○"}
+                  </button>
+                </div>
               );
             })}
           </div>
@@ -315,7 +422,35 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
 
       {/* Controls */}
       <div className={styles.nav}>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={showHint}
+            className="microlabel rounded-full border px-4 py-2 transition hover:brightness-110"
+            style={{ borderColor: ACCENT, color: ACCENT, background: `${ACCENT}12` }}
+            title="reveal the clue that forces the next move"
+          >
+            ✦ hint
+          </button>
+          <button
+            onClick={undo}
+            disabled={!canUndo}
+            aria-label="undo"
+            title="undo (⌘/Ctrl+Z)"
+            className="microlabel rounded-full border px-4 py-2 transition disabled:opacity-30"
+            style={{ borderColor: "var(--line, #2a2333)" }}
+          >
+            ↶ undo
+          </button>
+          <button
+            onClick={redo}
+            disabled={!canRedo}
+            aria-label="redo"
+            title="redo (⇧⌘/Ctrl+Z)"
+            className="microlabel rounded-full border px-4 py-2 transition disabled:opacity-30"
+            style={{ borderColor: "var(--line, #2a2333)" }}
+          >
+            ↷ redo
+          </button>
           {puzzle.whisper && (
             <>
               <button
@@ -353,6 +488,13 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
         </button>
       </div>
 
+      {hint && (
+        <p className="text-center microlabel" style={{ color: ACCENT }}>
+          {hint.clues.length
+            ? "the highlighted clue points to your next move — read it, don't guess"
+            : "your marks alone already force a cell — scan the grid"}
+        </p>
+      )}
       <p className="text-center microlabel text-smoke">
         tap once to snuff (✕) · tap twice to bind (◯) · a wrong submission costs +60s
         {puzzle.whisper ? " · whisper mode is a scratchpad" : ""}
