@@ -21,13 +21,15 @@ const config: Config = {
         ember: "rgb(var(--c-ember) / <alpha-value>)",
         burgundy: "rgb(var(--c-burgundy) / <alpha-value>)",
         parchment: "rgb(var(--c-parchment) / <alpha-value>)",
-        // Category jewel tones — mirrored in lib/types.ts CATEGORY_HEX
-        history: "#c8852a",
-        music: "#b83468",
-        sports: "#2d9155",
-        screen: "#2b6ab5",
-        geography: "#178b99",
-        wildcard: "#7040a8",
+        // Category jewel-INK — text-safe per-theme tones driven by --cat-* vars
+        // (globals.css). Canonical *fills* stay in lib/types.ts CATEGORY_HEX for
+        // SVG/inline glow; these classes (text-/bg-/border-{cat}) are for text/UI.
+        history: "rgb(var(--cat-history) / <alpha-value>)",
+        music: "rgb(var(--cat-music) / <alpha-value>)",
+        sports: "rgb(var(--cat-sports) / <alpha-value>)",
+        screen: "rgb(var(--cat-screen) / <alpha-value>)",
+        geography: "rgb(var(--cat-geography) / <alpha-value>)",
+        wildcard: "rgb(var(--cat-wildcard) / <alpha-value>)",
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],

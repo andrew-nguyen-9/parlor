@@ -30,6 +30,17 @@
   --c-ember: 212 67 30;
   --c-burgundy: 110 31 43;
   --c-parchment: 239 232 192;
+  --c-focus: 230 200 120; /* #E6C878 goldlite — 12.25:1 on dark bg */
+  /* Jewel-ink: text-safe per-theme category tones (≥4.5:1 on bg + surface).
+     Distinct from canonical CATEGORY_HEX *fills* (SVG/glow) — use var(--cat-*)
+     for any colored TEXT. Dark tier lifts music/screen/geography/wildcard, whose
+     fills fail AA as text. Mirrors lib/types.ts CATEGORY_INK. */
+  --cat-history: 200 133 42; /* #C8852A */
+  --cat-music: 210 85 133; /* #D25585 */
+  --cat-sports: 45 145 85; /* #2D9155 */
+  --cat-screen: 74 133 204; /* #4A85CC */
+  --cat-geography: 30 151 166; /* #1E97A6 */
+  --cat-wildcard: 155 112 212; /* #9B70D4 */
   --body-grad:
     radial-gradient(120% 80% at 50% -10%, rgba(201, 162, 74, 0.16) 0%, rgba(110, 31, 43, 0.08) 32%, transparent 60%),
     radial-gradient(80% 60% at 50% 110%, rgba(110, 31, 43, 0.14) 0%, transparent 60%);
@@ -49,19 +60,26 @@
 
 [data-theme="light"] {
   color-scheme: light;
-  --c-bg: 228 217 183; /* parchment base — slightly deeper for warmth + texture */
+  --c-bg: 237 228 203; /* #EDE4CB parchment base — governing surface for the AA table; every text token ≥4.5:1 on it */
   --c-surface: 250 244 227; /* raised panel (lighter than bg) */
   --c-line: 206 184 142; /* brass hairline */
   --c-ink: 58 26 32; /* deep burgundy-brown text */
   --c-muted: 122 92 80;
-  --c-brass: 150 110 40;
-  --c-gold: 160 124 46;
+  --c-brass: 125 92 32; /* #7D5C20 — darkened bronze, 4.84:1 on parchment (was 150 110 40, ~3.8:1 fail) */
+  --c-gold: 148 114 42; /* #94722A — 3.52:1, large-text/border only (was 160 124 46) */
   --c-goldlite: 184 144 60;
   --c-candle: 214 150 40;
   --c-smoke: 150 132 108;
   --c-ember: 180 50 20;
   --c-burgundy: 110 31 43;
   --c-parchment: 239 232 192;
+  --c-focus: 110 31 43; /* #6E1F2B burgundy — 8.74:1 ring on parchment (dark literal was ~1.3:1, invisible) */
+  --cat-history: 138 87 16; /* #8A5710 */
+  --cat-music: 168 44 92; /* #A82C5C */
+  --cat-sports: 31 112 64; /* #1F7040 */
+  --cat-screen: 36 90 156; /* #245A9C */
+  --cat-geography: 15 110 122; /* #0F6E7A */
+  --cat-wildcard: 112 64 168; /* #7040A8 */
   --body-grad:
     radial-gradient(120% 80% at 50% -10%, rgba(201, 162, 74, 0.22) 0%, rgba(110, 31, 43, 0.06) 34%, transparent 62%),
     radial-gradient(80% 60% at 50% 110%, rgba(110, 31, 43, 0.05) 0%, transparent 60%);
@@ -306,7 +324,7 @@ body {
 /* ── Global focus-visible: a consistent brass ring for keyboard users on every
    interactive element (components may still override with a richer treatment). */
 :where(a, button, input, select, textarea, [tabindex], [role="button"]):focus-visible {
-  outline: 2px solid #e6c878;
+  outline: 2px solid rgb(var(--c-focus));
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -787,4 +805,26 @@ body {
 }
 .eye-glow {
   animation: eye-glow 5s ease-in-out infinite;
+}
+
+/* ── Light theme: "a daylit tour" atmosphere (E3.1) ──────────────────────────
+   Daylight has one light source already, so component glows become pigment, not
+   bloom. Gilt gets darkened bronze stops (the dark --gold-sheet reads ~2:1 on
+   parchment); deck-pip/deck-ace keep --gold-sheet unchanged (theme-invariant
+   card faces). Gilt is display-size only in light — never microlabels/body. */
+[data-theme="light"] .gilt,
+[data-theme="light"] .gold-text {
+  background: radial-gradient(120% 100% at 30% 0%,
+    #b8903c 0%, #b8903c 12%, #94722a 34%, #7d5c20 72%, #7d5c20 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+/* Component glows drop to pigment-level in daylight (shadows carry depth). */
+[data-theme="light"] .glow {
+  opacity: 0.05;
+}
+[data-theme="light"] .candle-pool::before {
+  background: radial-gradient(circle at 50% 40%, rgba(180, 128, 40, 0.12), transparent 62%);
 }

@@ -97,19 +97,152 @@ Distill, don't clone. What to take from each:
 | andreigorskikh.digital | Bold display type + cursor-reactive motion (feeds Streak's cursor glow, 2.6) |
 | coveomusic.com | Audio-reactive / atmospheric texture ideas |
 | wearedaima.framer.website | Playful card/section transitions; section choreography |
+| lusion.co | Richness is *capability-gated*: heavy effects load progressively and degrade to a complete static composition. PARLOR: the seed-bank/no-JS/reduced-motion render is the *design*; effects are garnish — design the static frame first, then animate it. |
+| poolsuite.net | Total commitment to a period metaphor — chrome, microcopy, cursor, loading states all in character, from cheap flat assets (no photography/WebGL). PARLOR: the mansion voice extends to *every* surface (empty states, errors, toasts, 404); commitment beats fidelity — engraving vectors over textures over photos. |
+| obys.agency | Editorial typography as the interface: oversized display type, strict grid, generous whitespace; motion is mostly type/scroll choreography. PARLOR: Cinzel at scale + whitespace *is* the luxury cue — when a room feels flat, fix type scale + rhythm before adding ornament or motion. |
 
 Common thread: **restraint + intentional motion**. v2 must not read templated. Every
 animation earns its place; nothing loops for the sake of looping (also a perf win).
 
-## Light / Dark (req #12, formalized in PLATFORM §2.15)
+## Light / Dark (req #12, formalized in PLATFORM §2.15) — E3.1–E3.5 canonical
 
-Today the app forces dark. v2 ships both:
+Today's default is dark; v2 ships both. **Dark** = "the mansion by candlelight";
+**light** = "a daylit tour". Light is the same house with the curtains drawn back —
+nothing is repainted: the parchment that was the *cards* becomes the *walls*, the
+gold that was the *light* becomes the *hardware*. System preference by default + a
+manual toggle (`ThemeToggle.tsx`), persisted, **SSR-safe** (no flash; obey
+`lib/rng.ts` — no `Math.random()` in render paths).
 
-- **Dark** = "the mansion by candlelight" (the current oxblood/gold/candle world).
-- **Light** = "a daylit tour" — parchment surfaces, brass + burgundy ink, gold
-  reserved for accents. Remap the semantic roles, not the brand.
-- System preference by default + a manual toggle; persisted; **SSR-safe** (no flash;
-  obey `lib/rng.ts` SSR rules — no `Math.random()` in render paths).
+**Opt-in contract (how a component themes).** Consume the semantic tokens, never
+hardcode: Tailwind classes (`bg-bg`, `text-ink`, `text-brass`, `border-line`,
+`text-{category}`, …) or `rgb(var(--c-*))` / `var(--cat-*)` in CSS. Every token is a
+`--c-*` / `--cat-*` RGB-channel var in `globals.css` under `:root` (dark) and
+`[data-theme="light"]`; switching one `data-theme` attribute remaps all of them. No
+component needs a light branch unless it hardcoded a literal (don't).
+
+### Semantic-role remap (not a brand swap)
+
+| Role | Dark ("candlelight") | Light ("daylit tour") |
+|---|---|---|
+| surface-base | near-black oxblood `bg` | aged parchment `bg` |
+| raised panel | lifted oxblood `surface` | brighter parchment `surface` (paper on paper, lifted by `line` + soft shadow, never a hue shift) |
+| hairline / engraving | oxblood `line` | brass-tinted `line` (decorative only) |
+| primary text | parchment `ink` | deep burgundy-brown `ink` |
+| secondary text | rose-ash `muted` | umber `muted` |
+| accent text (small) | `gold`/`brass` | `brass` (darkened bronze); gold is never small text in light |
+| primary highlight | `gold` (luminous) | `gold` (bronze; large text + borders only) |
+| flame / glow | `candle` blooms outward | `candle` is pigment, not light: warm accents, no bloom radii |
+| hero accent / focus | `burgundy` glow | `burgundy` = strongest ink accent (8.7:1) + focus ring |
+| danger | `ember` | `ember` |
+| focus ring | `--c-focus` = goldlite | `--c-focus` = burgundy |
+
+**Atmosphere in light.** `--body-grad` stays theme-aware; component glows
+(`.glow`, `.candle-pool`, drop-shadow blooms) drop to pigment-level under
+`[data-theme="light"]` (already scoped in `globals.css`). Shadows carry depth —
+soft umber (`rgba(58,26,32,…)`), never black.
+
+**Deck card faces are theme-invariant.** `.deck-front`/`.deck-back-art` render a
+physical object (a parchment card is parchment in daylight too). Their hardcoded
+literals + `--gold-sheet` are *by design* and MUST NOT be varred. Same for
+share-card renders.
+
+**Gilt in light.** `.gilt`/`.gold-text` resolve to theme-scoped darker bronze
+stops (`globals.css`) and are **display-size only** (≥24px bold / ≥19px). Never
+gilt a microlabel or body copy in light — use solid `brass`.
+
+### Token table (machine contract)
+
+Values not listed are unchanged across the E3 work. New CSS vars use RGB channels
+like the existing tokens. Jewel-ink vars are new in *both* themes.
+
+| name | tailwind key | css var | dark | light |
+|---|---|---|---|---|
+| brass | `brass` | `--c-brass` | `#a87a2e` | **`#7d5c20`** (was `#966e28`) |
+| gold | `gold` | `--c-gold` | `#c9a24a` | **`#94722a`** (was `#a07c2e`; large-text/border only) |
+| focus | — | `--c-focus` **new** | `#e6c878` | `#6e1f2b` |
+| cat-history | `history` | `--cat-history` **new** | `#c8852a` | `#8a5710` |
+| cat-music | `music` | `--cat-music` **new** | `#d25585` | `#a82c5c` |
+| cat-sports | `sports` | `--cat-sports` **new** | `#2d9155` | `#1f7040` |
+| cat-screen | `screen` | `--cat-screen` **new** | `#4a85cc` | `#245a9c` |
+| cat-geography | `geography` | `--cat-geography` **new** | `#1e97a6` | `#0f6e7a` |
+| cat-wildcard | `wildcard` | `--cat-wildcard` **new** | `#9b70d4` | `#7040a8` |
+
+All other tokens (`bg`, `surface`, `line`, `ink`, `muted`, `goldlite`, `candle`,
+`smoke`, `ember`, `burgundy`, `parchment`) keep their existing per-theme values.
+Every text pair ≥4.5:1, every UI-boundary pair ≥3:1 (WCAG 2.1 computed);
+decorative pairs (goldlite/candle/line shine, disabled `smoke`) are rule-exempt.
+
+### Jewels are two-tier
+
+- **Fill** = `CATEGORY_HEX` (`lib/types.ts`, canonical, theme-invariant): SVG
+  fills, wedge fills, map pins, glows, chart marks — always paired with
+  `CATEGORY_GLYPH`/`CATEGORY_LABEL` (a11y 2.14, never colour alone).
+- **Ink** = `var(--cat-*)` / Tailwind `text-{category}` / `CATEGORY_INK`
+  (`lib/types.ts`): any colored *text* (microlabels, headers, scores). Text-safe
+  ≥4.5:1 both themes. New code setting `style={{color: CATEGORY_HEX[…]}}` on text
+  is wrong — use `CATEGORY_INK` (inline) or `text-{category}` (class).
+
+## Color-role law + guidelines (E3.2)
+
+Every rule is checkable without judgment calls.
+
+1. **Text carries only text-safe tokens**: `ink`, `muted`, `brass`, `ember`,
+   `burgundy`, `--cat-*` jewel-ink. In dark, `gold`/`goldlite`/`candle` also
+   qualify (>8:1). In light, `gold` is large-text-only; `goldlite`/`candle` never
+   carry text.
+2. **`line` is decorative.** If a border is the *only* affordance of an
+   interactive element/state, use `brass` (3:1+ both themes), not `line`.
+3. **One danger color** — `ember`; at small sizes pair with an icon or word.
+4. **Focus is `--c-focus`**, one global ring (`:focus-visible` in `globals.css`).
+   Components may thicken it, never re-color it.
+5. **No new hex literals in components.** Tokens or `var(--cat-*)` only.
+   Exemptions: deck card faces + share-card renders (theme-invariant, above).
+
+### Layout grid + rhythm
+
+- The `--d-*` tokens (`globals.css`) are the grid: gutter, max-width, gap,
+  card-min, stack. Rooms consume them; no room invents its own gutter/max-width.
+- Vertical rhythm: blocks separate by `--d-stack`; within a block, multiples of
+  0.25rem. Section headers use `.deco-rule`; panels use `.gilt-frame` on
+  `surface`. One `.density-grid` per room for card collections.
+- Type scale: `.display` (Cinzel) for nameplates/headers, `.microlabel` for
+  signage, system stack for body. Question/answer text ≥1rem, line-height ≥1.5,
+  **never** inside a gilt/gradient treatment (legibility overrides any effect).
+
+### Mobile vs desktop
+
+- Mobile-first, pointer-enhanced: base styles are the phone; `lg:`/1024px adds
+  density (the `--d-*` media block models this). Nothing is desktop-only
+  *content* — only desktop-only *garnish*.
+- Touch targets ≥44px (deck buttons are the bar). Horizontal scroll only inside a
+  component with a visible affordance, never the page.
+- Hover is garnish, never information: anything on hover is also reachable by
+  tap/focus. Tilt/lift = `@media (hover:hover)`; touch gets a pressed state.
+
+### Cursor treatments + motion budget
+
+- **One light source.** `--gold-sheet` (viewport-fixed) lights all gilt from one
+  static specular spot. Any new cursor-reactive effect joins this system — no
+  second light. The Streak darkness `--gx/--gy` glow is the one sanctioned second
+  (diegetic candle). Max one cursor-tracked element per screen state. Cursor
+  motion is decoration-layer only (opacity/transform/background-position; never
+  moves layout or gates content). SSR/reduced-motion/touch resolve to the
+  centered default.
+- **Ambient budget: ≤1 infinite/looping animation per viewport** (the room's
+  signature: flame, pendulum, eye-glow — pick one). Everything else is finite and
+  ≤600ms. Every animation must be *diegetic* or *feedback*; decorative motion that
+  is neither is cut.
+- **Curve vocabulary**: entrances `cubic-bezier(0.22,1,0.36,1)`, flips
+  `cubic-bezier(0.2,0.8,0.2,1)` — the two existing curves, no new easings.
+- **Reduced-motion path for every new named animation** (kill-list in
+  `globals.css` or a designed static frame; Streak flame mid-brightness = model).
+- **Perf floor (lighthouse-ci gate)**: animate only `transform`/`opacity`/
+  `filter`; no new `backdrop-filter` beyond the deck zoom; no full-viewport blur
+  >120px; imagery stays optional-enhancement (seed-bank render looks complete
+  without it).
+- **States are triple-encoded**: color + shape/border + text/glyph. Feedback
+  ≤150ms perceived (press is instant CSS). Every overlay/zoom closes on Esc +
+  backdrop click, traps focus, returns focus on close.
 
 ## Claude Design tooling (the visual loop)
 
