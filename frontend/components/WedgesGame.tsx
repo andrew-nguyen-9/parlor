@@ -182,6 +182,7 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
   const [toasts, setToasts] = useState<Achievement[]>([]);
   const [burst, setBurst] = useState(0);
   const recorded = useRef(false);
+  const firstRun = useRef(true); // only the first run of the session records
   const stats = useRef<Partial<Record<Category, { correct: number; total: number }>>>({});
 
   const queue = phase === "main" ? mainQueue : daily.bonus;
@@ -216,7 +217,10 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
     setFlash(null);
     setReinforce(null);
     setCopied(false);
-    recorded.current = false;
+    // First run of the session records; every "play again" on the same daily
+    // set is a replay and must not re-post to the leaderboard.
+    recorded.current = !firstRun.current;
+    firstRun.current = false;
     stats.current = {};
   }
 
@@ -295,7 +299,7 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
     }
     const unlocked = record({
       room: "wedges",
-      score: earned.size,
+      score: points, // rank by speed-weighted points, not the 0–6 wedge count
       xp: earned.size * 150 + (wonRing ? 300 : 0) + points,
       perCategory: stats.current,
     });
@@ -434,7 +438,7 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
           </div>
           <p className="microlabel mt-1 text-muted">{questionsTaken} questions</p>
 
-          <LeaderboardPanel room="wedges" score={earned.size} accent="sports" />
+          <LeaderboardPanel room="wedges" score={points} accent="sports" />
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button
               onClick={shareResult}

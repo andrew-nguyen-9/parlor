@@ -34,7 +34,7 @@ interface ModeCfg {
 }
 const CFG: Record<Mode, ModeCfg> = {
   set: { rounds: 5, tries: 2, choices: 4, reveal: false, roundMs: 12000, max: 500 },
-  daily: { rounds: 1, tries: 6, choices: 6, reveal: true, roundMs: 45000, max: 100 },
+  daily: { rounds: 1, tries: 4, choices: 6, reveal: true, roundMs: 45000, max: 100 },
 };
 
 interface Round {
@@ -173,9 +173,11 @@ export default function AudioRoomGame({
   useEffect(() => clearTimers, [clearTimers]);
 
   // How much of the intro to sound: daily reveals a growing slice, set plays it all.
-  function play() {
-    if (!q || solved || failed) return;
-    if (!ticking) startClock(); // the round clock drops with the needle
+  // `full` = victory/defeat playback — the whole intro once, no clock.
+  function play(full = false) {
+    if (!q) return;
+    if (!full && (solved || failed)) return;
+    if (!full && !ticking) startClock(); // the round clock drops with the needle
     stopPlayback();
     setPlaying(true);
     if (q.q.audio_url) {
@@ -184,11 +186,11 @@ export default function AudioRoomGame({
       audioRef.current = el;
       void el.play().catch(() => setPlaying(false));
       el.onended = () => setPlaying(false);
-      const secs = cfg.reveal ? Math.min(12, 2 * reveal) : 12;
+      const secs = cfg.reveal && !full ? Math.min(12, 2 * reveal) : 12;
       playTimer.current = setTimeout(() => stopPlayback(), secs * 1000);
     } else if (q.q.melody?.length) {
       const total = q.q.melody.length;
-      const n = cfg.reveal ? Math.max(2, Math.ceil((total * reveal) / cfg.tries)) : total;
+      const n = cfg.reveal && !full ? Math.max(2, Math.ceil((total * reveal) / cfg.tries)) : total;
       const slice = q.q.melody.slice(0, n);
       stopRef.current = playMelody(slice, BPM);
       const ms = slice.reduce((s, note) => s + note.d, 0) * (60 / BPM) * 1000;
@@ -197,6 +199,14 @@ export default function AudioRoomGame({
       setPlaying(false);
     }
   }
+
+  // Victory/defeat playback — once the round locks, sound the whole intro once
+  // so the melody you strained to name actually pays off.
+  useEffect(() => {
+    if (!solved && !failed) return;
+    play(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [solved, failed]);
 
   function failRound() {
     setFailed(true);
@@ -397,7 +407,7 @@ export default function AudioRoomGame({
 
           <div className="mt-5 flex flex-col items-center">
             <button
-              onClick={play}
+              onClick={() => play()}
               disabled={locked}
               className="microlabel rounded-full border px-10 py-4 text-lg transition disabled:opacity-40"
               style={{ borderColor: HEX, color: HEX }}

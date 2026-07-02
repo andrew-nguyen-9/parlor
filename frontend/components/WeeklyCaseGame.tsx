@@ -145,7 +145,8 @@ export default function WeeklyCaseGame({
         <ol className={styles.ledger} aria-label="Daily clues">
           {c.clues.map((clue) => {
             const open = clue.day <= currentDay;
-            const wd = WEEKDAY[((weekStartDay + clue.day - 1) % 7 + 7) % 7];
+            // Epoch day 0 (daySeed) is a Thursday → offset +4 so labels land right.
+            const wd = WEEKDAY[((weekStartDay + clue.day - 1 + 4) % 7 + 7) % 7];
             return (
               <li key={clue.day} className={`${styles.clue} ${open ? "" : styles.locked}`}>
                 <span className={styles.clueDay} style={open ? { color: ACCENT } : undefined}>
