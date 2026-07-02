@@ -16,7 +16,7 @@ export const metadata = roomMetadata("/overture");
 export default async function OverturePage() {
   const pool = await getQuestionsByType("audio_guess");
   return (
-    <RoomShell label="the overture — name the intro" accent="music">
+    <RoomShell label="the overture — name the intro" accent="music" href="/overture">
       <AudioRoomGame pool={pool} daySeed={daySeed()} />
     </RoomShell>
   );

@@ -23,10 +23,11 @@ export interface RoomMeta {
 
 /**
  * Canonical game registry — order mirrors the home page rank. The home page's
- * playing-card deck (`app/page.tsx` `GAMES[]`) is the curated ten-card poker
- * deck; this registry is the broader source for sitemap/metadata/footer and
- * also carries rooms not (yet) on the poker deck. New rooms register HERE in
- * §3.0 so later segments add only their own files (PLATFORM.md §3.0 firewall).
+ * playing-card deck (`lib/games.ts` `GAMES[]`, the authoritative rank source —
+ * also read by RoomShell's rank badge) is the curated poker deck; this
+ * registry is the broader source for sitemap/metadata/footer and also carries
+ * rooms not (yet) on the poker deck. New rooms register HERE in §3.0 so later
+ * segments add only their own files (PLATFORM.md §3.0 firewall).
  */
 export const GAME_ROOMS: RoomMeta[] = [
   {

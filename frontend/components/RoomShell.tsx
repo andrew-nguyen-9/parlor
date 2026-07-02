@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { CATEGORY_HEX, CATEGORY_GLYPH } from "@/lib/types";
 import type { Category } from "@/lib/types";
+import { RankBadge } from "./CardFace";
+import { gameByHref } from "@/lib/games";
 
 const SUIT = CATEGORY_GLYPH; // single source (a11y non-color channel)
 
@@ -8,13 +10,18 @@ const SUIT = CATEGORY_GLYPH; // single source (a11y non-color channel)
 export default function RoomShell({
   label,
   accent,
+  href,
   children,
 }: {
   label: string;
   accent: Category;
+  /** This room's deck href (e.g. "/mystery") — looked up in lib/games.ts for
+   *  the top-right rank badge. Omit for non-game rooms (e.g. /profile). */
+  href?: string;
   children: React.ReactNode;
 }) {
   const hex = CATEGORY_HEX[accent];
+  const game = href ? gameByHref(href) : undefined;
   return (
     <main className="relative min-h-screen overflow-hidden px-4 pb-24 pt-6 sm:px-8">
       <div className="glow" style={{ background: hex }} aria-hidden />
@@ -27,25 +34,29 @@ export default function RoomShell({
       />
 
       <header className="relative z-10 flex items-center justify-between">
-        {/* Engraved nameplate */}
+        {/* Logo, top-left — the way back to the lobby */}
         <div className="flex items-center gap-2">
-          <span style={{ color: hex }} className="text-sm opacity-70">
+          <Link
+            href="/"
+            aria-label="PARLOR — home"
+            className="flex items-center transition hover:opacity-80"
+          >
+            <img
+              src="/logo-96.png?v=2"
+              alt=""
+              width={28}
+              height={31}
+              className="h-7 w-auto drop-shadow-[0_2px_8px_rgba(110,31,43,0.5)]"
+            />
+          </Link>
+          {/* Engraved nameplate */}
+          <span style={{ color: hex }} className="text-sm opacity-70" aria-hidden>
             {SUIT[accent]}
           </span>
           <span className="microlabel">{label}</span>
         </div>
-        <Link href="/" className="flex items-center gap-2 transition hover:opacity-80">
-          <span className="microlabel" style={{ color: `${hex}99` }}>
-            parlor
-          </span>
-          <img
-            src="/logo-96.png?v=2"
-            alt="The Parlor"
-            width={28}
-            height={31}
-            className="h-7 w-auto drop-shadow-[0_2px_8px_rgba(110,31,43,0.5)]"
-          />
-        </Link>
+        {/* Rank badge, top-right — the card this room is in the home deck */}
+        {game && <RankBadge game={game} />}
       </header>
 
       {/* Thin brass accent rule under header */}

@@ -6,7 +6,8 @@ export type Game = {
   accent: Category;
   character: string;
   emblem: string;
-  rank: number; // 1 = Ace
+  rank: number; // 1 = Ace; ignored for display when `joker` is set
+  joker?: boolean; // the deck's one wildcard — no rank, no suit
   blurb: string;
 };
 
@@ -19,7 +20,8 @@ const SUIT: Record<Category, string> = {
   wildcard: "✧",
 };
 
-// Canonical French-deck pip coordinates (% of the pip field) for ranks 2–10.
+// Canonical French-deck pip coordinates (% of the pip field) for ranks 2–11
+// (the deck runs one card past a standard suit — see lib/games.ts).
 const PIPS: Record<number, [number, number][]> = {
   2: [[50, 10], [50, 90]],
   3: [[50, 10], [50, 50], [50, 90]],
@@ -30,9 +32,10 @@ const PIPS: Record<number, [number, number][]> = {
   8: [[30, 11], [70, 11], [50, 30], [30, 50], [70, 50], [50, 70], [30, 89], [70, 89]],
   9: [[30, 9], [70, 9], [30, 36], [70, 36], [50, 50], [30, 64], [70, 64], [30, 91], [70, 91]],
   10: [[30, 9], [70, 9], [50, 27], [30, 36], [70, 36], [30, 64], [70, 64], [50, 73], [30, 91], [70, 91]],
+  11: [[30, 8], [70, 8], [50, 22], [30, 34], [70, 34], [50, 50], [30, 66], [70, 66], [50, 78], [30, 92], [70, 92]],
 };
 
-const rankLabel = (r: number) => (r === 1 ? "A" : String(r));
+export const rankLabel = (r: number) => (r === 1 ? "A" : String(r));
 
 // Larger when there are fewer pips, smaller when more — so every card is full
 // but never crowded.
@@ -41,16 +44,43 @@ const pipRem = (count: number) =>
 
 function Corner({ game, corner }: { game: Game; corner: "tl" | "br" }) {
   const hex = CATEGORY_HEX[game.accent];
+  const posClass = corner === "tl" ? "left-3.5 top-3" : "bottom-3 right-3.5 rotate-180";
+  if (game.joker) {
+    return (
+      <span className={`absolute z-[2] leading-none ${posClass}`} aria-hidden>
+        <span className="text-lg">🃏</span>
+      </span>
+    );
+  }
   return (
-    <span
-      className={`absolute z-[2] flex flex-col items-center leading-none ${
-        corner === "tl" ? "left-3.5 top-3" : "bottom-3 right-3.5 rotate-180"
-      }`}
-    >
+    <span className={`absolute z-[2] flex flex-col items-center leading-none ${posClass}`}>
       <span className="display text-base" style={{ color: "#43141f" }}>
         {rankLabel(game.rank)}
       </span>
       <span className="text-sm" style={{ color: hex }} aria-hidden>
+        {SUIT[game.accent]}
+      </span>
+    </span>
+  );
+}
+
+/** Standalone rank badge — RoomShell's page-level equivalent of `Corner`,
+ *  reusing the same rank/suit/joker vocabulary outside the card chrome. */
+export function RankBadge({ game }: { game: Game }) {
+  const hex = CATEGORY_HEX[game.accent];
+  if (game.joker) {
+    return (
+      <span className="text-base leading-none" aria-hidden>
+        🃏
+      </span>
+    );
+  }
+  return (
+    <span className="flex items-center gap-1 leading-none" aria-hidden>
+      <span className="display text-sm" style={{ color: hex }}>
+        {rankLabel(game.rank)}
+      </span>
+      <span className="text-sm" style={{ color: hex }}>
         {SUIT[game.accent]}
       </span>
     </span>
@@ -80,8 +110,10 @@ export default function CardFace({
     );
   }
 
-  const isAce = game.rank === 1;
-  const pips = PIPS[game.rank] ?? [];
+  // The Ace and the Joker both get the grand-central-emblem treatment —
+  // one is rank 1, the other has no rank at all.
+  const isAce = game.rank === 1 || game.joker;
+  const pips = isAce ? [] : PIPS[game.rank] ?? [];
 
   return (
     <div className="deck-face deck-front">
