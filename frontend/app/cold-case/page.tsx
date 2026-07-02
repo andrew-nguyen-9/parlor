@@ -17,7 +17,7 @@ export const revalidate = 3600;
 export default function ColdCasePage() {
   const { weekSeed, dayIndex } = weeklyBucket(daySeed());
   return (
-    <RoomShell label="The Cold Case" accent="history">
+    <RoomShell label="The Cold Case" accent="history" href="/cold-case">
       <WeeklyCaseGame weekSeed={weekSeed} dayIndex={dayIndex} />
     </RoomShell>
   );

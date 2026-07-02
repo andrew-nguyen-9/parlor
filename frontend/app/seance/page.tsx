@@ -20,7 +20,7 @@ export default async function SeancePage({
   const puzzle = await getSeancePuzzle(valid);
 
   return (
-    <RoomShell label="room 08 — the séance" accent="wildcard">
+    <RoomShell label="room 08 — the séance" accent="wildcard" href="/seance">
       <SeanceGame puzzle={puzzle} requestedDate={valid ?? null} />
     </RoomShell>
   );

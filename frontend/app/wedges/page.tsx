@@ -15,7 +15,7 @@ export default async function WedgesPage() {
   const day = daySeed();
 
   return (
-    <RoomShell label="room 03 — fractures" accent="sports">
+    <RoomShell label="room 03 — fractures" accent="sports" href="/wedges">
       <WedgesGame pool={pool} day={day} />
     </RoomShell>
   );
