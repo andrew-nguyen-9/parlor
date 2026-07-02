@@ -283,6 +283,11 @@ export function solutionCount(
 // ── Clue text ────────────────────────────────────────────────
 const ORDINALS = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth"];
 
+/** Capitalize the first letter — value pools mix proper names ("Mr. Vane") with
+ *  lower-case common nouns ("a salt ring"), so a value that leads a clue sentence
+ *  is title-cased here for one consistent sentence-case across every clue. */
+const capFirst = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
 function renderClue(
   type: ClueType,
   a: Ref,
@@ -291,17 +296,21 @@ function renderClue(
   cats: SeanceCategory[],
 ): string {
   const name = (r: Ref) => cats[r.cat].values[r.val];
+  const lead = (r: Ref) => capFirst(name(r)); // value that opens the sentence
+  // Seats render as ROWS (seat 1 at top → seat N at bottom), so the anchor axis
+  // is vertical: an "order" clue (seat a < seat b) reads "above"; a "neighbor"
+  // clue (adjacent seats, either direction) reads "directly above or below".
   switch (type) {
     case "at":
-      return `${name(a)} took the ${ORDINALS[seat!]} seat at the table.`;
+      return `${lead(a)} took the ${ORDINALS[seat!]} seat at the table.`;
     case "same":
-      return `${name(a)} and ${name(b!)} mark the same soul.`;
+      return `${lead(a)} and ${name(b!)} mark the same soul.`;
     case "diff":
-      return `${name(a)} and ${name(b!)} never touch the same soul.`;
+      return `${lead(a)} and ${name(b!)} never touch the same soul.`;
     case "order":
-      return `${name(a)} sits somewhere left of ${name(b!)}.`;
+      return `${lead(a)} sits somewhere above ${name(b!)}.`;
     case "neighbor":
-      return `${name(a)} sits directly beside ${name(b!)}.`;
+      return `${lead(a)} sits directly above or below ${name(b!)}.`;
   }
 }
 

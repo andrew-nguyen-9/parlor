@@ -19,9 +19,19 @@ import {
 import { recordBanishing, loadGrimoire, spiritsBanished } from "@/lib/grimoire";
 import { buildShare, type GameResult, type Tier } from "@/lib/share";
 import { sfxGlassClink, sfxWrong, sfxPianoChord, sfxDoorLatch } from "@/lib/sound";
+import { CATEGORIES, CATEGORY_HEX, CATEGORY_INK, CATEGORY_GLYPH } from "@/lib/types";
 import styles from "./SeanceGame.module.css";
 
-const ACCENT = "#7040a8"; // wildcard / the Medium
+const ACCENT = "#7040a8"; // wildcard / the Medium — the room's signature accent
+
+// E1.6 — color-code each puzzle category (guest/relic/sin/…) by its slot, so a
+// category and all of its value columns share one hue. Text uses CATEGORY_INK
+// (theme-remapping var, AA both themes); fills use CATEGORY_HEX. Never colour
+// alone — every band also carries its suit glyph + label (a11y 2.14).
+const catKey = (c: number) => CATEGORIES[c % CATEGORIES.length];
+const catInk = (c: number) => CATEGORY_INK[catKey(c)]; // text
+const catHex = (c: number) => CATEGORY_HEX[catKey(c)]; // fills
+const catGlyph = (c: number) => CATEGORY_GLYPH[catKey(c)];
 // Mark: 0 none · 1 exclude (snuffed candle) · 2 confirm (glowing rune).
 // Board = marks[cat][seat][val]. Types + emptyBoard live in lib/seance.
 
@@ -351,8 +361,11 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
                     colSpan={puzzle.n}
                     scope="colgroup"
                     className={`${styles.catBand} ${c > 0 ? styles.groupStart : ""}`}
-                    style={{ color: ACCENT }}
+                    style={{ color: catInk(c) }}
                   >
+                    <span aria-hidden className="mr-1">
+                      {catGlyph(c)}
+                    </span>
                     {cat.label}
                   </th>
                 ))}
@@ -366,7 +379,8 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
                       <th
                         key={`${cat.key}-${val}`}
                         scope="col"
-                        className={`${styles.valHead} ${val === 0 && c > 0 ? styles.groupStart : ""} ${hi ? styles.colHiHead : ""} text-muted`}
+                        className={`${styles.valHead} ${val === 0 && c > 0 ? styles.groupStart : ""} ${hi ? styles.colHiHead : ""}`}
+                        style={{ color: catInk(c) }}
                         title={v}
                       >
                         <span>{v}</span>
@@ -400,9 +414,9 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
                             aria-label={`seat ${seat + 1}, ${cat.label} ${v}: ${m === 2 ? "bound" : m === 1 ? "snuffed" : "unmarked"}`}
                             className={styles.cell}
                             style={{
-                              borderColor: m === 2 ? ACCENT : undefined,
-                              background: m === 2 ? `${ACCENT}26` : "transparent",
-                              color: m === 2 ? ACCENT : m === 1 ? "#7a6e8a" : "transparent",
+                              borderColor: m === 2 ? catHex(c) : undefined,
+                              background: m === 2 ? `${catHex(c)}26` : "transparent",
+                              color: m === 2 ? catInk(c) : m === 1 ? "#7a6e8a" : "transparent",
                             }}
                           >
                             <span aria-hidden>
