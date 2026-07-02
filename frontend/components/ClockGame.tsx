@@ -472,7 +472,7 @@ export default function ClockGame({
                 max={puzzle.max}
                 value={guess}
                 onChange={(e) => setGuess(Number(e.target.value))}
-                className="w-full"
+                className="h-11 w-full"
                 style={{ accentColor: dialHex }}
                 aria-label="turn the clock hands to a year"
               />

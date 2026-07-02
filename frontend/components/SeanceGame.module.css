@@ -152,7 +152,7 @@
   height: 4.75rem;
   vertical-align: bottom;
   padding: 0.15rem 0 0.3rem;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 400;
 }
 .valHead > span {
@@ -166,14 +166,14 @@
 }
 
 .seatHead {
-  font-size: 0.62rem;
+  font-size: 0.66rem;
   font-weight: 400;
   white-space: nowrap;
   padding: 0 0.45rem;
   text-align: right;
 }
 .corner {
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   font-weight: 400;
   text-align: right;
   padding: 0 0.45rem 0.4rem;

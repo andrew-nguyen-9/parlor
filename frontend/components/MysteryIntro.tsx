@@ -62,7 +62,7 @@ export default function MysteryIntro({
             <div className="flex size-12 items-center justify-center rounded-full border-2 border-gold bg-surface text-2xl">
               {s.emoji}
             </div>
-            <p className="text-center text-[10px] text-ink/70">{pretty(s.id).split(" ")[0]}</p>
+            <p className="text-center text-[11px] text-ink/70">{pretty(s.id).split(" ")[0]}</p>
           </div>
         ))}
       </div>

@@ -354,7 +354,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
           <table className={styles.matrix} role="grid" aria-label="the scrying matrix">
             <thead>
               <tr>
-                <td className={styles.corner} aria-hidden />
+                <th className={styles.corner} aria-hidden />
                 {puzzle.categories.map((cat, c) => (
                   <th
                     key={cat.key}
@@ -371,7 +371,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
                 ))}
               </tr>
               <tr>
-                <td className={styles.corner}>seat</td>
+                <th scope="col" className={styles.corner}>seat</th>
                 {puzzle.categories.map((cat, c) =>
                   cat.values.map((v, val) => {
                     const hi = hiCols.has(`${c}:${val}`);
@@ -495,7 +495,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
         </div>
         <button
           onClick={submit}
-          className="rounded-full px-6 py-3 text-sm font-medium text-bg transition hover:brightness-110"
+          className="rounded-full px-6 py-3 text-sm font-medium text-white transition hover:brightness-110"
           style={{ background: ACCENT }}
         >
           ✦ Stabilise the Séance
@@ -592,7 +592,7 @@ function Banished({
       <pre className="whitespace-pre-wrap text-2xl leading-snug">{grid}</pre>
       <button
         onClick={copy}
-        className="rounded-full px-6 py-3 text-sm font-medium text-bg transition hover:brightness-110"
+        className="rounded-full px-6 py-3 text-sm font-medium text-white transition hover:brightness-110"
         style={{ background: ACCENT }}
       >
         {copied ? "copied ✓" : "share result"}

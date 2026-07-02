@@ -258,7 +258,7 @@ export default function MysteryInvestigate({
                     >
                       <div className="flex items-center justify-between gap-2">
                         <p className="microlabel text-ember">{clue.kind}</p>
-                        <span className="microlabel text-[9px] text-muted">{done ? "✓ done" : ""}</span>
+                        <span className="microlabel text-[10px] text-muted">{done ? "✓ done" : ""}</span>
                       </div>
                       <p className={`display mt-0.5 text-[15px] ${done ? "line-through" : ""}`}>{clue.title}</p>
                       <p className="mt-1 text-[13px] leading-relaxed text-ink/85">{clue.text}</p>

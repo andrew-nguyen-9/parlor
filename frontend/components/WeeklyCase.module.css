@@ -127,8 +127,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 999px;
   border: 1px solid rgb(var(--c-line));
   font-size: 0.7rem;
@@ -152,7 +152,7 @@
   flex-direction: column;
 }
 .attr dt {
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgb(var(--c-smoke));
@@ -165,7 +165,7 @@
 
 .guiltyTag {
   align-self: flex-start;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgb(var(--c-brass));

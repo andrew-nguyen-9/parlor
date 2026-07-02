@@ -141,6 +141,19 @@ body {
   letter-spacing: 0.22em;
 }
 
+/* ── Mobile tap targets: microlabel pills/links reach the 44px floor.
+   Scoped to phone widths so desktop pill proportions stay untouched. ── */
+@media (max-width: 640px) {
+  button.microlabel,
+  a.microlabel,
+  summary.microlabel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+}
+
 /* ── Velvet grain overlay: static dot grid (no feTurbulence, no CPU cost) ── */
 .noise::after {
   content: "";

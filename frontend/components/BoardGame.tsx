@@ -330,7 +330,7 @@ export default function BoardGame({
               onClick={() => setShowSettings((s) => !s)}
               aria-label="settings"
               aria-expanded={showSettings}
-              className={`rounded-full border px-2.5 py-1 text-base transition ${
+              className={`min-h-[44px] min-w-[44px] rounded-full border px-2.5 py-1 text-base transition sm:min-h-0 sm:min-w-0 ${
                 showSettings ? "border-gold text-gold" : "border-line text-muted hover:border-ink"
               }`}
             >
@@ -421,11 +421,13 @@ export default function BoardGame({
             aria-label="Codex value board — use arrow keys to navigate, Enter to open"
             onKeyDown={onGridKey}
           >
+            <div role="row" className="contents">
             {columns.map((col) => {
               const hex = CATEGORY_HEX[col.category];
               return (
                 <div
                   key={col.category}
+                  role="columnheader"
                   className="microlabel flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg border bg-surface p-1.5 text-center"
                   style={{
                     color: hex,
@@ -440,8 +442,10 @@ export default function BoardGame({
                 </div>
               );
             })}
-            {[0, 1, 2, 3, 4].map((r) =>
-              columns.map((col, c) => {
+            </div>
+            {[0, 1, 2, 3, 4].map((r) => (
+              <div key={r} role="row" className="contents">
+              {columns.map((col, c) => {
                 const st = states[cellKey(c, r)];
                 const isCursor = cursor[0] === c && cursor[1] === r;
                 return (
@@ -487,8 +491,9 @@ export default function BoardGame({
                     </div>
                   </div>
                 );
-              }),
-            )}
+              })}
+              </div>
+            ))}
           </div>
 
           {/* The clue / wager overlay — covers only the board */}

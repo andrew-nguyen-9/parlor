@@ -90,9 +90,9 @@ export default function Home() {
                   >
                     {game.character}
                   </span>
-                  <h3 className="gilt display mt-1 text-lg leading-tight tracking-[0.04em]">
+                  <h2 className="gilt display mt-1 text-lg leading-tight tracking-[0.04em]">
                     {game.name}
-                  </h3>
+                  </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted">
                     {game.blurb}
                   </p>

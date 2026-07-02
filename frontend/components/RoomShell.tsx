@@ -39,7 +39,7 @@ export default function RoomShell({
           <Link
             href="/"
             aria-label="PARLOR — home"
-            className="flex items-center transition hover:opacity-80"
+            className="flex min-h-[44px] min-w-[44px] items-center transition hover:opacity-80"
           >
             <img
               src="/logo-96.png?v=2"
@@ -66,7 +66,7 @@ export default function RoomShell({
 
       <Link
         href="/"
-        className="microlabel fixed bottom-6 left-6 z-20 flex items-center gap-2 rounded-full border border-line bg-surface/80 px-4 py-2 backdrop-blur transition hover:border-brass"
+        className="microlabel fixed bottom-6 left-6 z-20 flex min-h-[44px] items-center gap-2 rounded-full border border-line bg-surface/80 px-4 py-2 backdrop-blur transition hover:border-brass"
       >
         <span className="opacity-60">←</span> Lobby
       </Link>
