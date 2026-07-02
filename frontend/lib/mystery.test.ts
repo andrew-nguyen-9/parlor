@@ -124,6 +124,76 @@ describe("checkpoints / free clues (5.11–5.12)", () => {
   });
 });
 
+describe("WHERE/WHEN rebalance (E2.2)", () => {
+  it("splits each axis across >=2 clues — no single clue determines WHERE or WHEN", () => {
+    for (const date of datesFrom(0, 200)) {
+      const c = generateCase(date);
+      const hourClues = c.clues.filter((cl) => cl.eliminatesHours.length > 0);
+      const roomClues = c.clues.filter((cl) => cl.eliminatesRooms.length > 0);
+      expect(hourClues.length).toBeGreaterThanOrEqual(2);
+      expect(roomClues.length).toBeGreaterThanOrEqual(2);
+      // no single clue crosses off all-but-one on its axis
+      for (const cl of hourClues) expect(cl.eliminatesHours.length).toBeLessThan(HOURS.length - 1);
+      for (const cl of roomClues) expect(cl.eliminatesRooms.length).toBeLessThan(ROOMS.length - 1);
+      // ...but the union still leaves exactly the true hour and true scene
+      const elimH = new Set(hourClues.flatMap((cl) => cl.eliminatesHours));
+      const elimR = new Set(roomClues.flatMap((cl) => cl.eliminatesRooms));
+      expect(elimH.has(c.hourIndex)).toBe(false);
+      expect(elimH.size).toBe(HOURS.length - 1);
+      const sceneIdx = ROOMS.indexOf(c.scene as (typeof ROOMS)[number]);
+      expect(elimR.has(sceneIdx)).toBe(false);
+      expect(elimR.size).toBe(ROOMS.length - 1);
+    }
+  });
+
+  it("frames WHEN as brackets straddling the murder hour (1..3, both bounds present)", () => {
+    for (const date of datesFrom(0, 200)) {
+      const c = generateCase(date);
+      expect(c.hourIndex).toBeGreaterThanOrEqual(1);
+      expect(c.hourIndex).toBeLessThanOrEqual(3);
+      const before = new Set<number>();
+      const after = new Set<number>();
+      for (const cl of c.clues)
+        for (const h of cl.eliminatesHours) (h < c.hourIndex ? before : after).add(h);
+      expect(before.size).toBeGreaterThan(0); // "last seen alive" bracket
+      expect(after.size).toBeGreaterThan(0); // "found cold by" bracket
+    }
+  });
+});
+
+describe("relationship red herrings (C1)", () => {
+  it("ties >=3 suspects to the victim so dossiers can't fingerprint the ringleader", () => {
+    for (const date of datesFrom(0, 200)) {
+      const c = generateCase(date);
+      const tiedToVictim = c.suspects.filter((s) =>
+        c.dossiers[s.id].relationships.some((r) => r.to === c.victim.id),
+      );
+      expect(tiedToVictim.length).toBeGreaterThanOrEqual(3); // ringleader + 2 herrings
+      // WHO stays uniquely deducible off the alibi grid regardless of ties
+      const deduced = new Set(deduceCulprits(c));
+      expect(deduced.size).toBe(c.culprits.length);
+      for (const id of c.culprits) expect(deduced.has(id)).toBe(true);
+    }
+  });
+});
+
+describe("prose diversity (E2.5)", () => {
+  it("varies titles and openings across days from the second rng stream", () => {
+    const dates = datesFrom(0, 40);
+    const titles = new Set(dates.map((d) => generateCase(d).title));
+    const openings = new Set(dates.map((d) => generateCase(d).opening));
+    expect(titles.size).toBeGreaterThan(10);
+    expect(openings.size).toBeGreaterThan(10);
+  });
+
+  it("re-derives identical prose for the same date (deterministic)", () => {
+    const a = generateCase("2026-03-09");
+    const b = generateCase("2026-03-09");
+    expect(a.title).toBe(b.title);
+    expect(a.opening).toBe(b.opening);
+  });
+});
+
 describe("deduceCulprits", () => {
   it("matches the generated culprit set exactly", () => {
     const c = generateCase("2026-06-16");
