@@ -37,8 +37,10 @@ report-only mode) for the critique pass.
    categories performance + accessibility. Record scores + top 3 audits.
 5. **Design-review lens** — apply the gstack `design-review` eye plus the
    rubric below to both snapshots.
-6. **Report** — write `.orchestrator/qa/<route-slug>.md` (slug: strip leading
-   `/`, replace remaining `/` with `-`; `/` itself → `home`). Format below.
+6. **Report** — write `.orchestrator/qa/<route-slug>.md` (`mkdir -p` the dir —
+   it's gitignored scratch, recreated per run; promote reports worth keeping to
+   `docs/archive/`). Slug: strip leading `/`, replace remaining `/` with `-`;
+   `/` itself → `home`. Format below.
 
 ## Report format
 

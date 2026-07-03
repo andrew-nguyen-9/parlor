@@ -1,0 +1,33 @@
+{
+  "project": "parlor-ux",
+  "integration": "local-branch-merge",
+  "branchPrefix": "ux",
+  "workRoot": "frontend/",
+  "dod": "cd frontend && npm run build && npm run lint && npm run test",
+  "gates": [
+    {
+      "before": "e3-tokens",
+      "require": "USER approval of .orchestrator/proposals/e3-design.md (blocker A5). C must stop and ask."
+    }
+  ],
+  "modelRouting": {
+    "fable": "design/analysis/critique units — limited-release model, use for ALL judgment work",
+    "opus": "implementation",
+    "sonnet": "mechanical"
+  },
+  "units": [
+    { "id": "e3-proposal",  "brief": ".orchestrator/briefs/e3-proposal.md",  "deps": [], "effort": "high",   "model": "fable",  "wave": 1, "codeChanges": false },
+    { "id": "e2-analysis",  "brief": ".orchestrator/briefs/e2-analysis.md",  "deps": [], "effort": "high",   "model": "fable",  "wave": 1, "codeChanges": false },
+    { "id": "e5-analysis",  "brief": ".orchestrator/briefs/e5-analysis.md",  "deps": [], "effort": "medium", "model": "fable",  "wave": 1, "codeChanges": false },
+    { "id": "e6-ui-qa",     "brief": ".orchestrator/briefs/e6-ui-qa.md",     "deps": [], "effort": "medium", "model": "fable",  "wave": 1 },
+    { "id": "e1-core",      "brief": ".orchestrator/briefs/e1-core.md",      "deps": [], "effort": "high",   "model": "opus",   "wave": 1 },
+    { "id": "e3-tokens",    "brief": ".orchestrator/briefs/e3-tokens.md",    "deps": ["e3-proposal"], "effort": "high", "model": "opus", "wave": 2, "gated": true },
+    { "id": "e2-engine",    "brief": ".orchestrator/briefs/e2-engine.md",    "deps": ["e2-analysis"], "effort": "high", "model": "opus", "wave": 2 },
+    { "id": "e1-polish",    "brief": ".orchestrator/briefs/e1-polish.md",    "deps": ["e3-tokens", "e1-core"], "effort": "medium", "model": "opus", "wave": 3 },
+    { "id": "e2-ui",        "brief": ".orchestrator/briefs/e2-ui.md",        "deps": ["e2-engine", "e3-tokens", "e2-analysis"], "effort": "medium", "model": "opus", "wave": 3 },
+    { "id": "e5-nav",       "brief": ".orchestrator/briefs/e5-nav.md",       "deps": ["e3-tokens"], "effort": "low", "model": "sonnet", "wave": 3 },
+    { "id": "e5-improve",   "brief": ".orchestrator/briefs/e5-improve.md",   "deps": ["e5-analysis", "e3-tokens"], "effort": "medium", "model": "opus", "wave": 3 },
+    { "id": "e4-mobile",    "brief": ".orchestrator/briefs/e4-mobile.md",    "deps": ["e3-tokens", "e1-polish", "e2-ui", "e5-nav", "e5-improve", "e6-ui-qa"], "effort": "medium", "model": "opus", "wave": 4 },
+    { "id": "qa-sweep",     "brief": ".orchestrator/briefs/qa-sweep.md",     "deps": ["e4-mobile", "e6-ui-qa"], "effort": "medium", "model": "fable", "wave": 5 }
+  ]
+}

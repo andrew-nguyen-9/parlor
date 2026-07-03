@@ -29,9 +29,10 @@ the Phase-2 Delta Lake mirror lab (never the serving path).
 | `transform/` | dbt project (`dbt build --profiles-dir .` from inside it) |
 | `frontend/lib/queries.ts` | ALL data access; Neon (`lib/db.ts`) with seed-bank fallback |
 | `frontend/lib/types.ts` | Question shape + category palette (single source) |
-| `docs/v2/` | v2 framework (canonical): ROADMAP, DESIGN_SYSTEM, GAMES, PLATFORM, PHASE_PROMPTS |
+| `docs/v3/` | active framework (§3.x segments): ROADMAP, GAMES, PIPELINE, PLATFORM, PHASE_PROMPTS |
+| `docs/v2/DESIGN_SYSTEM.md` | canonical visual language (tokens, light/dark, jewel-ink) — still live; rest of `docs/v2/` = shipped baseline |
 | `docs/FILE_INDEX.md` | annotated map of every dir/file |
-| `docs/archive/UI_SPEC.md` | v1 design tokens (superseded by `docs/v2/DESIGN_SYSTEM.md`) |
+| `docs/archive/` | v1 docs + finished-run records (e.g. `orchestrator-2026-07-ux/` — proposals, QA reports, backlog) |
 
 ## Conventions
 
