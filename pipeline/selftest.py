@@ -248,6 +248,19 @@ def main() -> None:
         check("clue choices include the answer, 4 options",
               cc["correct"] in cc["choices"] and len(cc["choices"]) == 4)
 
+    # G2/§5: THE BOARD (Codex) drops Deezer — no board `clue` may be Deezer-
+    # provenanced (music stays on the board only via Wikipedia). The synthetic
+    # facts include Deezer music rows that WOULD have become clues pre-G2, so this
+    # actively exercises the exclusion. Deezer still fuels non-board music recipes.
+    all_clues = [q for q in qs if q["qtype"] == "clue"]
+    check("no Deezer-provenanced board clues (Codex is Wikipedia-first)",
+          all((q.get("source") or "").lower() != "deezer"
+              and "deezer.com" not in (q.get("source_url") or "").lower()
+              for q in all_clues),
+          f"{sum(1 for q in all_clues if (q.get('source') or '').lower() == 'deezer')} deezer clues")
+    check("dropping Deezer clues still leaves board clues to build from",
+          len(all_clues) > 0, f"{len(all_clues)} clues")
+
     # forge_trivia keeps the source's hand-authored distractors verbatim.
     trivia_mc = [q for q in qs if q["qtype"] == "multiple_choice" and q["correct"] == "Inception"]
     check("forge_trivia emits MC keeping source distractors",
@@ -443,6 +456,37 @@ def main() -> None:
     pool_avg = sum(_qs(q) for q in pool) / len(pool)
     check("board biases toward higher-quality clues", board_avg > pool_avg,
           f"board {board_avg:.3f} vs pool {pool_avg:.3f}")
+
+    # ── G2 daily-theme engine: anniversary pool + cross-file theme contract ────
+    # THE BOARD's daily theme comes from a LARGE bundled anniversary/holiday pool
+    # (the committed offline fallback — G2 blocker). Assert the pool is large and
+    # well-formed, its skins stay ⊆ BOARD_THEME_KEYWORDS, the forge stamps a valid
+    # theme on every board, and BOARD_THEME_KEYWORDS stays in lockstep with the
+    # frontend lib/themes.ts THEMES keys (the documented cross-file contract).
+    import re as _re_theme
+
+    from question_forge import ANNIVERSARIES_PATH, board_theme_key
+    anns = json.loads(ANNIVERSARIES_PATH.read_text())["anniversaries"]
+    check("anniversary theme pool is large (days feel fresh)", len(anns) >= 40,
+          f"{len(anns)} entries")
+    check("anniversary dates are well-formed MM-DD",
+          all(_re_theme.fullmatch(r"\d{2}-\d{2}", a.get("md", "")) for a in anns))
+    check("every anniversary carries a blurb + match keywords",
+          all(a.get("blurb") and a.get("match") for a in anns))
+    _ann_keys = {a.get("boardThemeKey") for a in anns}
+    check("anniversary skins ⊆ BOARD_THEME_KEYWORDS (theme contract)",
+          _ann_keys <= BOARD_KEYS, f"stray: {sorted(_ann_keys - BOARD_KEYS)}")
+    check("board_theme_key returns a valid skin for every month",
+          all(board_theme_key(date(2026, m, 15)) in BOARD_KEYS for m in range(1, 13)))
+    check("daily board payload stamps a valid theme key",
+          bb["payload"].get("theme") in BOARD_KEYS, f"{bb['payload'].get('theme')}")
+    # cross-file: BOARD_THEME_KEYWORDS (forge) must equal lib/themes.ts THEMES keys
+    _themes_src = (REPO_ROOT / "frontend" / "lib" / "themes.ts").read_text()
+    _themes_block = _themes_src.split("export const THEMES", 1)[-1].split("];", 1)[0]
+    _ts_keys = set(_re_theme.findall(r'key:\s*"([^"]+)"', _themes_block))
+    check("BOARD_THEME_KEYWORDS == lib/themes.ts THEMES keys (cross-file sync)",
+          _ts_keys == BOARD_KEYS,
+          f"forge-only {sorted(BOARD_KEYS - _ts_keys)} / themes-only {sorted(_ts_keys - BOARD_KEYS)}")
 
     # bronze compaction (DB-less serving depends on this not bloating the repo)
     import tempfile

@@ -6,6 +6,7 @@
 // day's data has no themed twist the standard CATEGORY_LABEL is used as a
 // fallback (handled by themedLabel below).
 
+import { anniversaryOfDay } from "./anniversaries";
 import { motifOfDay } from "./dailyMotif";
 import type { Category } from "./types";
 
@@ -20,6 +21,11 @@ export interface BoardTheme {
   glyph: string;
   /** themed labels per category; missing entries fall back to CATEGORY_LABEL */
   labels: Partial<Record<Category, string>>;
+  /** one-line framing shown under the board frame — set on anniversary days */
+  blurb?: string;
+  /** on-theme selection keywords (anniversary days) — the board floats clues
+   *  whose text hits one of these to the front of each column (visible theme) */
+  match?: string[];
 }
 
 export const THEMES: BoardTheme[] = [
@@ -135,10 +141,22 @@ export function themeByKey(key: string): BoardTheme | undefined {
 }
 
 /** Deterministic theme of the day — same dayIndex ⇒ same theme for everyone.
- *  Now derived from the day's cross-room MOTIF (lib/dailyMotif), so THE BOARD's
- *  reskin stays in step with the subject every other room pulls. Falls back to
- *  the first skin only if a motif ever names a key that isn't in THEMES. */
+ *
+ *  Two-layer daily-theme engine (Codex G2):
+ *  1. If today lands on an ANNIVERSARY (lib/anniversaries — a large committed,
+ *     offline pool of holidays/anniversaries), that date's framing wins: the
+ *     board borrows the anniversary's visual skin but shows its fresh name +
+ *     blurb, and carries its `match` keywords so on-theme clues float to the
+ *     front (a visibly expressed, day-fresh theme with zero network).
+ *  2. Otherwise fall back to the day's cross-room MOTIF (lib/dailyMotif), so an
+ *     ordinary day still reskins in step with the subject every other room
+ *     pulls. Falls back to the first skin only if a key is ever missing. */
 export function pickTheme(dayIndex: number): BoardTheme {
+  const ann = anniversaryOfDay(dayIndex);
+  if (ann) {
+    const skin = themeByKey(ann.boardThemeKey) ?? THEMES[0];
+    return { ...skin, name: ann.name, blurb: ann.blurb, match: ann.match };
+  }
   return themeByKey(motifOfDay(dayIndex).boardThemeKey) ?? THEMES[0];
 }
 

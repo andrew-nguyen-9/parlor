@@ -35,6 +35,7 @@ from pathlib import Path
 
 from common import (
     RAW_DIR,
+    REPO_ROOT,
     console,
     content_hash,
     fetch_all,
@@ -72,6 +73,17 @@ BOARD_THEME_KEYWORDS: dict[str, tuple[str, ...]] = {
     "deep-sea": ("deep", "trench", "abyss", "submarine", "reef", "whale"),
     "library": (),  # fallback — always matches
 }
+
+
+def _is_deezer_provenanced(fact: dict) -> bool:
+    """THE BOARD (Codex, G2) is Wikipedia-provenanced trivia — Deezer is dropped
+    from the board's `clue` column (architecture-notes §5). A fact is Deezer-
+    provenanced when its source is Deezer OR its source_url points at deezer.com.
+    Deezer facts still fuel the music-depth recipes (BPM higher_lower, label/genre
+    MC) for other rooms; they just never become board clues."""
+    src = (fact.get("source") or "").lower()
+    url = (fact.get("source_url") or "").lower()
+    return src == "deezer" or "deezer.com" in url
 
 
 def tag_board_themes(text: str, subject: str) -> list[str]:
@@ -389,6 +401,8 @@ def forge_clues(facts: list[dict], rng: random.Random | None = None,
     for f in facts:
         if (f.get("meta") or {}).get("melody"):
             continue  # melody facts are audio-only (forge_audio); skip as clues
+        if _is_deezer_provenanced(f):
+            continue  # G2/§5: drop Deezer from the board — music stays via Wikipedia
         subject = f["subject"]
         clue = mask_subject(f["fact_text"], subject, f)
         if clue is None:
@@ -957,6 +971,34 @@ def _clue_quality(q: dict) -> float:
     return (q.get("meta") or {}).get("quality", 0.5)
 
 
+ANNIVERSARIES_PATH = REPO_ROOT / "frontend" / "lib" / "anniversaries.json"
+
+
+def _load_anniversaries() -> dict[str, dict]:
+    """The bundled, committed daily-theme pool (offline fallback for the
+    anniversary/holiday feed — G2 blocker). Read from the single source the
+    frontend also imports (frontend/lib/anniversaries.json), keyed by UTC MM-DD.
+    Offline-safe: a missing/garbled file yields no anniversaries, and the board
+    still builds (theme falls back to a rotating keyword)."""
+    try:
+        data = json.loads(ANNIVERSARIES_PATH.read_text())
+        return {a["md"]: a for a in data.get("anniversaries", []) if a.get("md")}
+    except Exception:
+        return {}
+
+
+def board_theme_key(for_date: date) -> str:
+    """The day's theme key for THE BOARD — one of BOARD_THEME_KEYWORDS (the
+    cross-file contract with lib/themes.ts THEMES). If the date lands on a
+    bundled anniversary, its skin wins (fresh, on-this-day); otherwise a
+    deterministic rotation over the non-fallback skins keeps days varied."""
+    ann = _load_anniversaries().get(for_date.strftime("%m-%d"))
+    if ann and ann.get("boardThemeKey") in BOARD_THEME_KEYWORDS:
+        return ann["boardThemeKey"]
+    skins = [k for k in BOARD_THEME_KEYWORDS if k != "library"] or ["library"]
+    return skins[for_date.toordinal() % len(skins)]
+
+
 def build_daily_board(questions: list[dict], for_date: date) -> dict | None:
     rng = random.Random(for_date.toordinal())  # same board for everyone, every day
     clues = [q for q in questions if q["qtype"] == "clue"]
@@ -981,8 +1023,11 @@ def build_daily_board(questions: list[dict], for_date: date) -> dict | None:
             col.append(rng.choice(top)["content_hash"])
         cols.append({"category": c, "cells": col})
     dd_col, dd_row = rng.randrange(5), rng.randrange(5)
+    # G2: stamp the day's theme so a DB consumer knows the board's daily reskin
+    # (the frontend derives its own via lib/themes pickTheme; this keeps parity).
     return {"set_date": for_date.isoformat(), "mode": "board",
-            "payload": {"columns": cols, "daily_double": [dd_col, dd_row]}}
+            "payload": {"columns": cols, "daily_double": [dd_col, dd_row],
+                        "theme": board_theme_key(for_date)}}
 
 
 # ── fact loading ────────────────────────────────────────────────────────────
