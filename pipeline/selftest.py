@@ -488,6 +488,29 @@ def main() -> None:
     else:
         check("forge produces thread", False, "no thread question in output")
 
+    # ── text-answer quality gate (regression tripwire) ───────────────────────
+    # THE THREAD's typed-answer rooms (clue/thread) must never carry an MC-style
+    # prompt (no options exist to pick from) or an answer too long to type.
+    # Same rule the forge applies via _clean_text_answer — asserted here against
+    # every forged clue and every thread chain link (chain links are built from
+    # the same clue pool, pre-filter).
+    from question_forge import _TEXT_ANSWER_REJECT
+    text_clues = [q for q in qs if q["qtype"] == "clue"]
+    bad_prompts = [q for q in text_clues if _TEXT_ANSWER_REJECT.search(q["prompt"])]
+    bad_answers = [q for q in text_clues if len(q["correct"].split()) > 2]
+    check("no forged clue has MC-phrased prompt (which/not/below/of the following)",
+          not bad_prompts, f"{len(bad_prompts)} bad e.g. {[q['prompt'] for q in bad_prompts[:2]]}")
+    check("no forged clue has a >2-word answer",
+          not bad_answers, f"{len(bad_answers)} bad e.g. {[q['correct'] for q in bad_answers[:2]]}")
+
+    thread_links = [lk for q in qs if q["qtype"] == "thread" for lk in (q.get("chain") or [])]
+    bad_link_prompts = [lk for lk in thread_links if _TEXT_ANSWER_REJECT.search(lk["prompt"])]
+    bad_link_answers = [lk for lk in thread_links if len(lk["answer"].split()) > 2]
+    check("no thread chain link has MC-phrased prompt",
+          not bad_link_prompts, f"{len(bad_link_prompts)} bad")
+    check("no thread chain link has a >2-word answer",
+          not bad_link_answers, f"{len(bad_link_answers)} bad")
+
     d = date(2026, 6, 12)
     b1, b2 = build_daily_board(qs, d), build_daily_board(qs, d)
     check("daily board is deterministic", b1 == b2)
@@ -690,6 +713,22 @@ def main() -> None:
             answers = [lk["answer"].lower() for lk in (q.get("chain") or [])]
             check("thread answers don't leak the theme", theme and theme not in answers,
                   f"{q.get('theme')} ∈ {[lk['answer'] for lk in q.get('chain') or []]}")
+
+        # ── text-answer quality gate (seed bank, live regression tripwire) ────
+        bank_clues = [q for q in bank if q["qtype"] == "clue"]
+        bank_bad_prompts = [q for q in bank_clues if _TEXT_ANSWER_REJECT.search(q["prompt"])]
+        bank_bad_answers = [q for q in bank_clues if len(q["correct"].split()) > 2]
+        check("seed bank: no clue has MC-phrased prompt",
+              not bank_bad_prompts, f"{len(bank_bad_prompts)} bad e.g. {[q['prompt'] for q in bank_bad_prompts[:2]]}")
+        check("seed bank: no clue has a >2-word answer",
+              not bank_bad_answers, f"{len(bank_bad_answers)} bad e.g. {[q['correct'] for q in bank_bad_answers[:2]]}")
+        bank_thread_links = [lk for q in bank if q["qtype"] == "thread" for lk in (q.get("chain") or [])]
+        bank_bad_link_prompts = [lk for lk in bank_thread_links if _TEXT_ANSWER_REJECT.search(lk["prompt"])]
+        bank_bad_link_answers = [lk for lk in bank_thread_links if len(lk["answer"].split()) > 2]
+        check("seed bank: no thread chain link has MC-phrased prompt",
+              not bank_bad_link_prompts, f"{len(bank_bad_link_prompts)} bad")
+        check("seed bank: no thread chain link has a >2-word answer",
+              not bank_bad_link_answers, f"{len(bank_bad_link_answers)} bad")
 
         # ── difficulty calibration gate ──────────────────────────────────────
         # New/sourced questions must spread across tiers, not pile onto one
