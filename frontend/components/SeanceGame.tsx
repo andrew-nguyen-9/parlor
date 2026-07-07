@@ -20,6 +20,7 @@ import { recordBanishing, loadGrimoire, spiritsBanished } from "@/lib/grimoire";
 import { buildShare, type GameResult, type Tier } from "@/lib/share";
 import { sfxGlassClink, sfxWrong, sfxPianoChord, sfxDoorLatch } from "@/lib/sound";
 import { CATEGORIES, CATEGORY_HEX, CATEGORY_INK, CATEGORY_GLYPH } from "@/lib/types";
+import CollapsiblePanel from "./CollapsiblePanel";
 import styles from "./SeanceGame.module.css";
 
 const ACCENT = "#7040a8"; // wildcard / the Medium — the room's signature accent
@@ -168,6 +169,37 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
     setHint(null);
   }, []);
 
+  // Triple-click a cell: snuff its whole row (this seat, every category+value)
+  // and its whole column (this category+value, every seat) — a bulk "I got
+  // this wrong" gesture. A cell already CONFIRMED (bound, mark 2) anywhere in
+  // that row/col is a settled placement, not scratch work — it survives.
+  const clearRowCol = useCallback(
+    (c: number, seat: number, val: number) => {
+      if (won) return;
+      setHist((h) => {
+        const prev = histState(h);
+        const next = prev.map((cat) => cat.map((row) => row.slice()));
+        for (let cc = 0; cc < puzzle.categories.length; cc++)
+          for (let v = 0; v < puzzle.n; v++)
+            if (next[cc][seat][v] !== 2) next[cc][seat][v] = 0;
+        for (let s = 0; s < puzzle.n; s++)
+          if (next[c][s][val] !== 2) next[c][s][val] = 0;
+        return histCommit(h, next);
+      });
+      setHint(null);
+    },
+    [won, puzzle.categories.length, puzzle.n],
+  );
+
+  // Clear button: wipe the whole matrix back to blank. A full commit, so a
+  // regretted Clear is one ⌘/Ctrl+Z away — no confirm dialog needed.
+  const clearBoard = useCallback(() => {
+    if (won) return;
+    setHist((h) => histCommit(h, emptyBoard(puzzle)));
+    setHint(null);
+    setActiveClue(null);
+  }, [won, puzzle]);
+
   // Undo/redo keyboard shortcuts (ignored while typing in a field).
   useEffect(() => {
     if (won) return;
@@ -287,7 +319,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
       {/* HUD */}
       <div className={styles.hud}>
         <div>
-          <p className="microlabel" style={{ color: ACCENT }}>
+          <p className="microlabel animate-flicker" style={{ color: ACCENT }}>
             {puzzle.rite} · {puzzle.spirit}
           </p>
           <p className="text-xs text-muted mt-0.5 max-w-md">{puzzle.backstory}</p>
@@ -305,50 +337,57 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
       </div>
 
       <div className={styles.main}>
-        {/* Clues — the corrupted message. Tap one to light up the cells it names. */}
-        <div>
-          <p className="microlabel mb-2 text-smoke">
-            the spirit whispers ({puzzle.clues.length}) · tap to trace · ✓ marks a clue spent
-          </p>
-          <div className={styles.clues}>
-            {puzzle.clues.map((cl, i) => {
-              const on = activeClue === i;
-              const hinted = !!hint?.clues.includes(i);
-              const flag = flagged.has(i);
-              return (
-                <div
-                  key={i}
-                  className={`${styles.clueRow} ${flag ? styles.clueFlagged : ""} ${hinted ? styles.clueHint : ""}`}
-                >
-                  <button
-                    ref={(el) => {
-                      clueRefs.current[i] = el;
-                    }}
-                    type="button"
-                    onClick={() => setActiveClue(on ? null : i)}
-                    aria-pressed={on}
-                    className={`${styles.clue} ${on ? styles.clueActive : ""} text-sm text-ink`}
-                    style={on ? { color: ACCENT } : undefined}
+        {/* Clues — the corrupted message. Stacked vertically in the left rail;
+            tap one to light up the cells it names. */}
+        <div className={styles.hintRail}>
+          <CollapsiblePanel
+            side="left"
+            title={`the spirit whispers (${puzzle.clues.length})`}
+            accent={ACCENT}
+            defaultOpen
+            storageKey="parlor:seance-hints"
+          >
+            <p className="microlabel mb-2 text-smoke">tap a clue to trace · ✓ marks it spent</p>
+            <div className={styles.clues}>
+              {puzzle.clues.map((cl, i) => {
+                const on = activeClue === i;
+                const hinted = !!hint?.clues.includes(i);
+                const flag = flagged.has(i);
+                return (
+                  <div
+                    key={i}
+                    className={`${styles.clueRow} ${flag ? styles.clueFlagged : ""} ${hinted ? styles.clueHint : ""}`}
                   >
-                    <span className="text-smoke select-none" aria-hidden>
-                      ✦
-                    </span>
-                    <span>{cl.text}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleFlag(i)}
-                    aria-pressed={flag}
-                    aria-label={flag ? "clue marked spent — restore it" : "mark clue spent"}
-                    title={flag ? "restore clue" : "mark clue spent"}
-                    className={styles.flagBtn}
-                  >
-                    {flag ? "✓" : "○"}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                    <button
+                      ref={(el) => {
+                        clueRefs.current[i] = el;
+                      }}
+                      type="button"
+                      onClick={() => setActiveClue(on ? null : i)}
+                      aria-pressed={on}
+                      className={`${styles.clue} ${on ? styles.clueActive : ""} text-sm text-ink`}
+                      style={on ? { color: ACCENT } : undefined}
+                    >
+                      <span className="text-smoke select-none" aria-hidden>
+                        ✦
+                      </span>
+                      <span>{cl.text}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleFlag(i)}
+                      aria-pressed={flag}
+                      aria-label={flag ? "clue marked spent — restore it" : "mark clue spent"}
+                      title={flag ? "restore clue" : "mark clue spent"}
+                      className={styles.flagBtn}
+                    >
+                      {flag ? "✓" : "○"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </CollapsiblePanel>
         </div>
 
         {/* The Scrying Matrix — one unified seat × (category·value) grid. */}
@@ -412,8 +451,14 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
                         >
                           <button
                             type="button"
-                            onClick={() => cycle(c, seat, val)}
+                            onClick={(e) => {
+                              // triple-click snuffs the whole row + column (confirmed
+                              // cells survive); single/double clicks cycle as before.
+                              if (e.detail >= 3) clearRowCol(c, seat, val);
+                              else cycle(c, seat, val);
+                            }}
                             aria-label={`seat ${seat + 1}, ${cat.label} ${v}: ${m === 2 ? "bound" : m === 1 ? "snuffed" : "unmarked"}`}
+                            title="triple-click to clear this row + column"
                             className={styles.cell}
                             style={{
                               borderColor: m === 2 ? catHex(c) : undefined,
@@ -467,6 +512,15 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
           >
             ↷ redo
           </button>
+          <button
+            onClick={clearBoard}
+            aria-label="clear the board"
+            title="clear every mark (undoable)"
+            className="microlabel rounded-full border px-4 py-2 transition hover:brightness-110 disabled:opacity-30"
+            style={{ borderColor: "var(--line, #2a2333)" }}
+          >
+            ⌫ clear
+          </button>
           {puzzle.whisper && (
             <>
               <button
@@ -516,7 +570,8 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
         </p>
       )}
       <p className="text-center microlabel text-smoke">
-        tap once to snuff (✕) · tap twice to bind (◯) · a wrong submission costs +60s
+        tap once to snuff (✕) · tap twice to bind (◯) · triple-tap clears the row + column · a
+        wrong submission costs +60s
         {puzzle.whisper ? " · whisper mode is a scratchpad" : ""}
       </p>
     </motion.div>
