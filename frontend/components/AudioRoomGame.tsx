@@ -1,14 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { CATEGORY_HEX, type Question } from "@/lib/types";
 import { playMelody, sfx } from "@/lib/sound";
 import { haptic } from "@/lib/haptics";
 import { useProfile, type Achievement } from "@/lib/profile";
 import { mulberry32, pickRotating, shuffled } from "@/lib/rng";
 import { buildShare, type GameResult, type Tier } from "@/lib/share";
-import { buildChoices, titledRows, type TitledRow } from "@/lib/overture";
+import { buildChoices, titledRows, DECOY_TITLES, type TitledRow } from "@/lib/overture";
 import dynamic from "next/dynamic";
 // code-split: the win-only canvas confetti is fetched on demand (perf 2.16).
 const Confetti = dynamic(() => import("@/components/Confetti"), { ssr: false });
@@ -53,6 +53,7 @@ export default function AudioRoomGame({
   daySeed: number;
 }) {
   const { record } = useProfile();
+  const reduce = useReducedMotion();
   const titled = useMemo(() => titledRows(pool), [pool]);
 
   const [mode, setMode] = useState<Mode>("set");
@@ -104,11 +105,14 @@ export default function AudioRoomGame({
   // Build a fresh run for the active mode. `set` shuffles freely (replayable, not
   // shared); `daily` is day-seeded so every player gets the same intro + options.
   const start = useCallback(() => {
+    // Distractor pool = every real intro's title + a bank of famous decoys, so the
+    // choice grid stays full and plausible even when the offline pool is thin.
+    const distractorPool = [...titled.map((t) => t.title), ...DECOY_TITLES];
     const make = (rows: TitledRow[], rand: () => number): Round[] =>
       rows.map((r) => ({
         q: r.q,
         title: r.title,
-        choices: buildChoices(r.title, titled.map((t) => t.title), rand, cfg.choices),
+        choices: buildChoices(r.title, distractorPool, rand, cfg.choices),
       }));
 
     let next: Round[];
@@ -388,6 +392,16 @@ export default function AudioRoomGame({
             name the intro{cfg.reveal ? " · the needle drops slowly" : ""}
           </span>
 
+          {/* Spinning vinyl — a tactile "now playing" cue; spins only while the
+              clip/melody sounds, and holds still under reduced-motion (CSS). */}
+          <div className="mt-5 flex justify-center">
+            <div
+              className={`${styles.vinyl} ${playing ? styles.spinning : ""}`}
+              style={{ ["--label" as string]: HEX } as CSSProperties}
+              aria-hidden
+            />
+          </div>
+
           {/* Equalizer — animates while the clip/melody sounds. */}
           <div className={`mt-5 flex items-end justify-center gap-1.5 ${styles.eq}`}>
             {Array.from({ length: 13 }).map((_, k) => (
@@ -395,9 +409,13 @@ export default function AudioRoomGame({
                 key={k}
                 className="w-2.5 rounded-full"
                 style={{ background: HEX }}
-                animate={playing ? { height: [8, 18 + ((k * 13) % 80), 8] } : { height: 8 }}
+                animate={
+                  playing && !reduce
+                    ? { height: [8, 18 + ((k * 13) % 80), 8] }
+                    : { height: playing ? 12 + ((k * 7) % 24) : 8 }
+                }
                 transition={
-                  playing
+                  playing && !reduce
                     ? { duration: 0.4 + (k % 5) * 0.08, repeat: Infinity, ease: "easeInOut" }
                     : { duration: 0.2 }
                 }

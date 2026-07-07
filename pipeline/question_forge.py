@@ -110,29 +110,53 @@ def assign_difficulty(facts: list[dict]) -> None:
 
 
 # ── recipes ─────────────────────────────────────────────────────────────────
+def _is_audio_only(f: dict) -> bool:
+    """Audio facts are the sole fuel for forge_audio and must NOT also become dial
+    (year_guess) / streak (date higher_lower) / board (clue) rows. Two shapes:
+    curated melody facts (meta.melody) and Deezer 30s-preview facts
+    (meta.audio_url, §3.22 THE OVERTURE)."""
+    meta = f.get("meta") or {}
+    return bool(meta.get("melody") or meta.get("audio_url"))
+
+
 def forge_audio(facts: list[dict]) -> list[dict]:
-    """THE CLOCK audio rounds (folded Jukebox): a fact carrying an offline melody
-    in meta becomes a "when was this first heard?" round — the year is the answer,
-    the synthesized tune (lib/sound.ts) is the clue. No audio files involved."""
+    """Audio rounds for THE OVERTURE ("name the intro") and THE CLOCK ("when
+    released?"). Two fact shapes qualify, both answering the year for THE CLOCK:
+      • curated melody facts (meta.melody + year): a synthesized tune (lib/sound.ts),
+        no audio files — the offline-playable path.
+      • Deezer 30s-preview facts (meta.audio_url + meta.track_title + year): the
+        REAL opening seconds stream from Deezer; the track title (carried in
+        subject_a) is THE OVERTURE's answer. Previews exist only when Deezer was
+        reachable at forge time; offline the room falls back to the synth melody."""
     out = []
     for f in facts:
-        melody = (f.get("meta") or {}).get("melody")
+        meta = f.get("meta") or {}
+        melody = meta.get("melody")
+        audio_url = meta.get("audio_url")
         year = f.get("year")
-        if not melody or not year:
+        if not year or not (melody or audio_url):
             continue
-        out.append(
-            {
-                "content_hash": content_hash("audio_guess", f["content_hash"]),
-                "qtype": "audio_guess",
-                "category": f["category"],
-                "difficulty": f.get("_difficulty", 3),
-                "prompt": f["fact_text"],
-                "correct": str(year),
-                "year": year,
-                "melody": melody,
-                "source_url": f.get("source_url"),
-            }
-        )
+        q = {
+            "content_hash": content_hash("audio_guess", f["content_hash"]),
+            "qtype": "audio_guess",
+            "category": f["category"],
+            "difficulty": f.get("_difficulty", 3),
+            "prompt": f["fact_text"],
+            "correct": str(year),
+            "year": year,
+            "source_url": f.get("source_url"),
+        }
+        if melody:
+            q["melody"] = melody
+        if audio_url:
+            q["audio_url"] = audio_url
+            # THE OVERTURE names the track; a Deezer URL isn't sluggable the way a
+            # Wikipedia article is, so carry the title explicitly (lib/overture.ts
+            # reads subject_a on preview rows, source_url slug on melody rows).
+            title = meta.get("track_title")
+            if title:
+                q["subject_a"] = title
+        out.append(q)
     return out
 
 
@@ -142,8 +166,8 @@ def forge_year_guess(facts: list[dict]) -> list[dict]:
         year = f.get("year")
         if not year or year < 1800:
             continue
-        if (f.get("meta") or {}).get("melody"):
-            continue  # melody facts are audio rounds (forge_audio), not dial rounds
+        if _is_audio_only(f):
+            continue  # melody/preview facts are audio rounds (forge_audio), not dial rounds
         prompt = f["fact_text"]
         # Redact the answer year wherever it appears so the prompt never hands it
         # over. On-this-day facts lead with the year ("1969 – …"); the old
@@ -227,7 +251,7 @@ def _higher_lower_dates(facts: list[dict], rng: random.Random) -> list[dict]:
     "more Wikipedia-inspired" ask for free."""
     by_cat: dict[str, list[dict]] = {}
     for f in facts:
-        if f.get("year") and not (f.get("meta") or {}).get("melody"):
+        if f.get("year") and not _is_audio_only(f):
             by_cat.setdefault(f["category"], []).append(f)
 
     out = []

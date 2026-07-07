@@ -21,6 +21,69 @@
   }
 }
 
+/* Spinning vinyl — an illustrative record (theme-invariant black, like map pins).
+   The label colour is the music fill, passed in via the --label CSS var so this
+   module never forks the palette. Grooves + spindle hole are pure gradients. */
+.vinyl {
+  width: 7rem;
+  height: 7rem;
+  position: relative;
+  border-radius: 9999px;
+  background:
+    radial-gradient(
+      circle at center,
+      var(--label, #b83468) 0 15%,
+      #17161d 16% 19%,
+      #201f27 19% 100%
+    );
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.06),
+    0 10px 26px rgb(0 0 0 / 0.4);
+}
+
+/* concentric grooves */
+.vinyl::before {
+  content: "";
+  position: absolute;
+  inset: 11%;
+  border-radius: 9999px;
+  background: repeating-radial-gradient(
+    circle at center,
+    rgb(255 255 255 / 0.05) 0 1px,
+    transparent 1px 4px
+  );
+}
+
+/* spindle hole */
+.vinyl::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6%;
+  height: 6%;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background: #0b0a0f;
+}
+
+.spinning {
+  animation: overtureSpin 3s linear infinite;
+}
+
+@keyframes overtureSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced-motion: the record holds still (no spin). */
+@media (prefers-reduced-motion: reduce) {
+  .spinning {
+    animation: none;
+  }
+}
+
 /* Equalizer height is fixed so the play card never grows with animation. */
 .eq {
   height: 6rem;

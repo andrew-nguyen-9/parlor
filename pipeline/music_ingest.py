@@ -128,6 +128,40 @@ def facts_for_artist(artist: dict) -> list[dict]:
                     ))
         except Exception as e:  # album/track detail is enrichment — never lose core facts
             console.print(f"[yellow]music-depth skip {name}: {e}[/yellow]")
+
+    # ── THE OVERTURE (§3.22): a real 30s opening clip for "name the intro" ──────
+    # The artist's MOST-POPULAR track is the recognizable one, so we source it via
+    # /artist/{id}/top (not the debut album's obscure opener). /track/{id} then
+    # gives its own preview + release year — the year is accurate for THE CLOCK's
+    # "when was this released?" round, unlike a debut-album year pinned to a later
+    # hit. One extra /top + one /track call per artist (Deezer is keyless; expanded
+    # sourcing pre-approved in blockers.md, within rate limits/ToS).
+    try:
+        top = get_json(f"{API}/artist/{artist['id']}/top", params={"limit": 5})
+        for t in (top.get("data") or []):
+            preview = t.get("preview")
+            if not preview:
+                continue  # some tracks have no 30s preview — skip to the next hit
+            tr = get_json(f"{API}/track/{t['id']}")
+            rd = str(tr.get("release_date") or "")
+            ty = int(rd[:4]) if rd[:4].isdigit() else None
+            # strip "(feat. …)" so the answer is the clean track title
+            title = re.sub(r"\s*\((?:feat\.?|ft\.?)[^)]*\)", "", t.get("title", ""), flags=re.I).strip()
+            if not (title and ty and ty > 1900):
+                continue
+            out.append(make_fact(
+                source="deezer", category="music", subject=f"“{title}” — {name}",
+                # prompt reads as a year round (shown in THE CLOCK); THE OVERTURE
+                # never renders it — it names the track from meta.track_title.
+                fact_text="In what year did this track first appear?",
+                year=ty, image_url=pic, source_url=link, popularity=pop,
+                # audio_url + track_title ride in meta so make_fact stays generic;
+                # forge_audio lifts them onto the audio_guess question.
+                meta={"audio_url": preview, "track_title": title},
+            ))
+            break  # one preview per artist → a broad song pool, not artist-heavy
+    except Exception as e:  # preview is enrichment — never lose the core facts
+        console.print(f"[yellow]preview skip {name}: {e}[/yellow]")
     return out
 
 

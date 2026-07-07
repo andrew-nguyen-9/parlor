@@ -143,6 +143,25 @@ def synthetic_facts() -> list[dict]:
             popularity=120.0 + j, source_url="https://example.com",
         ))
 
+    # §3.22 THE OVERTURE / THE CLOCK audio rounds — both forge_audio shapes:
+    #   • a curated melody fact (offline synth tune + year), and
+    #   • a Deezer 30s-preview fact (meta.audio_url + track_title + year) — the real
+    #     opening seconds. Offline these preview facts never appear (they need
+    #     network), so exercising the wiring here keeps a live nightly run trustworthy.
+    facts.append(make_fact(
+        source="curated", category="music", subject="Synth Tune",
+        fact_text="Listen closely — in what year was this melody first heard?",
+        year=1808, popularity=88.0, source_url="https://en.wikipedia.org/wiki/Synth_Tune",
+        meta={"melody": [{"n": "C4", "d": 1}, {"n": "E4", "d": 1}, {"n": "G4", "d": 1}]},
+    ))
+    facts.append(make_fact(
+        source="deezer", category="music", subject="“Preview Hit” — Preview Artist",
+        fact_text="In what year did this track first appear?",
+        year=1985, popularity=95.0, source_url="https://www.deezer.com/artist/42",
+        meta={"audio_url": "https://cdns-preview.dzcdn.net/stream/preview.mp3",
+              "track_title": "Preview Hit"},
+    ))
+
     # Ready-made MC trivia (trivia_ingest: opentdb/QuizAPI) → forge_trivia keeps
     # the source's own distractors.
     facts.append(make_fact(
@@ -203,6 +222,26 @@ def main() -> None:
           all("/images/cover/" not in (q.get("image_url") or "") for q in music_qs))
     check("forge preserves music artist portraits (not over-stripped)",
           any("/images/artist/" in (q.get("image_url") or "") for q in music_qs))
+
+    # §3.22 THE OVERTURE / THE CLOCK: forge_audio wires both audio shapes.
+    check("forge produces audio_guess", "audio_guess" in types)
+    audio = [q for q in qs if q["qtype"] == "audio_guess"]
+    check("audio rounds carry a melody or a Deezer preview, always with a year",
+          all((q.get("melody") or q.get("audio_url")) and isinstance(q.get("year"), int)
+              for q in audio) and bool(audio))
+    check("melody audio rounds forge offline (synth tune + year)",
+          any(q.get("melody") and isinstance(q.get("year"), int) for q in audio))
+    preview_audio = [q for q in audio if q.get("audio_url")]
+    check("forge_audio emits a Deezer-preview round (real 30s clip URL)",
+          len(preview_audio) >= 1, f"{len(preview_audio)} preview rounds")
+    check("preview rounds carry the track title (name-the-intro), year + provenance",
+          all(q.get("subject_a") and isinstance(q.get("year"), int) and q.get("source_url")
+              for q in preview_audio))
+    # A preview fact has a year but must stay audio-only — never a dial/streak/board row.
+    check("preview facts don't leak into year_guess/date-HL/clue",
+          all(not (q.get("audio_url") and q["qtype"] in ("year_guess", "clue")) for q in qs)
+          and all(q.get("subject_a") != "Preview Hit"
+                  for q in qs if q["qtype"] == "higher_lower"))
 
     for q in qs:
         if q["qtype"] == "where":
@@ -630,12 +669,20 @@ def main() -> None:
         music_bank = [q for q in bank if q.get("category") == "music"]
         check("seed bank: no music image leaks the answer (no album covers)",
               all("/images/cover/" not in (q.get("image_url") or "") for q in music_bank))
-        # THE CLOCK's audio rounds must play offline: melody facts (no audio files)
-        # carry a synthesizable note list + a year to guess.
+        # THE CLOCK / THE OVERTURE audio rounds. Offline they're synth-melody facts
+        # (note list + year); when Deezer was reachable at forge time they also carry
+        # a real 30s preview (audio_url) + the track title (subject_a). Either way the
+        # year answers THE CLOCK, and preview rounds must keep provenance.
         au = [q for q in bank if q["qtype"] == "audio_guess"]
         check("seed bank has offline audio rounds for THE CLOCK", len(au) >= 3, f"{len(au)} found")
-        check("audio rounds carry an offline melody + year",
-              all(isinstance(q.get("melody"), list) and q["melody"] and isinstance(q.get("year"), int) for q in au))
+        melodic = [q for q in au if q.get("melody")]
+        check("audio rounds are playable offline (synth melody + year)",
+              len(melodic) >= 3 and all(isinstance(q.get("melody"), list) and q["melody"]
+                                        and isinstance(q.get("year"), int) for q in melodic))
+        check("every audio round has a melody or a Deezer preview, plus a year",
+              all((q.get("melody") or q.get("audio_url")) and isinstance(q.get("year"), int) for q in au))
+        check("preview-backed audio rounds keep provenance + a track title",
+              all(q.get("source_url") and q.get("subject_a") for q in au if q.get("audio_url")))
         # THE THREAD's master theme must be deducible, not handed over: no chain
         # answer may equal the theme it belongs to.
         for q in (q for q in bank if q["qtype"] == "thread"):

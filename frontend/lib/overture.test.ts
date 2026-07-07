@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 // relative import: vitest does not resolve the @/ alias used in app code.
-import { titleFromSource, titledRows, buildChoices } from "./overture";
+import { titleFromSource, trackTitle, titledRows, buildChoices, DECOY_TITLES } from "./overture";
 import { mulberry32 } from "./rng";
 import type { Question } from "./types";
 
@@ -32,15 +32,48 @@ describe("titleFromSource", () => {
   });
 });
 
+describe("trackTitle", () => {
+  it("prefers subject_a on a Deezer-preview row (real clip, unsluggable URL)", () => {
+    const row: Question = {
+      ...q("https://www.deezer.com/artist/42"),
+      audio_url: "https://cdns-preview.dzcdn.net/stream/x.mp3",
+      subject_a: "Billie Jean",
+    };
+    expect(trackTitle(row)).toBe("Billie Jean");
+  });
+  it("falls back to the wiki slug for a melody row (no audio_url)", () => {
+    expect(trackTitle(q("https://en.wikipedia.org/wiki/Ode_to_Joy"))).toBe("Ode to Joy");
+  });
+  it("returns null for a Deezer row missing its title", () => {
+    const row: Question = {
+      ...q("https://www.deezer.com/artist/42"),
+      audio_url: "https://cdns-preview.dzcdn.net/stream/x.mp3",
+    };
+    expect(trackTitle(row)).toBeNull();
+  });
+});
+
 describe("titledRows", () => {
-  it("keeps only rows with a derivable title", () => {
+  it("keeps only rows with a derivable title (slug or preview subject_a)", () => {
+    const preview: Question = {
+      ...q("https://www.deezer.com/artist/9"),
+      audio_url: "https://cdns-preview.dzcdn.net/stream/y.mp3",
+      subject_a: "Billie Jean",
+    };
     const rows = titledRows([
       q("https://en.wikipedia.org/wiki/Ode_to_Joy"),
-      q("https://www.deezer.com/track/1"),
+      preview,
+      q("https://www.deezer.com/track/1"), // deezer URL, no subject_a → dropped
       q(null),
     ]);
-    expect(rows).toHaveLength(1);
-    expect(rows[0].title).toBe("Ode to Joy");
+    expect(rows.map((r) => r.title).sort()).toEqual(["Billie Jean", "Ode to Joy"]);
+  });
+});
+
+describe("DECOY_TITLES", () => {
+  it("offers a broad, de-duplicated famous-song pool", () => {
+    expect(DECOY_TITLES.length).toBeGreaterThanOrEqual(20);
+    expect(new Set(DECOY_TITLES).size).toBe(DECOY_TITLES.length);
   });
 });
 
