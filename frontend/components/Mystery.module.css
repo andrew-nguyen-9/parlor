@@ -1,172 +1,41 @@
-/* PARLOR v3 §3.9 — Sanctum Mysterii layout (single-tab redesign, E2b).
+/* PARLOR §3.9 — Sanctum Mysterii (G1 deduction rebuild). LAYOUT ONLY: every
+ * color/surface/type token stays in the global design system (Tailwind tokens +
+ * .microlabel), so this module never forks the palette.
  *
- * LAYOUT ONLY. Colors, type and surfaces stay in the global design system
- * (Tailwind tokens + .display/.microlabel/.gilt-frame + F1 gold) so this module
- * never forks the palette.
- *
- * ONE tab now: a left CLUE PANEL beside the BOARD, each its own scroll region.
- * Hovering a region scrolls that region (native overflow scoping — no JS scroll
- * hijack). The shell stretches to use the full screen width; nothing truncates,
- * cells wrap instead of collapsing to an ellipsis at any width. */
+ * The one structural job here: the status pills sit in their OWN fixed-width
+ * column, right-aligned, so they form a clean vertical band regardless of how
+ * long a suspect / room / hour label is (never inline after the name). */
 
-.shell {
+.axis {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-  max-width: 96rem;
-  margin: 0 auto;
+  gap: 0.4rem;
 }
 
-/* E2.1 — full-viewport board. RoomShell caps its column at 64rem, but the
- * investigation wants the whole screen on large displays. Break out of the
- * parent cap and fluidly fill the viewport (capped at 96rem, centred, with 1rem
- * gutters). Below this width the parent column already fits, so leave it be. */
-@media (min-width: 1088px) {
-  .shell {
-    width: min(96rem, 100vw - 2rem);
-    max-width: none;
-    margin-left: calc(50% - min(48rem, 50vw - 1rem));
-    margin-right: calc(50% - min(48rem, 50vw - 1rem));
-  }
-}
-
-/* ── case bar: identity + live deduction status ──────────────────────────── */
-.caseBar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 0.5rem 1.5rem;
-  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
-  padding-bottom: 0.75rem;
-}
-
-/* ── workspace: clue panel | board, independent scroll columns ───────────── */
-.workspace {
+.row {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-@media (min-width: 900px) {
-  .workspace {
-    grid-template-columns: minmax(15rem, 21rem) minmax(0, 1fr);
-    gap: 1.5rem;
-    align-items: start;
-  }
-}
-
-/* Desktop ONLY: each panel owns its scroll so hover-to-scroll works without JS
- * (bounded height keeps both columns visible at once). Mobile flows as one
- * natural page scroll — no nested scroll boxes, no trapped content. */
-.scrollPane {
-  min-height: 0;
-}
-@media (min-width: 900px) {
-  .scrollPane {
-    overflow-y: auto;
-    overflow-x: hidden;
-    overscroll-behavior: contain;
-    max-height: min(74vh, 760px);
-    padding-right: 0.35rem;
-  }
-}
-
-.cluePanel {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.board {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* ── grids: fixed-layout tables, cells WRAP (never ellipsis) ─────────────── */
-/* Narrow screens swipe the board horizontally rather than crushing cells to an
- * unreadable per-character wrap; min-width keeps every name legible. On desktop
- * the table fills its column (width:100% > min-width) so there's no scroll. */
-/* Mobile only — desktop keeps overflow visible so the hover dossier (absolutely
- * positioned below a row) isn't clipped by a scroll container. */
-@media (max-width: 899px) {
-  .tableScroll {
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 0.25rem;
-  }
-}
-.grid {
-  width: 100%;
-  min-width: 30rem;
-  border-collapse: separate;
-  border-spacing: 0.28rem;
-  table-layout: fixed;
-  text-align: center;
-}
-.grid th {
-  font-weight: 400;
-  padding: 0.1rem;
-  vertical-align: bottom;
-}
-.rowHead {
-  width: 26%;
-  min-width: 6.5rem;
-  text-align: left;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  vertical-align: middle;
-}
-
-/* Alibi cell — vibrant tinted chip, wrapping room name, brighter text. */
-.cell {
-  display: flex;
+  grid-template-columns: minmax(0, 1fr) 6.6rem; /* name | pill column (fixed) */
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 2.1rem;
-  padding: 0.25rem 0.3rem;
-  border-radius: 0.4rem;
-  font-size: 0.72rem;
-  line-height: 1.15;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  gap: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.6rem;
 }
 
-/* Where/when deduction cell — square mark target. */
-.markCell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 2.1rem;
-  border-radius: 0.4rem;
-  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
-  background: rgba(255, 255, 255, 0.02);
-  cursor: pointer;
+.name {
   font-size: 0.95rem;
-  line-height: 1;
-  transition: border-color 0.15s, background 0.15s, transform 0.08s;
-}
-.markCell:hover {
-  border-color: var(--gold, #d8b15a);
-}
-.markCell:active {
-  transform: scale(0.94);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
-/* tooltip anchor for hover dossiers */
-.suspectAnchor {
-  position: relative;
+/* the aligned pill column — fixed track, pill hugs the right edge */
+.pillCol {
+  display: flex;
+  justify-content: flex-end;
 }
-.tooltip {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 0.35rem);
-  z-index: 60;
-  width: max(16rem, 100%);
-  max-width: 22rem;
-  pointer-events: none;
+
+/* clue list — comfortable reading measure, wraps freely at 375px */
+.clue {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
