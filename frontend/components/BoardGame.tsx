@@ -293,6 +293,11 @@ export default function BoardGame({
               {BOARD_HOST.name}
             </div>
             <div className="microlabel truncate text-muted">tonight: {theme.name}</div>
+            {theme.blurb && (
+              <div className="truncate text-xs text-muted/80" title={theme.blurb}>
+                {theme.blurb}
+              </div>
+            )}
           </div>
         </div>
 
