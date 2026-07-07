@@ -410,6 +410,24 @@ def _clue_distractors(
     return choices
 
 
+# Text-answer quality gate (THE THREAD's `clue`/`thread` rooms: player TYPES the
+# answer, no options are ever shown). Reject MC-phrased prompts that leaked in
+# from the clue recipe ("which…", "…of the following", "…NOT…", "…below…") and
+# answers too long to type as a short guess. Word-boundary regex so "notable"/
+# "another"/"nothing" don't false-positive on "not".
+_TEXT_ANSWER_REJECT = re.compile(r"\bwhich\b|\bnot\b|\bbelow\b|of the following", re.IGNORECASE)
+
+
+def _clean_text_answer(q: dict) -> bool:
+    """True if a text-answer question (clue/thread) is fit for a typed-answer
+    room: no MC-style prompt phrasing, and a short (≤2 word) answer."""
+    if _TEXT_ANSWER_REJECT.search(q.get("prompt", "")):
+        return False
+    if len(q.get("correct", "").split()) > 2:
+        return False
+    return True
+
+
 def forge_clues(facts: list[dict], rng: random.Random | None = None,
                 pools: Pools | None = None) -> list[dict]:
     """Jeopardy-style: the fact sentence becomes the clue, the subject the answer.
@@ -1116,6 +1134,10 @@ def forge_all(facts: list[dict], seed: int = 0) -> list[dict]:
     _strip_leaky_music_art(facts)  # §3.13: album covers leak the answer in clue mode
     pools = Pools(facts)  # §6.6/6.7: typed + name reference tables, built once
     clues = forge_clues(facts, rng, pools)
+    # Text-answer quality gate: filters the clue pool BEFORE it feeds forge_thread's
+    # chain-builder, so chains are only ever built from clean/short-answer clues —
+    # filtering after the fact would strand chains linked through a rejected clue.
+    clues = [c for c in clues if _clean_text_answer(c)]
     questions = (
         forge_year_guess(facts)
         + forge_audio(facts)
