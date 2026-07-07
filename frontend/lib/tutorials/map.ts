@@ -1,19 +1,22 @@
 import type { Tutorial } from "./types";
 
-// STUB (F2) — Atlas Obscura is being revamped this cycle; that game unit
-// overwrites this file with final rules + example. Keep the shape; overlay reads it.
+// REAL content (G5) — Atlas is now a constellation LOGIC puzzle. No astronomy
+// needed: you solve it by counting and reasoning over the drawn star patterns.
 export const tutorial: Tutorial = {
   href: "/map",
-  title: "Atlas Obscura",
+  title: "Atlas",
   accent: "geography",
-  tagline: "Drop a pin where it happened. Scored by the kilometer.",
+  tagline: "Six patterns burn in the dark. The omens point to exactly one.",
   rules: [
-    "Each round names a place or an event tied to somewhere on Earth.",
-    "Tap the map to drop your pin, then confirm your guess.",
-    "The closer your pin lands to the true spot, the more you score.",
+    "Each night the sky lays out six star patterns, drawn as dots joined by lines.",
+    "A short list of omens describes the one you seek — but only by what you can SEE and COUNT: how many stars, whether the lines close into a loop, where the single brightest star sits. No stargazing knowledge is needed or rewarded.",
+    "Cross off any pattern an omen rules out. Exactly one pattern obeys every omen.",
+    "Name that pattern to win. Fewer wrong guesses, higher score — the constellation's real name is revealed only once you solve it.",
   ],
   example: {
-    prompt: "“Where is the Colosseum?”",
-    walkthrough: "Drop your pin on Rome; a pin in central Italy still scores well, one in Spain far less.",
+    prompt:
+      "Omens: “drawn from exactly four stars,” “its lines close into a loop,” “no star gathers more than two lines.”",
+    walkthrough:
+      "Ignore what the shapes are called. Count: keep only the four-star patterns. Of those, keep the ones whose lines form a closed loop. Toss any where a star has three lines meeting at it. One four-star, single-loop, no-hub figure survives — that's your answer.",
   },
 };

@@ -1,0 +1,403 @@
+{
+  "source": "HYG Stellar Database v3 (David Nash / Astronomy Nexus, astronexus.com/hyg) — bright-star subset (RA/Dec J2000, apparent magnitude) — plus IAU / Stellarium 'Western' constellation stick-figure line sets.",
+  "license": "HYG database is released under CC BY-SA 4.0 (compiled from the public-domain Hipparcos, Yale BSC5, and Gliese catalogs); IAU constellation boundaries/figures are public domain. Committed here as an offline, zero-network local fallback (the polygon-equivalent for THE MAP), per CLAUDE.md.",
+  "note": "ra in degrees (0-360), dec in degrees (-90..90), mag = apparent visual magnitude (smaller is brighter). `lines` are stick-figure segments between star ids. Coordinates are approximate J2000 for pattern fidelity; the daily puzzle uses only the graph structure + magnitude order, never any astronomy fact.",
+  "constellations": [
+    {
+      "id": "orion",
+      "name": "Orion",
+      "hemisphere": "equatorial",
+      "stars": [
+        { "id": "betelgeuse", "name": "Betelgeuse", "ra": 88.79, "dec": 7.41, "mag": 0.42 },
+        { "id": "bellatrix", "name": "Bellatrix", "ra": 81.28, "dec": 6.35, "mag": 1.64 },
+        { "id": "mintaka", "name": "Mintaka", "ra": 83.0, "dec": -0.3, "mag": 2.25 },
+        { "id": "alnilam", "name": "Alnilam", "ra": 84.05, "dec": -1.2, "mag": 1.69 },
+        { "id": "alnitak", "name": "Alnitak", "ra": 85.19, "dec": -1.94, "mag": 1.74 },
+        { "id": "saiph", "name": "Saiph", "ra": 86.94, "dec": -9.67, "mag": 2.07 },
+        { "id": "rigel", "name": "Rigel", "ra": 78.63, "dec": -8.2, "mag": 0.13 }
+      ],
+      "lines": [
+        ["betelgeuse", "bellatrix"],
+        ["betelgeuse", "alnitak"],
+        ["bellatrix", "mintaka"],
+        ["mintaka", "alnilam"],
+        ["alnilam", "alnitak"],
+        ["alnitak", "saiph"],
+        ["mintaka", "rigel"]
+      ]
+    },
+    {
+      "id": "cassiopeia",
+      "name": "Cassiopeia",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "segin", "name": "Segin", "ra": 28.6, "dec": 63.67, "mag": 3.35 },
+        { "id": "ruchbah", "name": "Ruchbah", "ra": 21.45, "dec": 60.24, "mag": 2.68 },
+        { "id": "navi", "name": "Navi", "ra": 14.18, "dec": 60.72, "mag": 2.47 },
+        { "id": "schedar", "name": "Schedar", "ra": 10.13, "dec": 56.54, "mag": 2.24 },
+        { "id": "caph", "name": "Caph", "ra": 2.29, "dec": 59.15, "mag": 2.28 }
+      ],
+      "lines": [
+        ["segin", "ruchbah"],
+        ["ruchbah", "navi"],
+        ["navi", "schedar"],
+        ["schedar", "caph"]
+      ]
+    },
+    {
+      "id": "ursa_major",
+      "name": "the Big Dipper",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "alkaid", "name": "Alkaid", "ra": 206.89, "dec": 49.31, "mag": 1.85 },
+        { "id": "mizar", "name": "Mizar", "ra": 200.98, "dec": 54.93, "mag": 2.23 },
+        { "id": "alioth", "name": "Alioth", "ra": 193.51, "dec": 55.96, "mag": 1.76 },
+        { "id": "megrez", "name": "Megrez", "ra": 183.86, "dec": 57.03, "mag": 3.31 },
+        { "id": "phecda", "name": "Phecda", "ra": 178.46, "dec": 53.69, "mag": 2.44 },
+        { "id": "merak", "name": "Merak", "ra": 165.46, "dec": 56.38, "mag": 2.34 },
+        { "id": "dubhe", "name": "Dubhe", "ra": 165.93, "dec": 61.75, "mag": 1.79 }
+      ],
+      "lines": [
+        ["alkaid", "mizar"],
+        ["mizar", "alioth"],
+        ["alioth", "megrez"],
+        ["megrez", "dubhe"],
+        ["dubhe", "merak"],
+        ["merak", "phecda"],
+        ["phecda", "megrez"]
+      ]
+    },
+    {
+      "id": "crux",
+      "name": "the Southern Cross",
+      "hemisphere": "southern",
+      "stars": [
+        { "id": "acrux", "name": "Acrux", "ra": 186.65, "dec": -63.1, "mag": 0.77 },
+        { "id": "mimosa", "name": "Mimosa", "ra": 191.93, "dec": -59.69, "mag": 1.25 },
+        { "id": "gacrux", "name": "Gacrux", "ra": 187.79, "dec": -57.11, "mag": 1.63 },
+        { "id": "delta_cru", "name": "Delta Crucis", "ra": 183.79, "dec": -58.75, "mag": 2.79 }
+      ],
+      "lines": [
+        ["acrux", "gacrux"],
+        ["mimosa", "delta_cru"]
+      ]
+    },
+    {
+      "id": "cygnus",
+      "name": "the Northern Cross",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "deneb", "name": "Deneb", "ra": 310.36, "dec": 45.28, "mag": 1.25 },
+        { "id": "sadr", "name": "Sadr", "ra": 305.56, "dec": 40.26, "mag": 2.23 },
+        { "id": "gienah_cyg", "name": "Gienah", "ra": 305.55, "dec": 33.97, "mag": 2.48 },
+        { "id": "fawaris", "name": "Fawaris", "ra": 296.24, "dec": 45.13, "mag": 2.87 },
+        { "id": "albireo", "name": "Albireo", "ra": 292.68, "dec": 27.96, "mag": 3.05 }
+      ],
+      "lines": [
+        ["deneb", "sadr"],
+        ["sadr", "albireo"],
+        ["sadr", "gienah_cyg"],
+        ["sadr", "fawaris"]
+      ]
+    },
+    {
+      "id": "lyra",
+      "name": "Lyra",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "vega", "name": "Vega", "ra": 279.23, "dec": 38.78, "mag": 0.03 },
+        { "id": "sheliak", "name": "Sheliak", "ra": 282.52, "dec": 33.36, "mag": 3.52 },
+        { "id": "sulafat", "name": "Sulafat", "ra": 284.74, "dec": 32.69, "mag": 3.24 },
+        { "id": "delta_lyr", "name": "Delta Lyrae", "ra": 283.63, "dec": 36.9, "mag": 4.22 },
+        { "id": "zeta_lyr", "name": "Zeta Lyrae", "ra": 281.19, "dec": 37.6, "mag": 4.36 }
+      ],
+      "lines": [
+        ["vega", "zeta_lyr"],
+        ["zeta_lyr", "delta_lyr"],
+        ["delta_lyr", "sulafat"],
+        ["sulafat", "sheliak"],
+        ["sheliak", "zeta_lyr"]
+      ]
+    },
+    {
+      "id": "leo",
+      "name": "Leo",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "regulus", "name": "Regulus", "ra": 152.09, "dec": 11.97, "mag": 1.35 },
+        { "id": "eta_leo", "name": "Eta Leonis", "ra": 151.83, "dec": 16.76, "mag": 3.48 },
+        { "id": "algieba", "name": "Algieba", "ra": 154.99, "dec": 19.84, "mag": 2.01 },
+        { "id": "zosma", "name": "Zosma", "ra": 168.53, "dec": 20.52, "mag": 2.56 },
+        { "id": "denebola", "name": "Denebola", "ra": 177.26, "dec": 14.57, "mag": 2.14 },
+        { "id": "chort", "name": "Chort", "ra": 168.56, "dec": 15.43, "mag": 3.32 }
+      ],
+      "lines": [
+        ["regulus", "eta_leo"],
+        ["eta_leo", "algieba"],
+        ["algieba", "zosma"],
+        ["zosma", "denebola"],
+        ["denebola", "chort"],
+        ["chort", "zosma"],
+        ["chort", "regulus"]
+      ]
+    },
+    {
+      "id": "corvus",
+      "name": "Corvus",
+      "hemisphere": "southern",
+      "stars": [
+        { "id": "gienah_crv", "name": "Gienah", "ra": 183.95, "dec": -17.54, "mag": 2.59 },
+        { "id": "algorab", "name": "Algorab", "ra": 187.47, "dec": -16.52, "mag": 2.94 },
+        { "id": "kraz", "name": "Kraz", "ra": 188.6, "dec": -23.4, "mag": 2.65 },
+        { "id": "minkar", "name": "Minkar", "ra": 182.09, "dec": -22.62, "mag": 3.02 }
+      ],
+      "lines": [
+        ["gienah_crv", "algorab"],
+        ["algorab", "kraz"],
+        ["kraz", "minkar"],
+        ["minkar", "gienah_crv"]
+      ]
+    },
+    {
+      "id": "delphinus",
+      "name": "Delphinus",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "sualocin", "name": "Sualocin", "ra": 309.39, "dec": 15.91, "mag": 3.77 },
+        { "id": "rotanev", "name": "Rotanev", "ra": 309.29, "dec": 14.6, "mag": 3.64 },
+        { "id": "gamma_del", "name": "Gamma Delphini", "ra": 310.66, "dec": 16.12, "mag": 4.27 },
+        { "id": "delta_del", "name": "Delta Delphini", "ra": 310.36, "dec": 15.07, "mag": 4.43 },
+        { "id": "epsilon_del", "name": "Deneb Dulfim", "ra": 308.3, "dec": 11.3, "mag": 4.03 }
+      ],
+      "lines": [
+        ["sualocin", "gamma_del"],
+        ["gamma_del", "delta_del"],
+        ["delta_del", "rotanev"],
+        ["rotanev", "sualocin"],
+        ["rotanev", "epsilon_del"]
+      ]
+    },
+    {
+      "id": "triangulum",
+      "name": "Triangulum",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "beta_tri", "name": "Beta Trianguli", "ra": 32.39, "dec": 34.99, "mag": 3.0 },
+        { "id": "mothallah", "name": "Mothallah", "ra": 28.27, "dec": 29.58, "mag": 3.42 },
+        { "id": "gamma_tri", "name": "Gamma Trianguli", "ra": 34.33, "dec": 33.85, "mag": 4.01 }
+      ],
+      "lines": [
+        ["beta_tri", "mothallah"],
+        ["mothallah", "gamma_tri"],
+        ["gamma_tri", "beta_tri"]
+      ]
+    },
+    {
+      "id": "corona_borealis",
+      "name": "Corona Borealis",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "theta_crb", "name": "Theta CrB", "ra": 231.96, "dec": 31.36, "mag": 4.14 },
+        { "id": "beta_crb", "name": "Nusakan", "ra": 231.96, "dec": 29.11, "mag": 3.68 },
+        { "id": "alphecca", "name": "Alphecca", "ra": 233.67, "dec": 26.71, "mag": 2.22 },
+        { "id": "gamma_crb", "name": "Gamma CrB", "ra": 235.9, "dec": 26.3, "mag": 3.84 },
+        { "id": "delta_crb", "name": "Delta CrB", "ra": 237.4, "dec": 26.07, "mag": 4.63 },
+        { "id": "epsilon_crb", "name": "Epsilon CrB", "ra": 239.4, "dec": 26.88, "mag": 4.15 },
+        { "id": "iota_crb", "name": "Iota CrB", "ra": 241.01, "dec": 29.85, "mag": 4.98 }
+      ],
+      "lines": [
+        ["theta_crb", "beta_crb"],
+        ["beta_crb", "alphecca"],
+        ["alphecca", "gamma_crb"],
+        ["gamma_crb", "delta_crb"],
+        ["delta_crb", "epsilon_crb"],
+        ["epsilon_crb", "iota_crb"]
+      ]
+    },
+    {
+      "id": "bootes",
+      "name": "Bootes",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "arcturus", "name": "Arcturus", "ra": 213.92, "dec": 19.18, "mag": -0.05 },
+        { "id": "izar", "name": "Izar", "ra": 221.25, "dec": 27.07, "mag": 2.35 },
+        { "id": "seginus", "name": "Seginus", "ra": 218.02, "dec": 38.31, "mag": 3.03 },
+        { "id": "nekkar", "name": "Nekkar", "ra": 225.49, "dec": 40.39, "mag": 3.49 },
+        { "id": "rho_boo", "name": "Rho Bootis", "ra": 218.29, "dec": 30.37, "mag": 3.57 },
+        { "id": "muphrid", "name": "Muphrid", "ra": 208.67, "dec": 18.4, "mag": 2.68 }
+      ],
+      "lines": [
+        ["arcturus", "muphrid"],
+        ["arcturus", "izar"],
+        ["izar", "nekkar"],
+        ["nekkar", "seginus"],
+        ["seginus", "rho_boo"],
+        ["rho_boo", "arcturus"]
+      ]
+    },
+    {
+      "id": "aquila",
+      "name": "Aquila",
+      "hemisphere": "equatorial",
+      "stars": [
+        { "id": "altair", "name": "Altair", "ra": 297.7, "dec": 8.87, "mag": 0.76 },
+        { "id": "tarazed", "name": "Tarazed", "ra": 296.56, "dec": 10.61, "mag": 2.72 },
+        { "id": "alshain", "name": "Alshain", "ra": 298.83, "dec": 6.41, "mag": 3.71 }
+      ],
+      "lines": [
+        ["tarazed", "altair"],
+        ["altair", "alshain"]
+      ]
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "castor", "name": "Castor", "ra": 113.65, "dec": 31.89, "mag": 1.58 },
+        { "id": "pollux", "name": "Pollux", "ra": 116.33, "dec": 28.03, "mag": 1.15 },
+        { "id": "mebsuta", "name": "Mebsuta", "ra": 100.98, "dec": 25.13, "mag": 3.06 },
+        { "id": "tejat", "name": "Tejat", "ra": 95.74, "dec": 22.51, "mag": 2.87 },
+        { "id": "wasat", "name": "Wasat", "ra": 110.03, "dec": 21.98, "mag": 3.53 },
+        { "id": "mekbuda", "name": "Mekbuda", "ra": 106.03, "dec": 20.57, "mag": 3.9 },
+        { "id": "alhena", "name": "Alhena", "ra": 99.43, "dec": 16.4, "mag": 1.93 },
+        { "id": "alzirr", "name": "Alzirr", "ra": 101.32, "dec": 12.9, "mag": 3.35 }
+      ],
+      "lines": [
+        ["castor", "mebsuta"],
+        ["mebsuta", "tejat"],
+        ["castor", "pollux"],
+        ["pollux", "wasat"],
+        ["wasat", "mekbuda"],
+        ["mekbuda", "alhena"],
+        ["alhena", "alzirr"]
+      ]
+    },
+    {
+      "id": "sagittarius",
+      "name": "the Teapot",
+      "hemisphere": "southern",
+      "stars": [
+        { "id": "kaus_australis", "name": "Kaus Australis", "ra": 276.04, "dec": -34.38, "mag": 1.79 },
+        { "id": "kaus_media", "name": "Kaus Media", "ra": 275.25, "dec": -29.83, "mag": 2.7 },
+        { "id": "kaus_borealis", "name": "Kaus Borealis", "ra": 276.99, "dec": -25.42, "mag": 2.81 },
+        { "id": "ascella", "name": "Ascella", "ra": 285.65, "dec": -29.88, "mag": 2.6 },
+        { "id": "nunki", "name": "Nunki", "ra": 283.82, "dec": -26.3, "mag": 2.05 },
+        { "id": "phi_sgr", "name": "Phi Sagittarii", "ra": 281.42, "dec": -26.99, "mag": 3.17 },
+        { "id": "alnasl", "name": "Alnasl", "ra": 271.45, "dec": -30.42, "mag": 2.98 },
+        { "id": "tau_sgr", "name": "Tau Sagittarii", "ra": 286.74, "dec": -27.67, "mag": 3.32 }
+      ],
+      "lines": [
+        ["alnasl", "kaus_media"],
+        ["kaus_media", "kaus_australis"],
+        ["kaus_australis", "ascella"],
+        ["ascella", "phi_sgr"],
+        ["phi_sgr", "kaus_borealis"],
+        ["kaus_borealis", "kaus_media"],
+        ["ascella", "nunki"],
+        ["nunki", "tau_sgr"]
+      ]
+    },
+    {
+      "id": "scorpius",
+      "name": "Scorpius",
+      "hemisphere": "southern",
+      "stars": [
+        { "id": "acrab", "name": "Acrab", "ra": 241.36, "dec": -19.81, "mag": 2.56 },
+        { "id": "dschubba", "name": "Dschubba", "ra": 240.08, "dec": -22.62, "mag": 2.29 },
+        { "id": "pi_sco", "name": "Pi Scorpii", "ra": 239.71, "dec": -26.11, "mag": 2.89 },
+        { "id": "antares", "name": "Antares", "ra": 247.35, "dec": -26.43, "mag": 1.06 },
+        { "id": "tau_sco", "name": "Tau Scorpii", "ra": 248.97, "dec": -28.22, "mag": 2.82 },
+        { "id": "epsilon_sco", "name": "Epsilon Scorpii", "ra": 252.97, "dec": -34.29, "mag": 2.29 },
+        { "id": "mu_sco", "name": "Mu Scorpii", "ra": 253.5, "dec": -38.05, "mag": 3.0 },
+        { "id": "sargas", "name": "Sargas", "ra": 264.33, "dec": -42.99, "mag": 1.86 },
+        { "id": "shaula", "name": "Shaula", "ra": 263.4, "dec": -37.1, "mag": 1.62 }
+      ],
+      "lines": [
+        ["acrab", "dschubba"],
+        ["dschubba", "pi_sco"],
+        ["dschubba", "antares"],
+        ["antares", "tau_sco"],
+        ["tau_sco", "epsilon_sco"],
+        ["epsilon_sco", "mu_sco"],
+        ["mu_sco", "sargas"],
+        ["sargas", "shaula"]
+      ]
+    },
+    {
+      "id": "cepheus",
+      "name": "Cepheus",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "alderamin", "name": "Alderamin", "ra": 319.64, "dec": 62.59, "mag": 2.45 },
+        { "id": "alfirk", "name": "Alfirk", "ra": 322.16, "dec": 70.56, "mag": 3.23 },
+        { "id": "errai", "name": "Errai", "ra": 354.84, "dec": 77.63, "mag": 3.21 },
+        { "id": "zeta_cep", "name": "Zeta Cephei", "ra": 337.83, "dec": 58.2, "mag": 3.35 },
+        { "id": "iota_cep", "name": "Iota Cephei", "ra": 342.42, "dec": 66.2, "mag": 3.52 }
+      ],
+      "lines": [
+        ["alderamin", "alfirk"],
+        ["alfirk", "errai"],
+        ["errai", "iota_cep"],
+        ["iota_cep", "zeta_cep"],
+        ["zeta_cep", "alderamin"]
+      ]
+    },
+    {
+      "id": "draco",
+      "name": "Draco",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "thuban", "name": "Thuban", "ra": 211.1, "dec": 64.38, "mag": 3.65 },
+        { "id": "eltanin", "name": "Eltanin", "ra": 269.15, "dec": 51.49, "mag": 2.23 },
+        { "id": "rastaban", "name": "Rastaban", "ra": 262.61, "dec": 52.3, "mag": 2.79 },
+        { "id": "grumium", "name": "Grumium", "ra": 268.38, "dec": 56.87, "mag": 3.75 },
+        { "id": "nu_dra", "name": "Nu Draconis", "ra": 263.05, "dec": 55.18, "mag": 4.13 },
+        { "id": "edasich", "name": "Edasich", "ra": 231.23, "dec": 58.97, "mag": 3.29 },
+        { "id": "aldhibah", "name": "Aldhibah", "ra": 257.2, "dec": 65.71, "mag": 3.17 },
+        { "id": "kappa_dra", "name": "Kappa Draconis", "ra": 188.37, "dec": 69.79, "mag": 3.82 }
+      ],
+      "lines": [
+        ["kappa_dra", "thuban"],
+        ["thuban", "edasich"],
+        ["edasich", "aldhibah"],
+        ["aldhibah", "grumium"],
+        ["grumium", "eltanin"],
+        ["eltanin", "rastaban"],
+        ["rastaban", "nu_dra"]
+      ]
+    },
+    {
+      "id": "andromeda",
+      "name": "Andromeda",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "alpheratz", "name": "Alpheratz", "ra": 2.1, "dec": 29.09, "mag": 2.06 },
+        { "id": "delta_and", "name": "Delta Andromedae", "ra": 9.83, "dec": 30.86, "mag": 3.27 },
+        { "id": "mirach", "name": "Mirach", "ra": 17.43, "dec": 35.62, "mag": 2.05 },
+        { "id": "almach", "name": "Almach", "ra": 30.97, "dec": 42.33, "mag": 2.1 }
+      ],
+      "lines": [
+        ["alpheratz", "delta_and"],
+        ["delta_and", "mirach"],
+        ["mirach", "almach"]
+      ]
+    },
+    {
+      "id": "aries",
+      "name": "Aries",
+      "hemisphere": "northern",
+      "stars": [
+        { "id": "hamal", "name": "Hamal", "ra": 31.79, "dec": 23.46, "mag": 2.0 },
+        { "id": "sheratan", "name": "Sheratan", "ra": 28.66, "dec": 20.81, "mag": 2.64 },
+        { "id": "mesarthim", "name": "Mesarthim", "ra": 28.38, "dec": 19.29, "mag": 3.86 },
+        { "id": "bharani", "name": "41 Arietis", "ra": 42.65, "dec": 27.26, "mag": 3.61 }
+      ],
+      "lines": [
+        ["bharani", "hamal"],
+        ["hamal", "sheratan"],
+        ["sheratan", "mesarthim"]
+      ]
+    }
+  ]
+}

@@ -1,56 +1,287 @@
-/* PARLOR v3 §3.5 — The Map (Atlas Obscura). Per-game styles only (firewall:
-   new styles go in a *.module.css, never a shared file). Colour comes from
-   Tailwind utility classes in the JSX; this file owns layout + sizing only. */
+/* PARLOR v3 §3.5 — Atlas (constellation logic puzzle). Per-game styles only
+   (firewall: new styles go in a *.module.css, never a shared file). This file
+   owns layout, the star field, and motion; colour comes from Tailwind utility
+   classes + inline accent (CATEGORY_HEX geography) in the JSX. Reduced motion is
+   a designed still state, gated by .still and prefers-reduced-motion. */
 
-/* Desktop one-screen: on a pin round the map and the question/controls sit
-   side by side, so the whole round is visible at 1280×800 and 1920×1080 with
-   no scroll-to-play. Mobile (<1024px) keeps the existing stacked flow. */
+.wrap {
+  position: relative;
+  isolation: isolate;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  padding: 1.25rem;
+  /* Deep-space wash: darkness with a faint nebula bloom. Reads on both themes. */
+  background:
+    radial-gradient(120% 80% at 18% 8%, rgba(23, 139, 153, 0.16), transparent 60%),
+    radial-gradient(90% 70% at 88% 96%, rgba(110, 60, 160, 0.18), transparent 62%),
+    radial-gradient(140% 120% at 50% 50%, rgba(6, 9, 24, 0.9), rgba(4, 6, 18, 0.98));
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.dust {
+  width: 100%;
+  height: 100%;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 42rem;
+}
+.title {
+  font-family: var(--font-display, inherit);
+  font-size: clamp(1.9rem, 6vw, 3rem);
+  line-height: 1.05;
+  color: #f3f6ff;
+}
+
+/* Omens rail + pattern grid. Stacks on mobile, rail sits left on lg. */
 .layout {
   display: grid;
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
 }
 @media (min-width: 1024px) {
   .layout {
-    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
     align-items: start;
   }
 }
 
-/* The per-round distance line (the §3.5 social artifact): one bar per round,
-   fill height ∝ closeness. Pin rounds show km; MC tangents show ✓/✗. */
-.bars {
+.clues {
   display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.barCol {
+.clue {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+.clueNum {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* The six patterns. Two columns from 375px up; three on wide screens. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+@media (min-width: 700px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(180, 200, 255, 0.18);
+  border-radius: 0.9rem;
+  background: rgba(8, 12, 30, 0.55);
+  overflow: hidden;
+  transition:
+    border-color 0.25s ease,
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+.cardBtn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.5rem 0.5rem 0.35rem;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+.cardBtn:disabled {
+  cursor: default;
+}
+.figure {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: block;
+}
+.tag {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.62rem;
+  text-align: center;
+  color: rgba(210, 222, 255, 0.75);
+}
+
+.line {
+  stroke: rgba(150, 178, 255, 0.5);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+}
+.star {
+  fill: #eaf1ff;
+}
+.bright {
+  fill: #fff;
+  filter: drop-shadow(0 0 2.4px rgba(120, 220, 255, 0.95));
+}
+
+/* A star's soft pulse. Staggered per-index in the JSX. */
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.twinkle {
+  animation: twinkle 3.4s ease-in-out infinite;
+}
+
+/* Rule-out affordance — a real ≥44px-tall control (touch). */
+.ruleBtn {
+  min-height: 44px;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid rgba(180, 200, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(200, 214, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.62rem;
+  cursor: pointer;
+}
+.ruleBtn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #eaf1ff;
+}
+
+.selected {
+  transform: translateY(-2px);
+}
+.struck {
+  opacity: 0.32;
+}
+.struck .figure {
+  filter: grayscale(1);
+}
+.answer {
+  box-shadow: 0 0 0 1px rgba(23, 139, 153, 0.6);
+}
+.dimmed {
+  opacity: 0.28;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+.shake {
+  animation: shake 0.45s ease;
+  border-color: #7a4b4b !important;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.confirm {
+  min-height: 48px;
+  padding: 0 1.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(23, 139, 153, 0.55);
+  color: #f3f6ff;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    opacity 0.2s ease;
+}
+.confirm:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.result {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.35rem;
-  width: 2.75rem;
+  margin-top: 1.75rem;
+  text-align: center;
 }
-.barTrack {
-  position: relative;
-  width: 100%;
-  height: 4rem;
-  border-radius: 0.4rem;
-  overflow: hidden;
+.resultName {
+  font-family: var(--font-display, inherit);
+  font-size: clamp(1.8rem, 6vw, 2.75rem);
+  line-height: 1.05;
+  color: #f3f6ff;
 }
-.barFill {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 0.4rem 0.4rem 0 0;
-  transition: height 0.4s ease;
+.shareBtn {
+  min-height: 44px;
+  margin-top: 0.5rem;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(23, 139, 153, 0.55);
+  color: #7fd3dd;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.66rem;
+  cursor: pointer;
+}
+.shareBtn:hover {
+  background: rgba(23, 139, 153, 0.15);
 }
 
-/* In-round proximity meter shown under the km readout. */
-.proxFill {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.5s ease;
+/* Reduced motion: freeze twinkle + all transitions (designed still state). */
+.still .twinkle,
+.still .shake {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .twinkle,
+  .shake {
+    animation: none;
+  }
+  .card {
+    transition: none;
+  }
 }
