@@ -21,7 +21,7 @@ export default async function BoardPage() {
   const theme = pickTheme(day); // deterministic daily reskin (SSR/client agree)
 
   return (
-    <RoomShell label={`room 01 — codex · ${theme.name.toLowerCase()}`} accent="history" href="/board">
+    <RoomShell label={`codex · ${theme.name.toLowerCase()}`} accent="history" href="/board">
       <BoardGame columns={columns} dailyDouble={dailyDouble} clues={clues} theme={theme} />
     </RoomShell>
   );

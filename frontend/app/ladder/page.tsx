@@ -18,7 +18,7 @@ export default async function LadderPage({
   const puzzle = await getLadderPuzzle(valid);
 
   return (
-    <RoomShell label="room 09 — climb of the initiate" accent="history" href="/ladder">
+    <RoomShell label="climb of the initiate" accent="history" href="/ladder">
       <LadderGame puzzle={puzzle} requestedDate={valid ?? null} />
     </RoomShell>
   );

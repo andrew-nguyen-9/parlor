@@ -116,7 +116,7 @@ export const GAMES: Game[] = [
     accent: "music",
     character: "the Maestro",
     emblem: "♪", // the opening note
-    rank: 12, // unranked — the Joker; see `joker` below
+    rank: 11, // contiguous with the deck (1–11); joker below overrides display
     joker: true,
     blurb:
       "Name the track before the needle lifts. The house band strikes up an intro — a music room for the sharp-eared.",

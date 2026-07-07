@@ -33,7 +33,7 @@ export default async function MapPage() {
   const rounds = [...civRounds(civ), ...themed.slice(0, 3)];
 
   return (
-    <RoomShell label="room 05 — atlas obscura" accent="geography" href="/map">
+    <RoomShell label="atlas obscura" accent="geography" href="/map">
       <MapGame rounds={rounds} pool={pool} civ={civ} />
     </RoomShell>
   );
