@@ -562,6 +562,21 @@ def forge_ladder(facts: list[dict], rng: random.Random) -> list[dict]:
 MIN_THREAD_LINKS = 5     # shortest publishable chain for THE THREAD
 MAX_THREAD_LINKS = 7
 
+# THE THREAD is the gentle room: only the easiest, best-known answers chain, so a
+# player recognizes every link and the fun is spotting the letter pass, not the
+# trivia. Difficulty is a within-category popularity percentile (1=most-popular …
+# 5=obscure), so ≤2 == roughly the top ~40% best-known answers in a category.
+THREAD_MAX_DIFFICULTY = 2
+
+# Prompts unfit for a THREAD link: multiple-choice phrasings (the thread is
+# free-text, never "which of the following"), and thin/generic stat clues
+# (tempo/BPM/listener counts) that read as unguessable rather than well-known.
+_THREAD_REJECT = re.compile(
+    r"which of the following|which one of|choose the|pick the|"
+    r"\bbpm\b|tempo of|beats per minute|monthly listeners|fans on ",
+    re.IGNORECASE,
+)
+
 
 def _chain_key(answer: str) -> str:
     """Normalize an answer to its bare letters (for last-char→first-char joins)."""
@@ -643,6 +658,14 @@ def forge_thread(clues: list[dict], rng: random.Random) -> list[dict]:
         #   pulls notable articles, swap this for a per-fact notability flag.
         if q.get("source") == "wikipedia":
             continue
+        # Easy-room gate: only well-known (top-popularity) answers may chain, and
+        # only clean, guessable prompts — no multiple-choice phrasing, no thin
+        # stat clues. Keeps THE THREAD significantly easier than the board it's
+        # forged from.
+        if q.get("difficulty", 3) > THREAD_MAX_DIFFICULTY:
+            continue
+        if _THREAD_REJECT.search(q.get("prompt", "")):
+            continue
         atype = answer_type(q["correct"], q["category"], source=q.get("source"))
         if not atype:
             continue
@@ -680,10 +703,17 @@ def forge_thread(clues: list[dict], rng: random.Random) -> list[dict]:
             )
             # never name the master theme here — only describe the letter pass.
             # the theme is revealed by SOLVING the chain, not by reading a link.
+            # Clear hint: name BOTH ends of the pass — this answer's LAST letter is
+            # the FIRST letter of the next — so a stuck player knows exactly what to
+            # reach for. (end == nxt_letter by construction of the chain.)
+            end = _chain_key(q["correct"])[-1].upper()
             if nxt_letter:
-                link = f"A stitch in the same weave. Its last letter passes the thread to “{nxt_letter}…”."
+                link = (
+                    f"Its last letter is “{end}”. That “{end}” is where the next "
+                    f"stitch picks up — the following answer begins with “{nxt_letter}…”."
+                )
             else:
-                link = "The final stitch — now name the thread."
+                link = "The thread is tied off here — now name what runs through them all."
             links.append({"prompt": q["prompt"], "answer": q["correct"], "link": link})
 
         # final-guess choices: the real theme + sibling type labels as

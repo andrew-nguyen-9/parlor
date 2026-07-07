@@ -236,6 +236,13 @@ export default function ThreadGame({
         </span>
       </div>
 
+      {/* Loom instruction — spelled out in weaving terms so the mechanic reads at
+          a glance (the deliberate difficulty drop this cycle). */}
+      <p className="microlabel mb-3 text-smoke">
+        Work the loom top to bottom: each answer&rsquo;s last letter is the weft
+        that starts the next stitch along the warp.
+      </p>
+
       {/* THE RAIL — every link, resolved ones revealed in place, the active one
           expanded with its input. This single list is the whole game. */}
       <div className={styles.rail}>
@@ -247,7 +254,11 @@ export default function ThreadGame({
           const future = n.state === "pending" && !isActive;
           return (
             <div key={i} className={styles.link} style={{ ["--knot" as string]: knot }}>
-              <span className={`${styles.knot} ${done ? styles.knotDone : ""}`}>
+              <span
+                className={`${styles.knot} ${
+                  done ? styles.knotDone : isActive ? styles.knotActive : ""
+                }`}
+              >
                 {n.state === "hit" ? "✓" : n.state === "near" ? "◆" : n.state === "miss" ? "✕" : i + 1}
               </span>
 
@@ -302,7 +313,7 @@ export default function ThreadGame({
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleGuess()}
-                        placeholder="your answer…"
+                        placeholder="name this stitch…"
                         className="flex-1 rounded-xl border border-line bg-bg px-4 py-2.5 text-ink placeholder:text-muted focus:border-brass focus:outline-none"
                       />
                       <button

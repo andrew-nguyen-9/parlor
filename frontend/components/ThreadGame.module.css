@@ -18,6 +18,70 @@
   gap: 0.5rem;
 }
 
+/* THE WARP — a single glowing gold thread running the whole length of the loom,
+   down the knot gutter behind every knot. It is the "thread" the room is named
+   for: a shimmering sheen travels down it so the whole rail reads as live,
+   spun-gold weaving even before a stitch is worked. Purely decorative (behind
+   the knots), so it never blocks input and vanishes cleanly under reduced motion. */
+.rail::before {
+  content: "";
+  position: absolute;
+  left: calc(0.875rem - 1px);
+  top: 0.75rem;
+  bottom: 0.75rem;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    rgba(199, 154, 58, 0.05),
+    rgba(212, 175, 90, 0.55) 45%,
+    rgba(240, 214, 140, 0.85) 50%,
+    rgba(212, 175, 90, 0.55) 55%,
+    rgba(199, 154, 58, 0.05)
+  );
+  background-size: 100% 260%;
+  box-shadow: 0 0 8px rgba(212, 175, 90, 0.35);
+  pointer-events: none;
+  z-index: 0;
+  animation: threadShimmer 3.6s ease-in-out infinite;
+}
+
+/* the sheen sliding down the warp — the "shuttle" pass */
+@keyframes threadShimmer {
+  0%,
+  100% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+}
+
+/* the active knot glows like a bead of gold on the loom, breathing so the eye
+   knows exactly which stitch is being worked */
+@keyframes knotPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(199, 154, 58, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 12px 3px rgba(212, 175, 90, 0.55);
+  }
+}
+
+.knotActive {
+  animation: knotPulse 1.9s ease-in-out infinite;
+}
+
+/* reduced motion: hold the gold, drop every animation — the thread still reads
+   as spun gold, it just stops shimmering/breathing */
+@media (prefers-reduced-motion: reduce) {
+  .rail::before,
+  .knotActive {
+    animation: none;
+  }
+}
+
 .link {
   position: relative;
   display: grid;
@@ -38,6 +102,8 @@
 }
 
 .knot {
+  position: relative;
+  z-index: 1; /* the knot bead sits ON the glowing warp, not behind it */
   grid-row: 1;
   grid-column: 1;
   width: 1.75rem;
@@ -52,11 +118,13 @@
   background: var(--bg, #0e0e16);
 }
 
-/* resolved knot: filled so the thread reads as woven through it */
+/* resolved knot: filled + a soft halo of its tier colour, so a finished stitch
+   reads as a warm bead knotted into the thread */
 .knotDone {
   background: var(--knot);
   color: #0e0e16;
   border-color: var(--knot);
+  box-shadow: 0 0 10px 0 var(--knot);
 }
 
 .body {

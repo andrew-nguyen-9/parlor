@@ -1,19 +1,21 @@
 import type { Tutorial } from "./types";
 
-// STUB (F2) — Thread of Fate is being revamped this cycle; that game unit
-// overwrites this file with final rules + example. Keep the shape; overlay reads it.
+// REAL content (G6) — Thread of Fate revamp: easier, weaving-loom UI, clear
+// last-letter→first-letter hint. Overlay reads this; games edit only this file.
 export const tutorial: Tutorial = {
   href: "/thread",
   title: "Thread of Fate",
   accent: "history",
-  tagline: "Follow the chain of clues — each answer links to the next.",
+  tagline: "Work the loom stitch by stitch — every answer's last letter starts the next.",
   rules: [
-    "Answers form a chain: each one is the key to the clue that follows.",
-    "Solve them in order, using what you just learned to unlock the next link.",
-    "Unravel the whole thread before it tangles.",
+    "The Weaver hands you a chain of clues with well-known answers — recognizable on purpose.",
+    "Each answer's LAST letter is the first letter of the next answer along the warp. Use that pass to unlock the stitch below it.",
+    "Stuck? Spend a hint to reveal the passing letter — it downgrades a clean stitch to a mended one, but keeps the thread moving.",
+    "After the final stitch, name the master theme that runs through every answer to weave the thread whole.",
   ],
   example: {
-    prompt: "Clue 1 answers “Rome”; clue 2 asks about a river running through that answer.",
-    walkthrough: "Carry “Rome” into clue two — the river is the Tiber — and the thread pulls forward.",
+    prompt: "Stitch one answers “Rome”. It ends in “e”, so stitch two's answer begins with “E”.",
+    walkthrough:
+      "“Rome” → the next clue's answer starts with E: “Egypt”. Egypt ends in “t”, so the third answer begins with “T”, and so on down the loom. Solve the chain, then name what ties them all — the theme is never spoken in a link, only revealed by weaving it.",
   },
 };

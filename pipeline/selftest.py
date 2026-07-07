@@ -133,10 +133,14 @@ def synthetic_facts() -> list[dict]:
     # gate bars that source from chains (obscure stubs make unguessable themes).
     chain_subjects = ["Oceanus", "Seafarer", "Rudder", "Reef", "Frigate", "Estuary"]
     for j, subj in enumerate(chain_subjects):
+        # High popularity → these land in the easy difficulty band (1–2 within
+        # geography), which forge_thread's THREAD_MAX_DIFFICULTY gate now requires:
+        # THE THREAD only chains well-known answers. Above every synthetic Country
+        # fact so the chain survives the gate.
         facts.append(make_fact(
             source="curated", category="geography", subject=subj,
             fact_text=f"A landmark from the great voyage, known to every sailor who set sail.",
-            popularity=20.0 + j, source_url="https://example.com",
+            popularity=120.0 + j, source_url="https://example.com",
         ))
 
     # Ready-made MC trivia (trivia_ingest: opentdb/QuizAPI) → forge_trivia keeps
@@ -419,6 +423,28 @@ def main() -> None:
             choices = q.get("theme_choices") or []
             check("thread final choices include the theme",
                   theme in choices and len(choices) >= 2)
+            # G6: THE THREAD is the easy room — only top-popularity answers chain,
+            # so the forged difficulty stays in the easy band.
+            from question_forge import THREAD_MAX_DIFFICULTY
+            check("thread stays in the easy difficulty band",
+                  q.get("difficulty", 5) <= THREAD_MAX_DIFFICULTY,
+                  f"difficulty {q.get('difficulty')}")
+            # G6: the thread is free-text — no link prompt may be multiple-choice
+            # phrased, and no thin/generic stat clue ("… tempo of 145 BPM").
+            bad = ("which of the following", "which one of", "bpm", "tempo of",
+                   "monthly listeners")
+            check("thread links carry no multiple-choice / generic-stat phrasing",
+                  all(all(b not in lk["prompt"].lower() for b in bad) for lk in chain))
+            # G6: every non-final link's hint text carries the letter that passes
+            # the thread forward — the first letter of the NEXT answer (== this
+            # answer's last letter) — so the hint is actually useful.
+            import re as _re2
+            key = lambda s: _re2.sub(r"[^a-z]", "", s.lower())
+            passes_ok = all(
+                f"“{key(chain[i + 1]['answer'])[0].upper()}…”" in chain[i]["link"]
+                for i in range(len(chain) - 1)
+            )
+            check("thread link text names the passing letter", passes_ok)
             break
     else:
         check("forge produces thread", False, "no thread question in output")
