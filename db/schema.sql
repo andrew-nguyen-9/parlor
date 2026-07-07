@@ -82,14 +82,14 @@ create table if not exists daily_sets (
 -- public insert policy. Reads are public via the leaderboard view. ──
 create table if not exists scores (
   id          uuid primary key default gen_random_uuid(),
-  -- Live v3 deck + new rooms (overture = audio room, cold-case = weekly case).
+  -- Live v3 deck + new rooms (overture = audio room).
   -- Legacy rooms (jukebox/gallery/blitz/connections) retained for historical
   -- rows even though their app routes are retired in v3 §3.0. Keep in sync with
   -- db/migrations/20260626_v3.sql (additive; CHECK only validates on write).
   room        text not null check (room in (
                 'board','clock','wedges','streak','map','daily',
                 'mystery','gauntlet','thread','seance','ladder',
-                'overture','cold-case',
+                'overture',
                 'jukebox','gallery','blitz','connections')),
   name        text not null check (char_length(name) between 1 and 12),
   score       int not null check (score >= 0),

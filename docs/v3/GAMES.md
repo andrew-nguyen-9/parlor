@@ -102,9 +102,7 @@ styles go in a per-game `*.module.css`.
 - **Mandate:** one-screen + shareable like any game.
 - **Brainstorm first** — exact scoring/rounds are open.
 
-## §3.23 — Hard-mode weekly Mystery
-- **Owns:** `WeeklyCaseGame.tsx` + its route (registered in 3.0),
-  `WeeklyCase.module.css`.
-- **Concept:** a longer, multi-day case with cross-room clues — depth on the
-  canon hub. Keep solvable (vitest).
-- **Brainstorm first** — cross-room clue mechanic is the open design.
+## §3.23 — Hard-mode weekly Mystery (REMOVED — wishlist #12, F5)
+- **Status:** the Cold Case room was fully removed. Route `/cold-case`,
+  `WeeklyCaseGame.tsx`, `WeeklyCase.module.css`, and `lib/weeklyCase.ts` no
+  longer exist. This segment is retired; retained here for history only.

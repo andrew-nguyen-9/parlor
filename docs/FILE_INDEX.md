@@ -42,7 +42,6 @@ root. Keep this current as v3 segments add/rename files.
 | `/seance` | The Séance | logic-grid deduction: clues, hints, undo/redo, whisper scratchpad, weekly grimoire |
 | `/ladder` | Climb of the Initiate | rung-by-rung sequence puzzles (pre-generated archive) |
 | `/overture` | The Overture (Joker) | name-the-intro audio rounds (Deezer previews) |
-| `/cold-case` | The Cold Case | weekly long-form case (`WeeklyCaseGame`) |
 | `/profile` | player dashboard | XP, accuracy, streaks, achievements, collection (localStorage) |
 | `/about`, `/sitemap` | site pages | about + human-readable room directory |
 | `api/og/[room]` | OG images | share-card renders (`@vercel/og`) |
@@ -63,7 +62,7 @@ root. Keep this current as v3 segments add/rename files.
 | `PracticeBar.tsx`, `RoomFilters.tsx` | Practice mode + deck/difficulty filters |
 | `ProfileDashboard.tsx` | Activity heatmap, XP, per-room/category stats, collection |
 | `ShareCardGallery.tsx`, `NotFoundCards.tsx` | Share-card showcase, 404 page deck |
-| `BoardGame` `ClockGame` `WedgesGame` `StreakGame` `MapGame` `GauntletGame` `ThreadGame` `SeanceGame` `LadderGame` `AudioRoomGame` `WeeklyCaseGame` | Game clients (one per room; `AudioRoomGame` = Overture) |
+| `BoardGame` `ClockGame` `WedgesGame` `StreakGame` `MapGame` `GauntletGame` `ThreadGame` `SeanceGame` `LadderGame` `AudioRoomGame` | Game clients (one per room; `AudioRoomGame` = Overture) |
 | `MysteryGame` + `Mystery{Intro,Investigate,Verdict,StatusPill}` | Mystery room (accusation inlined in `MysteryInvestigate`) |
 | `*.module.css` | Per-room scoped styles |
 
@@ -84,7 +83,7 @@ root. Keep this current as v3 segments add/rename files.
 | `mystery.ts` (+`mysteryProse.ts`, `mysteryScore.ts`) | Mystery engine: 5-axis case gen (`deduceMotive`/`deduceWeapon`), bracket WHEN clues, prose banks (2nd rng stream), `verifySolvable`; scoring + share |
 | `board.ts`, `boardSettings.ts`, `themes.ts` | Board arrangement (client-safe, no seed-bank import), settings, daily column themes |
 | `clockLogic.ts`, `calendars.ts` | Clock clue-bounded deduction + rotating calendar systems |
-| `wedges.ts`, `streak.ts`, `ladder.ts` (+`ladderFlavor.ts`), `overture.ts`, `weeklyCase.ts`, `civilizations.ts` | Per-room pure logic |
+| `wedges.ts`, `streak.ts`, `ladder.ts` (+`ladderFlavor.ts`), `overture.ts`, `civilizations.ts` | Per-room pure logic |
 | `dailyMotif.ts` | Cross-room subject-of-the-day (shared accent/glyph/blurb) |
 | `weakspot.ts` | Points player at the room drilling their worst category (§3.19) |
 | `share.ts` | Canonical share-card seam: emoji grid + OG URL |

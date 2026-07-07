@@ -35,5 +35,4 @@ ship in parallel with zero conflict in the global stylesheet. Adding a token to
    and colocate it next to the component or route page.
 4. No new globals. If you think you need one, it's a §3.0 change — flag it.
 
-Examples in tree: `app/overture/coming-soon.module.css`,
-`app/cold-case/coming-soon.module.css`.
+Examples in tree: `app/overture/coming-soon.module.css`.
