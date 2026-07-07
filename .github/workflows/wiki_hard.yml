@@ -61,38 +61,31 @@ jobs:
         # --from-bronze: forge from the committed bronze (source of truth), not a
         # partially-populated Neon — same reason as etl_daily's publish job.
         run: python pipeline/question_forge.py --min-questions 100 --from-bronze
-      - name: Commit bronze layer
-        # Bronze only — data/raw/*.jsonl is `merge=union` (.gitattributes), so
-        # this rebase can never conflict. seed-questions.json is a FULLY
-        # REGENERATED artifact and is deliberately NOT staged here: a line-level
-        # rebase can never merge two regenerations, so it's regenerated fresh
-        # below, after the rebase.
+      - name: Publish bank (bronze + regenerated seed, race-safe single push)
+        # ONE commit, ONE push, retried — same contract as etl_daily's publish.
+        # Bronze rebases cleanly (merge=union); the seed is a FULLY REGENERATED
+        # artifact that must never sit in a rebase, so it's regenerated from the
+        # just-merged bronze and folded into the same commit. A foreign commit
+        # (human/dependabot — the bank-writer concurrency group doesn't serialize
+        # those) rejecting the push re-runs the cycle: rebase → regen → gate → push.
+        # The selftest gate keeps a DB-less single-source bronze from replacing a
+        # richer committed bank.
         run: |
           git config user.name "parlor-etl"
           git config user.email "actions@users.noreply.github.com"
           git add data/raw
           git diff --cached --quiet && echo "no bronze changes" && exit 0
           git commit -m "chore: hard-question sweep [skip ci]"
-          # rebase before push (no `|| true` — a failed rebase must surface, not be
-          # swallowed into a doomed push). Concurrency group + union-merge bronze
-          # means there should be nothing left to conflict on.
-          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
-          git push
-      - name: Refresh committed seed bank
-        # --from-bronze: re-forge from the just-rebased, MERGED bronze now in the
-        # workspace (never a stale pre-rebase copy).
-        run: python pipeline/export_seed.py --from-bronze
-      - name: Verify exported seed bank before committing
-        # gates the commit, not just reports after the fact — a DB-less export
-        # built from a single-source bronze (e.g. wikipedia-only) must never
-        # replace a richer, multi-category committed bank.
-        run: python pipeline/selftest.py
-      - name: Commit + push refreshed seed bank
-        run: |
-          git add frontend/public/seed-questions.json
-          git diff --cached --quiet && echo "no seed changes" && exit 0
-          git commit -m "chore: refresh seed bank [skip ci]"
-          git push
+          for attempt in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+            python pipeline/export_seed.py --from-bronze
+            python pipeline/selftest.py
+            git add frontend/public/seed-questions.json
+            git commit --amend --no-edit
+            git push && exit 0
+            echo "push rejected (foreign commit landed) — retry $attempt"
+          done
+          echo "publish failed after 3 attempts" >&2; exit 1
       - name: Open or update the pipeline-failure issue
         if: failure()
         env:
