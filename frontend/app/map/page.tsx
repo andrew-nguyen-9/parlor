@@ -1,40 +1,27 @@
 import { roomMetadata } from "@/lib/rooms";
 import MapGame from "@/components/MapGame";
 import RoomShell from "@/components/RoomShell";
-import { getQuestionsByType } from "@/lib/queries";
-import { daySeed, pickRotating } from "@/lib/rng";
-import { civRounds, pickCivilization } from "@/lib/civilizations";
-import { motifOfDay, feedByMotif } from "@/lib/dailyMotif";
-
-export const revalidate = 86400;
+import { getAtlasPuzzle } from "@/lib/queries";
 
 export const metadata = roomMetadata("/map");
 
-export default async function MapPage() {
-  const pool = await getQuestionsByType("where");
-
-  // The day's ancient civilization opens the expedition: a "place this
-  // civilization" pin-drop plus themed rounds (near history + far pop culture),
-  // then a rotating tail of pinnable `where` facts. Deterministic by date so
-  // SSR/client agree and everyone plays the same board (lib/rng.ts).
-  const civ = pickCivilization(daySeed());
-  // Cross-room motif of the day (§3.21) biases the rotating tail toward
-  // on-subject `where` facts — pull a wider rotating window than we need,
-  // float on-motif items to the front (feedByMotif), then take the top 3
-  // (was 2): "more theme-specific questions" without breaking the day-seeded
-  // rotation everyone else sees (feedByMotif is a stable partition).
-  const motif = motifOfDay();
-  const window = pickRotating(pool, Math.min(pool.length, 8));
-  const themed = feedByMotif(window, motif, (q) => ({
-    category: q.category,
-    year: q.year ?? null,
-    text: `${q.prompt} ${q.correct}`,
-  }));
-  const rounds = [...civRounds(civ), ...themed.slice(0, 3)];
+// `?date=YYYY-MM-DD` replays an archived night's sky (that row from the Neon
+// archive). The default (today) is the live puzzle. searchParams makes the route
+// dynamic, which is correct: with no DB, getAtlasPuzzle generates today's puzzle
+// inline from the committed star catalog (see lib/queries.ts) — so this room is
+// always playable offline, zero env vars (CLAUDE.md THE MAP rule).
+export default async function MapPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
+  const { date } = await searchParams;
+  const valid = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined;
+  const puzzle = await getAtlasPuzzle(valid);
 
   return (
-    <RoomShell label="atlas obscura" accent="geography" href="/map">
-      <MapGame rounds={rounds} pool={pool} civ={civ} />
+    <RoomShell label="atlas" accent="geography" href="/map">
+      <MapGame puzzle={puzzle} requestedDate={valid ?? null} />
     </RoomShell>
   );
 }
