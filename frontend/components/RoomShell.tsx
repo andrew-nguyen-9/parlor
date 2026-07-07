@@ -3,6 +3,8 @@ import { CATEGORY_HEX, CATEGORY_GLYPH } from "@/lib/types";
 import type { Category } from "@/lib/types";
 import { RankBadge } from "./CardFace";
 import { gameByHref } from "@/lib/games";
+import { tutorialByHref } from "@/lib/tutorials";
+import TutorialOverlay from "./TutorialOverlay";
 
 const SUIT = CATEGORY_GLYPH; // single source (a11y non-color channel)
 
@@ -29,6 +31,8 @@ export default function RoomShell({
 }) {
   const hex = CATEGORY_HEX[accent];
   const game = href ? gameByHref(href) : undefined;
+  // First-play tutorial + help icon for this room (undefined for non-game rooms).
+  const tutorial = href ? tutorialByHref(href) : undefined;
   const hasRails = Boolean(leftRail || rightRail);
   // Desktop track template: rails are fixed ~15rem columns, the play area takes
   // the rest. Only the present rails get a column, so a single-rail room never
@@ -97,6 +101,10 @@ export default function RoomShell({
       >
         <span className="opacity-60">←</span> Lobby
       </Link>
+
+      {/* First-play tutorial overlay + persistent help icon (F2). Mounts itself
+          — reads the current room's content from the tutorial registry by href. */}
+      {tutorial && <TutorialOverlay tutorial={tutorial} />}
     </main>
   );
 }
