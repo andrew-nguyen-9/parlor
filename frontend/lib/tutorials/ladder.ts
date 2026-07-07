@@ -1,19 +1,22 @@
 import type { Tutorial } from "./types";
 
-// STUB (F2) — Climb of the Initiate is being revamped this cycle; that game unit
-// overwrites this file with final rules + example. Keep the shape; overlay reads it.
+// FINAL (G8) — Climb of the Initiate is a stack of genuine deduction grids drawn
+// from a rotating library of logic-puzzle families (skyscrapers, futoshiki,
+// binairo). One worked example keeps the rules literal; the overlay reads this.
 export const tutorial: Tutorial = {
   href: "/ladder",
   title: "Climb of the Initiate",
-  accent: "music",
-  tagline: "Pick the closest match and climb. Hints reveal what the answers share.",
+  accent: "history",
+  tagline: "Each rung is a logic grid with ONE solution. Deduce it, lock it, climb.",
   rules: [
-    "Each rung offers a set of options; choose the one that best fits the target.",
-    "Hints reveal shared attributes — category, region, magnitude — to guide you.",
-    "A right choice lifts you a rung; keep climbing the ladder as high as you can.",
+    "Every rung is a deduction puzzle — no guessing. The family rotates by the day: Skyline (skyscrapers), the Balance (futoshiki), or Twin Sigils (binairo).",
+    "Fill the whole board so no constraint is broken; conflicting cells glow red and the Lock stays sealed until the board is clean.",
+    "A wrong Lock collapses the rung and adds time (+90s, then +180s). Clear every rung to reach the summit.",
+    "Tap the help panel on any rung for that family's exact rules.",
   ],
   example: {
-    prompt: "“Which of these is closest in population to Paris?”",
-    walkthrough: "Use the region hint to rule out far-off cities, then pick the nearest match to climb.",
+    prompt: "A Skyline rung: a clue of “1” sits on the left of a row.",
+    walkthrough:
+      "A left clue of 1 means only one tower is visible from the left, so the tallest tower (height n) must sit in that row's first cell — nothing can hide behind it. Place it, then deduce the rest of the Latin square.",
   },
 };

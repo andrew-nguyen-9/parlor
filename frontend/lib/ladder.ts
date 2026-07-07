@@ -1,55 +1,64 @@
 // ─────────────────────────────────────────────────────────────
-// CLIMB OF THE INITIATE — daily logic/math ladder engine.
+// CLIMB OF THE INITIATE — daily logic-puzzle LIBRARY (G8 revamp).
 //
-// A path-dependent sequence of 4–7 "rungs", each uniquely solvable, threaded by
-// a Global Constraint Memory (GCM) "resonance" value carried up the staircase:
-// each rung's parameters are derived from the resonance produced by the rungs
-// below it, so the ascent is genuinely cumulative. Validation is immediate on
-// Lock (resolving the spec's own contradiction — see GAMES.md §2.10).
+// De-Queens'd. The ascent is now a small stack of genuine deduction grids drawn
+// from a library of DISTINCT logic-puzzle families, each proven to have a UNIQUE
+// solution by a dedicated solver (no solve-time RNG — generators use the seeded
+// PRNG, solvers are pure enumeration). The daily pull rotates which families a
+// climb uses by date-seed, and rungs escalate 5×5 → 8×8.
+//
+// Families (all Latin-square / binary, none a Queens clone):
+//   skyscrapers : Latin square (1..n) read via edge "visible skyline" clues
+//   futoshiki   : Latin square constrained by < / > relations between neighbours
+//   binairo     : balanced binary grid (Takuzu) — no 3-in-a-row, all lines unique
 //
 // Pure + deterministic: generated once server-side (scripts/generate-ladder.ts)
-// and archived to Neon (ladder_puzzles). The browser only renders. Three rung
-// mechanisms, all with a single correct answer:
-//   - grid     : LinkedIn-Queens (one sigil per row/col/region, none touching)
-//   - sequence : pick the true next value; the "obvious" extrapolation is a decoy
-//   - door     : pick the only assertion consistent with the resonance
+// and archived to Neon (`ladder_puzzles`, flexible jsonb payload). The browser
+// only renders + validates against the archived `solution`.
 // ─────────────────────────────────────────────────────────────
 import { mulberry32, shuffled } from "./rng";
-import { TRICKSTERS, LADDER_WEEKS, SIGILS } from "./ladderFlavor";
+import { TRICKSTERS, LADDER_WEEKS } from "./ladderFlavor";
 
-export type RungType = "grid" | "sequence" | "door";
+export type PuzzleKind = "skyscrapers" | "futoshiki" | "binairo";
 
 export interface BaseRung {
-  type: RungType;
-  modifier: string; // trickster name
-  whisper: string; // trickster line
-  resonance: number; // GCM value entering this rung (shown to the player)
-}
-
-export interface GridRung extends BaseRung {
-  type: "grid";
+  kind: PuzzleKind;
   n: number;
-  sigils: string[]; // length n
-  regions: number[][]; // [row][col] = region id (0..n-1)
-  solution: number[]; // solution[row] = col of that row's sigil
-  givens: number[]; // givens[row] = col if pre-placed, else -1
+  modifier: string; // trickster name hosting this rung
+  whisper: string; // trickster line
+  resonance: number; // GCM value entering this rung (flavor, shown)
 }
 
-export interface SequenceRung extends BaseRung {
-  type: "sequence";
-  shown: number[]; // visible terms
-  options: number[]; // candidate next values (one correct)
-  answer: number; // the correct next value
-  rule: string; // the true generator, described
+// Grids are number[][] (row-major). Empty cell = -1.
+
+export interface SkyscrapersRung extends BaseRung {
+  kind: "skyscrapers";
+  // Edge clues: number of skyscrapers visible looking along that line; 0 = hidden.
+  top: number[]; // per column, viewed top→bottom
+  bottom: number[]; // per column, viewed bottom→top
+  left: number[]; // per row, viewed left→right
+  right: number[]; // per row, viewed right→left
+  givens: number[][]; // n×n, -1 empty, else 1..n pre-placed
+  solution: number[][]; // n×n, 1..n
 }
 
-export interface DoorRung extends BaseRung {
-  type: "door";
-  doors: string[]; // assertion text per door
-  answer: number; // index of the only consistent door
+export interface FutoshikiRung extends BaseRung {
+  kind: "futoshiki";
+  givens: number[][]; // n×n, -1 empty
+  solution: number[][]; // n×n, 1..n
+  // horizontal relations between (r,c) and (r,c+1): 1 ⇒ left<right, -1 ⇒ left>right, 0 none
+  gh: number[][]; // n rows × (n-1)
+  // vertical relations between (r,c) and (r+1,c): 1 ⇒ top<bottom, -1 ⇒ top>bottom, 0 none
+  gv: number[][]; // (n-1) rows × n
 }
 
-export type Rung = GridRung | SequenceRung | DoorRung;
+export interface BinairoRung extends BaseRung {
+  kind: "binairo";
+  givens: number[][]; // n×n, -1 empty, else 0 | 1
+  solution: number[][]; // n×n, 0 | 1
+}
+
+export type Rung = SkyscrapersRung | FutoshikiRung | BinairoRung;
 
 export interface LadderPuzzle {
   date: string;
@@ -57,254 +66,555 @@ export interface LadderPuzzle {
   rite: string;
   trickster: string; // the week's host
   framing: string;
+  kinds: PuzzleKind[]; // the family used at each rung, in order
   rungs: Rung[];
   seed: number;
 }
 
 interface WeekdayConfig {
   rungs: number;
-  gridN: number;
+  sizes: number[]; // requested size per rung (clamped to each family's range)
   rite: string;
 }
 
 export const WEEKDAY: Record<number, WeekdayConfig> = {
-  1: { rungs: 4, gridN: 4, rite: "Stable Ascent" }, // Mon
-  2: { rungs: 4, gridN: 4, rite: "First Distortion" }, // Tue
-  3: { rungs: 5, gridN: 5, rite: "Dual Logic" }, // Wed
-  4: { rungs: 5, gridN: 5, rite: "Layer Shift" }, // Thu
-  5: { rungs: 6, gridN: 5, rite: "Adversarial Logic" }, // Fri
-  6: { rungs: 6, gridN: 6, rite: "Ritual Instability" }, // Sat
-  0: { rungs: 7, gridN: 6, rite: "The Impossible Ascent" }, // Sun
+  1: { rungs: 2, sizes: [5, 6], rite: "Stable Ascent" }, // Mon
+  2: { rungs: 2, sizes: [6, 6], rite: "First Distortion" }, // Tue
+  3: { rungs: 3, sizes: [5, 6, 7], rite: "Dual Logic" }, // Wed
+  4: { rungs: 3, sizes: [6, 6, 8], rite: "Layer Shift" }, // Thu
+  5: { rungs: 3, sizes: [6, 7, 8], rite: "Adversarial Logic" }, // Fri
+  6: { rungs: 4, sizes: [5, 6, 7, 8], rite: "Ritual Instability" }, // Sat
+  0: { rungs: 4, sizes: [6, 7, 8, 8], rite: "The Impossible Ascent" }, // Sun
 };
 
-// ── Queens solver (one per row/col/region, no two orthogonally/diagonally
-// adjacent). Counts solutions up to `cap` for the uniqueness gate. ──
-export function solveQueens(
-  n: number,
-  regions: number[][],
-  givens: number[],
-  cap = 2,
-): number {
-  const cols = new Set<number>();
-  const used = new Set<number>(); // region ids
-  const place: number[] = Array(n).fill(-1);
-  let count = 0;
+const FAMILIES: PuzzleKind[] = ["skyscrapers", "futoshiki", "binairo"];
 
-  function ok(row: number, col: number): boolean {
-    if (cols.has(col)) return false;
-    const reg = regions[row][col];
-    if (used.has(reg)) return false;
-    if (row > 0) {
-      const p = place[row - 1];
-      if (p !== -1 && Math.abs(p - col) <= 1) return false; // touching
+// Family → allowed grid sizes (skyscrapers kept small so the exhaustive
+// uniqueness solver stays fast; binairo must be even).
+const SIZE_RANGE: Record<PuzzleKind, number[]> = {
+  skyscrapers: [5, 6],
+  futoshiki: [5, 6],
+  binairo: [6, 8],
+};
+
+function clampSize(kind: PuzzleKind, want: number): number {
+  const allowed = SIZE_RANGE[kind];
+  let best = allowed[0];
+  let bestD = Infinity;
+  for (const s of allowed) {
+    const d = Math.abs(s - want);
+    if (d < bestD) {
+      bestD = d;
+      best = s;
     }
-    return true;
   }
+  return best;
+}
 
-  function rec(row: number): void {
+const KIND_HOST: Record<PuzzleKind, string> = {
+  skyscrapers: "Prof. Marlow",
+  futoshiki: "Dr. Chen",
+  binairo: "Astrid Moon",
+};
+
+function hostOf(kind: PuzzleKind): { modifier: string; whisper: string } {
+  const name = KIND_HOST[kind];
+  const t = TRICKSTERS.find((x) => x.name === name) ?? TRICKSTERS[0];
+  return { modifier: t.name, whisper: t.whisper };
+}
+
+// ─────────────────────────────────────────────────────────────
+// Shared primitives
+// ─────────────────────────────────────────────────────────────
+
+/** Visible count looking along a line (a taller building hides shorter ones behind). */
+export function visible(line: number[]): number {
+  let max = 0;
+  let seen = 0;
+  for (const v of line) {
+    if (v > max) {
+      max = v;
+      seen++;
+    }
+  }
+  return seen;
+}
+
+/** Build a random Latin square of order n (values 1..n), seeded + deterministic. */
+function buildLatin(n: number, rand: () => number): number[][] {
+  const g: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
+  function colHas(c: number, v: number, upto: number): boolean {
+    for (let r = 0; r < upto; r++) if (g[r][c] === v) return true;
+    return false;
+  }
+  function place(r: number, c: number): boolean {
+    if (r === n) return true;
+    const nr = c + 1 === n ? r + 1 : r;
+    const nc = c + 1 === n ? 0 : c + 1;
+    for (const v of shuffled([...Array(n).keys()].map((i) => i + 1), rand)) {
+      if (g[r].includes(v)) continue;
+      if (colHas(c, v, r)) continue;
+      g[r][c] = v;
+      if (place(nr, nc)) return true;
+      g[r][c] = 0;
+    }
+    return false;
+  }
+  place(0, 0);
+  return g;
+}
+
+/**
+ * Generic Latin-square completion counter (columns + rows distinct), gated by
+ * caller constraints. Counts solutions up to `cap`. Pure — no RNG.
+ *   cellOk : local check when placing v at (r,c) (neighbours above/left filled)
+ *   rowDone: check invoked when row r is fully filled
+ *   gridDone: check invoked when the whole grid is filled
+ */
+function countLatin(
+  n: number,
+  givens: number[][],
+  cellOk: (r: number, c: number, v: number, g: number[][]) => boolean,
+  rowDone: (r: number, g: number[][]) => boolean,
+  gridDone: (g: number[][]) => boolean,
+  cap: number,
+): number {
+  const g: number[][] = Array.from({ length: n }, () => Array(n).fill(-1));
+  let count = 0;
+  function colHas(c: number, v: number, upto: number): boolean {
+    for (let r = 0; r < upto; r++) if (g[r][c] === v) return true;
+    return false;
+  }
+  function rec(r: number, c: number): void {
     if (count >= cap) return;
-    if (row === n) {
-      count++;
+    if (r === n) {
+      if (gridDone(g)) count++;
       return;
     }
-    const fixed = givens[row];
-    const candidates = fixed >= 0 ? [fixed] : [...Array(n).keys()];
-    for (const col of candidates) {
-      if (!ok(row, col)) continue;
-      place[row] = col;
-      cols.add(col);
-      used.add(regions[row][col]);
-      rec(row + 1);
-      cols.delete(col);
-      used.delete(regions[row][col]);
-      place[row] = -1;
+    const nr = c + 1 === n ? r + 1 : r;
+    const nc = c + 1 === n ? 0 : c + 1;
+    const fixed = givens[r][c];
+    const cands = fixed >= 0 ? [fixed] : [...Array(n).keys()].map((i) => i + 1);
+    for (const v of cands) {
+      if (g[r].includes(v)) continue;
+      if (colHas(c, v, r)) continue;
+      if (!cellOk(r, c, v, g)) continue;
+      g[r][c] = v;
+      if (c + 1 === n) {
+        if (rowDone(r, g)) rec(nr, nc);
+      } else {
+        rec(nr, nc);
+      }
+      g[r][c] = -1;
       if (count >= cap) return;
     }
   }
-  rec(0);
+  rec(0, 0);
   return count;
 }
 
-// Build N contiguous regions, one seeded at each queen cell (multi-source flood).
-function growRegions(n: number, sol: number[], rand: () => number): number[][] {
-  const reg: number[][] = Array.from({ length: n }, () => Array(n).fill(-1));
-  const frontier: [number, number][][] = [];
-  for (let r = 0; r < n; r++) {
-    reg[r][sol[r]] = r;
-    frontier.push([[r, sol[r]]]);
+// ─────────────────────────────────────────────────────────────
+// SKYSCRAPERS
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Count solutions of a skyscrapers rung consistent with its clues + givens.
+ * Bespoke DFS with INCREMENTAL visibility pruning (partial left/top clues are
+ * checked as each cell is placed), so even a sparse-clue board is proven unique
+ * fast — no full Latin-square enumeration. Pure — no RNG.
+ */
+export function countSkyscrapers(
+  n: number,
+  clues: { top: number[]; bottom: number[]; left: number[]; right: number[] },
+  givens: number[][],
+  cap = 2,
+): number {
+  const g: number[][] = Array.from({ length: n }, () => Array(n).fill(-1));
+  const rowUsed: boolean[][] = Array.from({ length: n }, () => Array(n + 1).fill(false));
+  const colUsed: boolean[][] = Array.from({ length: n }, () => Array(n + 1).fill(false));
+  const rowMax = Array(n).fill(0);
+  const rowVis = Array(n).fill(0);
+  const colMax = Array(n).fill(0);
+  const colVis = Array(n).fill(0);
+  let count = 0;
+
+  // A running visibility `vis` (with `max` already placed, `n` = order) can still
+  // reach exactly `clue` iff clue is between vis and vis + (unseen values left).
+  function reachable(vis: number, max: number, placed: number, clue: number): boolean {
+    if (clue <= 0) return true;
+    if (vis > clue) return false;
+    const canStillAppear = max < n; // a taller building can still be revealed
+    const remaining = n - placed;
+    const maxFinal = vis + (canStillAppear ? remaining : 0);
+    return clue <= maxFinal;
   }
-  let remaining = n * n - n;
-  const dirs = [
-    [1, 0],
-    [-1, 0],
-    [0, 1],
-    [0, -1],
-  ];
-  let guard = n * n * 8;
-  while (remaining > 0 && guard-- > 0) {
-    for (let id = 0; id < n && remaining > 0; id++) {
-      const f = frontier[id];
-      // gather all unassigned neighbors of this region's frontier
-      const opts: [number, number][] = [];
-      for (const [r, c] of f) {
-        for (const [dr, dc] of dirs) {
-          const nr = r + dr;
-          const nc = c + dc;
-          if (nr >= 0 && nr < n && nc >= 0 && nc < n && reg[nr][nc] === -1) {
-            opts.push([nr, nc]);
+
+  function rec(r: number, c: number): void {
+    if (count >= cap) return;
+    if (r === n) {
+      count++;
+      return;
+    }
+    const nr = c + 1 === n ? r + 1 : r;
+    const nc = c + 1 === n ? 0 : c + 1;
+    const fixed = givens[r][c];
+    for (let v = 1; v <= n; v++) {
+      if (fixed >= 0 && v !== fixed) continue;
+      if (rowUsed[r][v] || colUsed[c][v]) continue;
+      const nRowVis = v > rowMax[r] ? rowVis[r] + 1 : rowVis[r];
+      const nRowMax = Math.max(rowMax[r], v);
+      const nColVis = v > colMax[c] ? colVis[c] + 1 : colVis[c];
+      const nColMax = Math.max(colMax[c], v);
+      // partial-line feasibility (left/top)
+      if (!reachable(nRowVis, nRowMax, c + 1, clues.left[r])) continue;
+      if (!reachable(nColVis, nColMax, r + 1, clues.top[c])) continue;
+      // exact checks once a line completes
+      if (c + 1 === n) {
+        if (clues.left[r] > 0 && nRowVis !== clues.left[r]) continue;
+        if (clues.right[r] > 0) {
+          const row = [...g[r]];
+          row[c] = v;
+          if (visible([...row].reverse()) !== clues.right[r]) continue;
+        }
+      }
+      if (r + 1 === n) {
+        if (clues.top[c] > 0 && nColVis !== clues.top[c]) continue;
+        if (clues.bottom[c] > 0) {
+          const col = g.map((row) => row[c]);
+          col[r] = v;
+          if (visible([...col].reverse()) !== clues.bottom[c]) continue;
+        }
+      }
+      // place
+      g[r][c] = v;
+      rowUsed[r][v] = colUsed[c][v] = true;
+      const sRowVis = rowVis[r], sRowMax = rowMax[r], sColVis = colVis[c], sColMax = colMax[c];
+      rowVis[r] = nRowVis; rowMax[r] = nRowMax; colVis[c] = nColVis; colMax[c] = nColMax;
+      rec(nr, nc);
+      // undo
+      g[r][c] = -1;
+      rowUsed[r][v] = colUsed[c][v] = false;
+      rowVis[r] = sRowVis; rowMax[r] = sRowMax; colVis[c] = sColVis; colMax[c] = sColMax;
+      if (count >= cap) return;
+    }
+  }
+  rec(0, 0);
+  return count;
+}
+
+function makeSkyscrapers(n: number, rand: () => number, resonance: number): SkyscrapersRung {
+  const solution = buildLatin(n, rand);
+  const top = Array.from({ length: n }, (_, c) => visible(solution.map((r) => r[c])));
+  const bottom = Array.from({ length: n }, (_, c) => visible(solution.map((r) => r[c]).reverse()));
+  const left = Array.from({ length: n }, (_, r) => visible(solution[r]));
+  const right = Array.from({ length: n }, (_, r) => visible([...solution[r]].reverse()));
+  const clues = { top: [...top], bottom: [...bottom], left: [...left], right: [...right] };
+  const givens: number[][] = Array.from({ length: n }, () => Array(n).fill(-1));
+
+  // Ensure uniqueness with full clues; reveal solution cells if needed.
+  const cells = shuffled(
+    Array.from({ length: n * n }, (_, i) => [Math.floor(i / n), i % n] as [number, number]),
+    rand,
+  );
+  let ci = 0;
+  while (countSkyscrapers(n, clues, givens) > 1 && ci < cells.length) {
+    const [r, c] = cells[ci++];
+    givens[r][c] = solution[r][c];
+  }
+
+  // Harden: hide as many edge clues as possible while the solution stays unique.
+  type Slot = { side: "top" | "bottom" | "left" | "right"; i: number };
+  const slots: Slot[] = [];
+  for (let i = 0; i < n; i++) {
+    slots.push({ side: "top", i }, { side: "bottom", i }, { side: "left", i }, { side: "right", i });
+  }
+  for (const s of shuffled(slots, rand)) {
+    const saved = clues[s.side][s.i];
+    if (saved === 0) continue;
+    clues[s.side][s.i] = 0;
+    if (countSkyscrapers(n, clues, givens) !== 1) clues[s.side][s.i] = saved;
+  }
+
+  return {
+    kind: "skyscrapers",
+    n,
+    ...hostOf("skyscrapers"),
+    resonance,
+    top: clues.top,
+    bottom: clues.bottom,
+    left: clues.left,
+    right: clues.right,
+    givens,
+    solution,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+// FUTOSHIKI
+// ─────────────────────────────────────────────────────────────
+
+/** Count solutions of a futoshiki rung consistent with relations + givens. */
+export function countFutoshiki(
+  n: number,
+  gh: number[][],
+  gv: number[][],
+  givens: number[][],
+  cap = 2,
+): number {
+  const cellOk = (r: number, c: number, v: number, g: number[][]) => {
+    // relation with left neighbour (already placed)
+    if (c > 0) {
+      const rel = gh[r][c - 1];
+      const l = g[r][c - 1];
+      if (rel === 1 && !(l < v)) return false; // left < right
+      if (rel === -1 && !(l > v)) return false; // left > right
+    }
+    // relation with top neighbour (already placed)
+    if (r > 0) {
+      const rel = gv[r - 1][c];
+      const u = g[r - 1][c];
+      if (rel === 1 && !(u < v)) return false; // top < bottom
+      if (rel === -1 && !(u > v)) return false; // top > bottom
+    }
+    return true;
+  };
+  return countLatin(n, givens, cellOk, () => true, () => true, cap);
+}
+
+function makeFutoshiki(n: number, rand: () => number, resonance: number): FutoshikiRung {
+  const solution = buildLatin(n, rand);
+  // full relation maps from the solution
+  const gh: number[][] = Array.from({ length: n }, (_, r) =>
+    Array.from({ length: n - 1 }, (_, c) => (solution[r][c] < solution[r][c + 1] ? 1 : -1)),
+  );
+  const gv: number[][] = Array.from({ length: n - 1 }, (_, r) =>
+    Array.from({ length: n }, (_, c) => (solution[r][c] < solution[r + 1][c] ? 1 : -1)),
+  );
+  const givens: number[][] = Array.from({ length: n }, () => Array(n).fill(-1));
+
+  // With every relation present it is (essentially always) unique; guarantee it
+  // by revealing cells if some pathological square isn't.
+  const cells = shuffled(
+    Array.from({ length: n * n }, (_, i) => [Math.floor(i / n), i % n] as [number, number]),
+    rand,
+  );
+  let ci = 0;
+  while (countFutoshiki(n, gh, gv, givens) > 1 && ci < cells.length) {
+    const [r, c] = cells[ci++];
+    givens[r][c] = solution[r][c];
+  }
+
+  // Harden: drop relations while the board stays unique (a sparser board is the
+  // classic, harder futoshiki look). We keep every retained inequality tightly
+  // bounding the DFS, and — crucially for generation speed — only ATTEMPT to
+  // remove a bounded budget of relations, so the uniqueness proofs stay cheap.
+  type Rel = { dir: "h" | "v"; r: number; c: number };
+  const rels: Rel[] = [];
+  for (let r = 0; r < n; r++) for (let c = 0; c < n - 1; c++) rels.push({ dir: "h", r, c });
+  for (let r = 0; r < n - 1; r++) for (let c = 0; c < n; c++) rels.push({ dir: "v", r, c });
+  let budget = Math.floor(rels.length / 3); // trim ~a third of the relations
+  for (const rel of shuffled(rels, rand)) {
+    if (budget <= 0) break;
+    const grid = rel.dir === "h" ? gh : gv;
+    const saved = grid[rel.r][rel.c];
+    if (saved === 0) continue;
+    grid[rel.r][rel.c] = 0;
+    if (countFutoshiki(n, gh, gv, givens) !== 1) grid[rel.r][rel.c] = saved;
+    else budget--;
+  }
+
+  // Now trim givens that are no longer needed.
+  for (const [r, c] of shuffled(cells, rand)) {
+    if (givens[r][c] < 0) continue;
+    const saved = givens[r][c];
+    givens[r][c] = -1;
+    if (countFutoshiki(n, gh, gv, givens) !== 1) givens[r][c] = saved;
+  }
+
+  return {
+    kind: "futoshiki",
+    n,
+    ...hostOf("futoshiki"),
+    resonance,
+    givens,
+    solution,
+    gh,
+    gv,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+// BINAIRO (Takuzu)
+// ─────────────────────────────────────────────────────────────
+
+function binairoRowOk(row: number[], n: number): boolean {
+  // no 3 consecutive equal among filled cells
+  for (let c = 2; c < row.length; c++) {
+    if (row[c] !== -1 && row[c] === row[c - 1] && row[c] === row[c - 2]) return false;
+  }
+  const zeros = row.filter((v) => v === 0).length;
+  const ones = row.filter((v) => v === 1).length;
+  return zeros <= n / 2 && ones <= n / 2;
+}
+
+function linesEqual(a: number[], b: number[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+/** Count solutions of a binairo rung consistent with its givens. Pure. */
+export function countBinairo(n: number, givens: number[][], cap = 2): number {
+  const g: number[][] = givens.map((row) => [...row]);
+  let count = 0;
+  function colOk(c: number, upto: number): boolean {
+    let run = 1;
+    let prev = -2;
+    let zeros = 0;
+    let ones = 0;
+    for (let r = 0; r <= upto; r++) {
+      const v = g[r][c];
+      if (v === 0) zeros++;
+      if (v === 1) ones++;
+      if (v !== -1 && v === prev) run++;
+      else run = 1;
+      prev = v;
+      if (v !== -1 && run >= 3) return false;
+    }
+    return zeros <= n / 2 && ones <= n / 2;
+  }
+  function rec(r: number, c: number): void {
+    if (count >= cap) return;
+    if (r === n) {
+      count++;
+      return;
+    }
+    const nr = c + 1 === n ? r + 1 : r;
+    const nc = c + 1 === n ? 0 : c + 1;
+    const fixed = givens[r][c];
+    const cands = fixed >= 0 ? [fixed] : [0, 1];
+    for (const v of cands) {
+      g[r][c] = v;
+      let ok = binairoRowOk(g[r], n) && colOk(c, r);
+      if (ok && c + 1 === n) {
+        // row complete → must differ from every earlier complete row
+        for (let rr = 0; rr < r; rr++) {
+          if (linesEqual(g[rr], g[r])) {
+            ok = false;
+            break;
           }
         }
       }
-      if (opts.length === 0) continue;
-      const [pr, pc] = opts[Math.floor(rand() * opts.length)];
-      reg[pr][pc] = id;
-      f.push([pr, pc]);
-      remaining--;
-    }
-  }
-  // any stragglers (disconnected by greedy order) → assign to a neighbor's region
-  for (let r = 0; r < n; r++) {
-    for (let c = 0; c < n; c++) {
-      if (reg[r][c] !== -1) continue;
-      for (const [dr, dc] of dirs) {
-        const nr = r + dr;
-        const nc = c + dc;
-        if (nr >= 0 && nr < n && nc >= 0 && nc < n && reg[nr][nc] !== -1) {
-          reg[r][c] = reg[nr][nc];
-          break;
+      if (ok && r + 1 === n && c + 1 === n) {
+        // grid complete → all columns distinct
+        for (let ca = 0; ca < n && ok; ca++) {
+          const colA = g.map((row) => row[ca]);
+          for (let cb = ca + 1; cb < n; cb++) {
+            if (linesEqual(colA, g.map((row) => row[cb]))) {
+              ok = false;
+              break;
+            }
+          }
         }
       }
-      if (reg[r][c] === -1) reg[r][c] = 0;
+      if (ok) rec(nr, nc);
+      if (fixed < 0) g[r][c] = -1;
+      if (count >= cap) return;
     }
+    if (fixed >= 0) g[r][c] = fixed;
   }
-  return reg;
+  rec(0, 0);
+  return count;
 }
 
-function makeGrid(n: number, rand: () => number, resonance: number): GridRung {
-  // a placement with no two queens in adjacent rows touching (|Δcol| >= 2)
-  let sol: number[] = [];
-  for (let tries = 0; tries < 400; tries++) {
-    const perm = shuffled([...Array(n).keys()], rand);
-    let valid = true;
-    for (let r = 1; r < n; r++) {
-      if (Math.abs(perm[r] - perm[r - 1]) <= 1) {
-        valid = false;
-        break;
+function buildBinairo(n: number, rand: () => number): number[][] {
+  const g: number[][] = Array.from({ length: n }, () => Array(n).fill(-1));
+  function colOk(c: number, upto: number): boolean {
+    let run = 1;
+    let prev = -2;
+    let zeros = 0;
+    let ones = 0;
+    for (let r = 0; r <= upto; r++) {
+      const v = g[r][c];
+      if (v === 0) zeros++;
+      if (v === 1) ones++;
+      if (v === prev) run++;
+      else run = 1;
+      prev = v;
+      if (run >= 3) return false;
+    }
+    return zeros <= n / 2 && ones <= n / 2;
+  }
+  function rec(r: number, c: number): boolean {
+    if (r === n) return true;
+    const nr = c + 1 === n ? r + 1 : r;
+    const nc = c + 1 === n ? 0 : c + 1;
+    for (const v of shuffled([0, 1], rand)) {
+      g[r][c] = v;
+      let ok = binairoRowOk(g[r], n) && colOk(c, r);
+      if (ok && c + 1 === n) {
+        for (let rr = 0; rr < r; rr++)
+          if (linesEqual(g[rr], g[r])) {
+            ok = false;
+            break;
+          }
       }
+      if (ok && r + 1 === n && c + 1 === n) {
+        for (let ca = 0; ca < n && ok; ca++) {
+          const colA = g.map((row) => row[ca]);
+          for (let cb = ca + 1; cb < n; cb++) {
+            if (linesEqual(colA, g.map((row) => row[cb]))) {
+              ok = false;
+              break;
+            }
+          }
+        }
+      }
+      if (ok && rec(nr, nc)) return true;
+      g[r][c] = -1;
     }
-    if (valid) {
-      sol = perm;
-      break;
-    }
+    return false;
   }
-  if (sol.length === 0) sol = [...Array(n).keys()]; // fallback (n large enough)
+  rec(0, 0);
+  return g;
+}
 
-  const regions = growRegions(n, sol, rand);
-
-  // reveal true cells until the puzzle is uniquely solvable
-  const givens: number[] = Array(n).fill(-1);
-  const order = shuffled([...Array(n).keys()], rand);
-  let oi = 0;
-  while (solveQueens(n, regions, givens) > 1 && oi < n) {
-    givens[order[oi]] = sol[order[oi]];
-    oi++;
+function makeBinairo(n: number, rand: () => number, resonance: number): BinairoRung {
+  const solution = buildBinairo(n, rand);
+  const givens: number[][] = solution.map((row) => [...row]);
+  // Dig holes while the solution stays unique — the fewer givens the harder.
+  const cells = shuffled(
+    Array.from({ length: n * n }, (_, i) => [Math.floor(i / n), i % n] as [number, number]),
+    rand,
+  );
+  for (const [r, c] of cells) {
+    const saved = givens[r][c];
+    givens[r][c] = -1;
+    if (countBinairo(n, givens) !== 1) givens[r][c] = saved;
   }
-
   return {
-    type: "grid",
-    modifier: "Prof. Marlow",
-    whisper: TRICKSTERS.find((t) => t.name === "Prof. Marlow")!.whisper,
-    resonance,
+    kind: "binairo",
     n,
-    sigils: SIGILS.slice(0, n),
-    regions,
-    solution: sol,
+    ...hostOf("binairo"),
+    resonance,
     givens,
+    solution,
   };
 }
 
-// ── Sequence rung — true generator vs. the obvious-but-wrong extrapolation ──
-function makeSequence(rand: () => number, resonance: number): SequenceRung {
-  const kind = Math.floor(rand() * 4);
-  const k = 4; // shown terms
-  let f: (n: number) => number;
-  let rule: string;
-  const a = 2 + (resonance % 3); // GCM-tuned parameter
-  const c = 1 + (resonance % 4);
-  if (kind === 0) {
-    f = (n) => c + a * n * n; // quadratic
-    rule = `add ${a}×n² to ${c}`;
-  } else if (kind === 1) {
-    f = (n) => (n * (n + 1)) / 2 + c; // triangular
-    rule = `the nth triangular number, plus ${c}`;
-  } else if (kind === 2) {
-    f = (n) => c * Math.pow(2, n); // geometric-ish
-    rule = `${c} doubled n times`;
-  } else {
-    f = (n) => c + a * n + n * n; // n² + a·n + c
-    rule = `n² + ${a}·n + ${c}`;
-  }
-  const shown = Array.from({ length: k }, (_, i) => f(i + 1));
-  const answer = f(k + 1);
-  // the decoy: linear continuation from the last gap (the "illusion")
-  const naive = shown[k - 1] + (shown[k - 1] - shown[k - 2]);
-  const far = answer + (kind === 2 ? c : a) + 1;
-  const opts = new Set<number>([answer, naive, far]);
-  let salt = 1;
-  while (opts.size < 3) opts.add(answer + salt++ * (a + 1));
-  const options = shuffled([...opts], rand);
-  const trick = TRICKSTERS[0]; // Loki
-  return {
-    type: "sequence",
-    modifier: trick.name,
-    whisper: trick.whisper,
-    resonance,
-    shown,
-    options,
-    answer,
-    rule,
-  };
+// ─────────────────────────────────────────────────────────────
+// The daily climb
+// ─────────────────────────────────────────────────────────────
+
+function resonanceBump(rung: Rung): number {
+  return rung.solution.flat().reduce((s, v) => s + (v >= 0 ? v : 0), 0);
 }
 
-// ── Door rung — exactly one assertion about the resonance is true ──
-function makeDoor(rand: () => number, resonance: number): DoorRung {
-  const r = resonance;
-  const preds: { text: string; holds: boolean }[] = [
-    { text: `The resonance ⟨${r}⟩ is even.`, holds: r % 2 === 0 },
-    { text: `The resonance ⟨${r}⟩ is odd.`, holds: r % 2 === 1 },
-    { text: `The resonance ⟨${r}⟩ is one less than a multiple of three.`, holds: (r + 1) % 3 === 0 },
-    { text: `The resonance ⟨${r}⟩ is a multiple of three.`, holds: r % 3 === 0 },
-    { text: `The resonance ⟨${r}⟩ is prime.`, holds: [2, 3, 5, 7, 11, 13].includes(r) },
-    { text: `The resonance ⟨${r}⟩ is a perfect square.`, holds: [0, 1, 4, 9, 16].includes(r) },
-  ];
-  const truths = shuffled(preds.filter((p) => p.holds), rand);
-  const falses = shuffled(preds.filter((p) => !p.holds), rand);
-  // exactly one true door + two false (predicates are mutually consistent enough
-  // that at least one true + two false always exist for r in our range).
-  const chosen = [truths[0], falses[0], falses[1]].filter(Boolean);
-  const ordered = shuffled(chosen, rand);
-  const answer = ordered.indexOf(truths[0]);
-  const trick = TRICKSTERS[2]; // Silas Crowe — the causal looper
-  return {
-    type: "door",
-    modifier: trick.name,
-    whisper: trick.whisper,
-    resonance,
-    doors: ordered.map((d) => d.text),
-    answer,
-  };
+function makeRung(kind: PuzzleKind, n: number, rand: () => number, resonance: number): Rung {
+  if (kind === "skyscrapers") return makeSkyscrapers(n, rand, resonance);
+  if (kind === "futoshiki") return makeFutoshiki(n, rand, resonance);
+  return makeBinairo(n, rand, resonance);
 }
 
-// resonance transition along the true ascent
-function nextResonance(res: number, rung: Rung): number {
-  let bump = 0;
-  if (rung.type === "grid") bump = rung.solution.reduce((s, c, r) => s + c * (r + 1), 0);
-  else if (rung.type === "sequence") bump = rung.answer;
-  else bump = rung.answer + 3;
-  return ((res + bump) % 12) + 1; // kept small so door predicates stay meaningful
-}
-
-/** Build the deterministic daily ladder for `dayIndex` / `date`. Pure. */
+/** Build the deterministic daily climb for `dayIndex` / `date`. Pure. */
 export function generateLadder(dayIndex: number, date: string): LadderPuzzle {
   const weekday = new Date(date + "T00:00:00Z").getUTCDay();
   const cfg = WEEKDAY[weekday];
@@ -313,21 +623,20 @@ export function generateLadder(dayIndex: number, date: string): LadderPuzzle {
 
   const framing = LADDER_WEEKS[Math.floor(dayIndex / 7) % LADDER_WEEKS.length];
 
-  // rung-type plan: first rung is always a grid; then cycle through the three so
-  // every ladder uses all mechanisms once it's long enough.
-  const cycle: RungType[] = ["grid", "sequence", "door"];
-  const plan: RungType[] = [];
-  for (let i = 0; i < cfg.rungs; i++) plan.push(cycle[i % 3]);
+  // Rotate which family leads today's climb; rungs then cycle the library so a
+  // single day shows off several distinct mechanics, escalating in size.
+  const start = ((dayIndex % FAMILIES.length) + FAMILIES.length) % FAMILIES.length;
+  const kinds: PuzzleKind[] = [];
+  for (let i = 0; i < cfg.rungs; i++) kinds.push(FAMILIES[(start + i) % FAMILIES.length]);
 
   let res = (seed % 9) + 1;
   const rungs: Rung[] = [];
-  for (const t of plan) {
-    let rung: Rung;
-    if (t === "grid") rung = makeGrid(cfg.gridN, rand, res);
-    else if (t === "sequence") rung = makeSequence(rand, res);
-    else rung = makeDoor(rand, res);
+  for (let i = 0; i < cfg.rungs; i++) {
+    const kind = kinds[i];
+    const n = clampSize(kind, cfg.sizes[i] ?? cfg.sizes[cfg.sizes.length - 1]);
+    const rung = makeRung(kind, n, rand, res);
     rungs.push(rung);
-    res = nextResonance(res, rung);
+    res = ((res + resonanceBump(rung)) % 12) + 1;
   }
 
   return {
@@ -336,6 +645,7 @@ export function generateLadder(dayIndex: number, date: string): LadderPuzzle {
     rite: cfg.rite,
     trickster: "Loki", // the Illusionist of the Order hosts the climb
     framing,
+    kinds,
     rungs,
     seed,
   };
