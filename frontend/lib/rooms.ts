@@ -132,15 +132,6 @@ export const GAME_ROOMS: RoomMeta[] = [
     accent: "music",
     kind: "game",
   },
-  {
-    path: "/cold-case",
-    name: "The Cold Case",
-    title: "The Cold Case — the week-long mystery",
-    description:
-      "One unsolved case, opened across a week. Follow clues from every room of the Order to name the culprit. (Opens soon.)",
-    accent: "history",
-    kind: "game",
-  },
 ];
 
 /** Non-game pages that still deserve unique metadata + a sitemap entry. */

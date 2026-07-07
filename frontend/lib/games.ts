@@ -111,16 +111,6 @@ export const GAMES: Game[] = [
       "Pick the closest match. Hints reveal shared attributes — category, region, magnitude. Climb the ladder.",
   },
   {
-    href: "/cold-case",
-    name: "The Cold Case",
-    accent: "history",
-    character: "the Inspector",
-    emblem: "⌕", // the magnifying glass
-    rank: 11,
-    blurb:
-      "One unsolved case, opened across a week. Follow clues from every room of the Order to name the culprit.",
-  },
-  {
     href: "/overture",
     name: "The Overture",
     accent: "music",

@@ -103,7 +103,6 @@ const ROOM_ART: Record<string, RoomArt> = {
   "/seance": { persona: "The Medium", suit: "♥" },
   "/ladder": { persona: "The Initiate's Climb", suit: "♦" },
   "/overture": { persona: "The Overture", suit: "♥" },
-  "/cold-case": { persona: "The Cold Case", suit: "♣" },
 };
 
 const DEFAULT_ART: RoomArt = { persona: "The Secret Order", suit: "♠" };
