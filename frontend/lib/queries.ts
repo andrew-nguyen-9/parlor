@@ -9,6 +9,10 @@ import { getDb } from "./db";
 import type { Question, QType } from "./types";
 import { generateSeance, refreshClueText, type SeancePuzzle } from "./seance";
 import { generateLadder, type LadderPuzzle } from "./ladder";
+import { generateMystery, type MysteryPuzzle } from "./mysteryPuzzle";
+import { generateChronos, type ChronosPuzzle } from "./chronosPuzzle";
+import { generateIgnite, type IgnitePuzzle } from "./ignitePuzzle";
+import { generateAtlas, type AtlasPuzzle } from "./atlasPuzzle";
 
 const SEED_BANK = (seed as { questions: Question[] }).questions;
 
@@ -94,6 +98,101 @@ export async function getLadderPuzzle(date?: string): Promise<LadderPuzzle | nul
   if (!sql) return generateLadder(dayIndexOf(day), day); // offline ⇒ generate, never dark
   try {
     return await cachedLadder(day);
+  } catch {
+    return null; // db hiccup → dark state, never throw, don't poison the cache
+  }
+}
+
+// ── Archive engines (F6 scaffold) ──────────────────────────────────────────
+// Four new ground-up engines share the same archive contract as the Séance:
+// DB-connected reads the nightly-archived `payload` jsonb; DB-less runs the
+// pure `generate<X>` inline (offline/zero-env ⇒ room is never dark). Games
+// (G1/G3/G4/G5) replace only their own `lib/<engine>Puzzle.ts` body — these
+// loaders + import names stay stable so `queries.ts` is never re-touched.
+
+const cachedMystery = unstable_cache(
+  async (day: string): Promise<MysteryPuzzle | null> => {
+    const sql = getDb()!;
+    const rows = await sql`
+      select payload from mystery_puzzles where play_date = ${day} limit 1`;
+    return rows.length > 0 ? (rows[0].payload as MysteryPuzzle) : null;
+  },
+  ["mystery-puzzle"],
+  { revalidate: 86_400 },
+);
+
+export async function getMysteryPuzzle(date?: string): Promise<MysteryPuzzle | null> {
+  const day = date ?? new Date().toISOString().slice(0, 10);
+  const sql = getDb();
+  if (!sql) return generateMystery(dayIndexOf(day), day); // offline ⇒ generate, never dark
+  try {
+    return await cachedMystery(day);
+  } catch {
+    return null; // db hiccup → dark state, never throw, don't poison the cache
+  }
+}
+
+const cachedChronos = unstable_cache(
+  async (day: string): Promise<ChronosPuzzle | null> => {
+    const sql = getDb()!;
+    const rows = await sql`
+      select payload from chronos_puzzles where play_date = ${day} limit 1`;
+    return rows.length > 0 ? (rows[0].payload as ChronosPuzzle) : null;
+  },
+  ["chronos-puzzle"],
+  { revalidate: 86_400 },
+);
+
+export async function getChronosPuzzle(date?: string): Promise<ChronosPuzzle | null> {
+  const day = date ?? new Date().toISOString().slice(0, 10);
+  const sql = getDb();
+  if (!sql) return generateChronos(dayIndexOf(day), day); // offline ⇒ generate, never dark
+  try {
+    return await cachedChronos(day);
+  } catch {
+    return null; // db hiccup → dark state, never throw, don't poison the cache
+  }
+}
+
+const cachedIgnite = unstable_cache(
+  async (day: string): Promise<IgnitePuzzle | null> => {
+    const sql = getDb()!;
+    const rows = await sql`
+      select payload from ignite_puzzles where play_date = ${day} limit 1`;
+    return rows.length > 0 ? (rows[0].payload as IgnitePuzzle) : null;
+  },
+  ["ignite-puzzle"],
+  { revalidate: 86_400 },
+);
+
+export async function getIgnitePuzzle(date?: string): Promise<IgnitePuzzle | null> {
+  const day = date ?? new Date().toISOString().slice(0, 10);
+  const sql = getDb();
+  if (!sql) return generateIgnite(dayIndexOf(day), day); // offline ⇒ generate, never dark
+  try {
+    return await cachedIgnite(day);
+  } catch {
+    return null; // db hiccup → dark state, never throw, don't poison the cache
+  }
+}
+
+const cachedAtlas = unstable_cache(
+  async (day: string): Promise<AtlasPuzzle | null> => {
+    const sql = getDb()!;
+    const rows = await sql`
+      select payload from atlas_puzzles where play_date = ${day} limit 1`;
+    return rows.length > 0 ? (rows[0].payload as AtlasPuzzle) : null;
+  },
+  ["atlas-puzzle"],
+  { revalidate: 86_400 },
+);
+
+export async function getAtlasPuzzle(date?: string): Promise<AtlasPuzzle | null> {
+  const day = date ?? new Date().toISOString().slice(0, 10);
+  const sql = getDb();
+  if (!sql) return generateAtlas(dayIndexOf(day), day); // offline ⇒ generate, never dark
+  try {
+    return await cachedAtlas(day);
   } catch {
     return null; // db hiccup → dark state, never throw, don't poison the cache
   }

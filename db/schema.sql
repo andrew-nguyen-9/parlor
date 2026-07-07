@@ -156,6 +156,63 @@ alter table ladder_puzzles enable row level security;
 drop policy if exists "public read ladder" on ladder_puzzles;
 create policy "public read ladder" on ladder_puzzles for select using (true);
 
+-- ── Archive engines (F6 scaffold): mystery / chronos / ignite / atlas. ──
+-- Same date-keyed archive pattern as seance_puzzles: written ahead by
+-- scripts/generate-<engine>.ts, read-only from the frontend. Absent row ⇒ the
+-- loader runs the pure generate<X> inline (offline never dark). RLS public-read.
+
+-- mystery_puzzles: deduction-grid (suspects × locations × times). Flavor: case_name.
+create table if not exists mystery_puzzles (
+  play_date   date primary key,
+  weekday     int  not null,
+  case_name   text not null,
+  seed        bigint not null,
+  payload     jsonb not null,   -- full MysteryPuzzle (see frontend/lib/mysteryPuzzle.ts)
+  created_at  timestamptz not null default now()
+);
+alter table mystery_puzzles enable row level security;
+drop policy if exists "public read mystery" on mystery_puzzles;
+create policy "public read mystery" on mystery_puzzles for select using (true);
+
+-- chronos_puzzles: clockwork/gear logic box. Flavor: mechanism.
+create table if not exists chronos_puzzles (
+  play_date   date primary key,
+  weekday     int  not null,
+  mechanism   text not null,
+  seed        bigint not null,
+  payload     jsonb not null,   -- full ChronosPuzzle (see frontend/lib/chronosPuzzle.ts)
+  created_at  timestamptz not null default now()
+);
+alter table chronos_puzzles enable row level security;
+drop policy if exists "public read chronos" on chronos_puzzles;
+create policy "public read chronos" on chronos_puzzles for select using (true);
+
+-- ignite_puzzles: rune substitution/cipher logic. Flavor: rune_set.
+create table if not exists ignite_puzzles (
+  play_date   date primary key,
+  weekday     int  not null,
+  rune_set    text not null,
+  seed        bigint not null,
+  payload     jsonb not null,   -- full IgnitePuzzle (see frontend/lib/ignitePuzzle.ts)
+  created_at  timestamptz not null default now()
+);
+alter table ignite_puzzles enable row level security;
+drop policy if exists "public read ignite" on ignite_puzzles;
+create policy "public read ignite" on ignite_puzzles for select using (true);
+
+-- atlas_puzzles: constellation/asterism logic. Flavor: sky_region.
+create table if not exists atlas_puzzles (
+  play_date   date primary key,
+  weekday     int  not null,
+  sky_region  text not null,
+  seed        bigint not null,
+  payload     jsonb not null,   -- full AtlasPuzzle (see frontend/lib/atlasPuzzle.ts)
+  created_at  timestamptz not null default now()
+);
+alter table atlas_puzzles enable row level security;
+drop policy if exists "public read atlas" on atlas_puzzles;
+create policy "public read atlas" on atlas_puzzles for select using (true);
+
 -- updated_at trigger
 create or replace function set_updated_at() returns trigger as $$
 begin

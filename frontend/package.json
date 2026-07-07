@@ -11,7 +11,11 @@
     "test": "vitest run",
     "seance:generate": "tsx scripts/generate-seance.ts",
     "ladder:generate": "tsx scripts/generate-ladder.ts",
-    "puzzles:generate": "npm run seance:generate && npm run ladder:generate"
+    "mystery:generate": "tsx scripts/generate-mystery.ts",
+    "chronos:generate": "tsx scripts/generate-chronos.ts",
+    "ignite:generate": "tsx scripts/generate-ignite.ts",
+    "atlas:generate": "tsx scripts/generate-atlas.ts",
+    "puzzles:generate": "npm run seance:generate && npm run ladder:generate && npm run mystery:generate && npm run chronos:generate && npm run ignite:generate && npm run atlas:generate"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
