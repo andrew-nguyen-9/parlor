@@ -22,7 +22,7 @@
   width: 100%;
   max-width: 74rem;
   margin: 0 auto;
-  min-height: min(78vh, 720px);
+  min-height: min(62vh, 580px);
   padding: clamp(1rem, 2.6vw, 2rem);
   border-radius: 24px;
   overflow: hidden;
@@ -95,8 +95,9 @@
 @media (min-width: 1024px) {
   .main {
     flex-direction: row;
-    align-items: flex-start;
-    gap: 1.25rem;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.25rem, 4vw, 3rem);
   }
   .hintRail {
     flex: 0 0 clamp(15rem, 32%, 22rem);
@@ -104,7 +105,9 @@
     top: 1rem;
   }
   .matrixWrap {
-    flex: 1 1 0;
+    /* size to the grid, not the whole column — so a small puzzle sits centered
+       beside the rail instead of stretching across a wide empty gutter */
+    flex: 0 1 auto;
     min-width: 0;
   }
 }
@@ -255,8 +258,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(1.6rem, 2.6vw, 2.05rem);
-  height: clamp(1.6rem, 2.6vw, 2.05rem);
+  width: clamp(1.75rem, 3vw, 2.5rem);
+  height: clamp(1.75rem, 3vw, 2.5rem);
   border: 1px solid rgb(var(--c-line));
   border-radius: 0.3rem;
   font-size: 0.9rem;
