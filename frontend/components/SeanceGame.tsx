@@ -309,7 +309,8 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
   return (
     <motion.div
       className={styles.shell}
-      animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : { x: 0 }}
+      initial={reduce ? false : { opacity: 0, y: 14 }}
+      animate={shake ? { x: [0, -8, 8, -6, 6, 0], opacity: 1, y: 0 } : { x: 0, opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       style={{
         // edges darken as the séance drags on
@@ -319,7 +320,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
       {/* HUD */}
       <div className={styles.hud}>
         <div>
-          <p className="microlabel animate-flicker" style={{ color: ACCENT }}>
+          <p className="microlabel" style={{ color: ACCENT }}>
             {puzzle.rite} · {puzzle.spirit}
           </p>
           <p className="text-xs text-muted mt-0.5 max-w-md">{puzzle.backstory}</p>
@@ -464,6 +465,9 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
                               borderColor: m === 2 ? catHex(c) : undefined,
                               background: m === 2 ? `${catHex(c)}26` : "transparent",
                               color: m === 2 ? catInk(c) : m === 1 ? "#7a6e8a" : "transparent",
+                              // a bound spirit glows — a soft spectral halo in the
+                              // cell's category hue (static, no loop)
+                              boxShadow: m === 2 ? `0 0 10px -1px ${catHex(c)}66` : undefined,
                             }}
                           >
                             <span aria-hidden>
