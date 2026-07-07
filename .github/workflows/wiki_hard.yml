@@ -61,23 +61,37 @@ jobs:
         # --from-bronze: forge from the committed bronze (source of truth), not a
         # partially-populated Neon — same reason as etl_daily's publish job.
         run: python pipeline/question_forge.py --min-questions 100 --from-bronze
+      - name: Commit bronze layer
+        # Bronze only — data/raw/*.jsonl is `merge=union` (.gitattributes), so
+        # this rebase can never conflict. seed-questions.json is a FULLY
+        # REGENERATED artifact and is deliberately NOT staged here: a line-level
+        # rebase can never merge two regenerations, so it's regenerated fresh
+        # below, after the rebase.
+        run: |
+          git config user.name "parlor-etl"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/raw
+          git diff --cached --quiet && echo "no bronze changes" && exit 0
+          git commit -m "chore: hard-question sweep [skip ci]"
+          # rebase before push (no `|| true` — a failed rebase must surface, not be
+          # swallowed into a doomed push). Concurrency group + union-merge bronze
+          # means there should be nothing left to conflict on.
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push
       - name: Refresh committed seed bank
+        # --from-bronze: re-forge from the just-rebased, MERGED bronze now in the
+        # workspace (never a stale pre-rebase copy).
         run: python pipeline/export_seed.py --from-bronze
       - name: Verify exported seed bank before committing
         # gates the commit, not just reports after the fact — a DB-less export
         # built from a single-source bronze (e.g. wikipedia-only) must never
         # replace a richer, multi-category committed bank.
         run: python pipeline/selftest.py
-      - name: Commit bronze layer + refreshed seed bank
+      - name: Commit + push refreshed seed bank
         run: |
-          git config user.name "parlor-etl"
-          git config user.email "actions@users.noreply.github.com"
-          git add data/raw frontend/public/seed-questions.json
-          git diff --cached --quiet && echo "no changes" && exit 0
-          git commit -m "chore: hard-question sweep [skip ci]"
-          # rebase before push (no `|| true` — a failed rebase must surface, not be
-          # swallowed into a doomed push). Concurrency group makes a conflict rare.
-          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git add frontend/public/seed-questions.json
+          git diff --cached --quiet && echo "no seed changes" && exit 0
+          git commit -m "chore: refresh seed bank [skip ci]"
           git push
       - name: Open or update the pipeline-failure issue
         if: failure()

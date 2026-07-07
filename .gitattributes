@@ -1,0 +1,6 @@
+# Bronze layer is append-only and compacted by content_hash (the repo is the
+# database in DB-less mode). A `merge=union` strategy keeps both sides' lines on
+# rebase/merge instead of raising a line-level conflict — duplicate lines
+# collapse harmlessly on the next compaction/export (question_forge.py /
+# export_seed.py dedupe on content_hash).
+data/raw/*.jsonl merge=union
