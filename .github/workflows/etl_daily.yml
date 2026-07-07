@@ -189,22 +189,34 @@ jobs:
         # bank (0 audio rounds) that selftest then rightly refused to commit. Bronze
         # is this repo's source of truth ("the repo is the database"); forge from it.
         run: python pipeline/question_forge.py --min-questions 100 --from-bronze
-      - name: Refresh committed seed bank
-        # --from-bronze: re-forge the export from the same complete bronze (mirrors
-        # the forge step above); never read a partially-populated Neon.
-        run: python pipeline/export_seed.py --from-bronze
-      - name: Verify exported seed bank before committing
-        run: python pipeline/selftest.py
-      - name: Commit bronze layer + refreshed seed bank
+      - name: Commit bronze layer
+        # Bronze only — data/raw/*.jsonl is `merge=union` (.gitattributes), so
+        # this rebase can never conflict (append-only, compacted by content_hash
+        # downstream). seed-questions.json is a FULLY REGENERATED artifact and is
+        # deliberately NOT staged here: a line-level rebase can never merge two
+        # regenerations, so it's regenerated fresh below, after the rebase.
         run: |
           git config user.name "parlor-etl"
           git config user.email "actions@users.noreply.github.com"
-          git add data/raw frontend/public/seed-questions.json
-          git diff --cached --quiet && echo "no changes" && exit 0
+          git add data/raw
+          git diff --cached --quiet && echo "no bronze changes" && exit 0
           git commit -m "chore: nightly bank refresh [skip ci]"
           # rebase onto whatever landed (e.g. a wiki_hard sweep) before pushing —
           # the belt to the concurrency group's suspenders against the push race.
           git pull --rebase --autostash origin main
+          git push
+      - name: Refresh committed seed bank
+        # --from-bronze: re-forge the export from the just-rebased, MERGED bronze
+        # now in the workspace (never a stale pre-rebase copy or a partially
+        # populated Neon).
+        run: python pipeline/export_seed.py --from-bronze
+      - name: Verify exported seed bank before committing
+        run: python pipeline/selftest.py
+      - name: Commit + push refreshed seed bank
+        run: |
+          git add frontend/public/seed-questions.json
+          git diff --cached --quiet && echo "no seed changes" && exit 0
+          git commit -m "chore: refresh seed bank [skip ci]"
           git push
 
   # (Séance + Ladder puzzles moved to puzzles_daily.yml — they read nothing from
