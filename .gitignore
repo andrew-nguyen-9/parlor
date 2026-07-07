@@ -31,3 +31,4 @@ transform/logs/
 transform/.user.yml
 .gstack/
 .orchestrator/
+.serena/
