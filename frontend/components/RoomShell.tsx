@@ -11,6 +11,8 @@ export default function RoomShell({
   label,
   accent,
   href,
+  leftRail,
+  rightRail,
   children,
 }: {
   label: string;
@@ -18,10 +20,25 @@ export default function RoomShell({
   /** This room's deck href (e.g. "/mystery") — looked up in lib/games.ts for
    *  the top-right rank badge. Omit for non-game rooms (e.g. /profile). */
   href?: string;
+  /** Optional left-rail slot (mount a <CollapsiblePanel side="left" …>). On
+   *  mobile it stacks above the play area; on `lg:` it sits in a sticky column. */
+  leftRail?: React.ReactNode;
+  /** Optional right-rail slot (mount a <CollapsiblePanel side="right" …>). */
+  rightRail?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const hex = CATEGORY_HEX[accent];
   const game = href ? gameByHref(href) : undefined;
+  const hasRails = Boolean(leftRail || rightRail);
+  // Desktop track template: rails are fixed ~15rem columns, the play area takes
+  // the rest. Only the present rails get a column, so a single-rail room never
+  // leaves a dead gap. Mobile is always one column (rails stack, collapsed).
+  const railCols =
+    leftRail && rightRail
+      ? "lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_minmax(0,15rem)]"
+      : leftRail
+        ? "lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]"
+        : "lg:grid-cols-[minmax(0,1fr)_minmax(0,15rem)]";
   return (
     <main className="relative min-h-screen overflow-hidden px-4 pb-24 pt-6 sm:px-8">
       <div className="glow" style={{ background: hex }} aria-hidden />
@@ -62,7 +79,17 @@ export default function RoomShell({
       {/* Thin brass accent rule under header */}
       <div className="relative z-10 mt-3 border-t brass-rule" aria-hidden />
 
-      <div className="relative z-10 mx-auto mt-6 max-w-5xl">{children}</div>
+      {hasRails ? (
+        <div
+          className={`relative z-10 mx-auto mt-6 grid max-w-6xl grid-cols-1 gap-4 lg:items-start ${railCols}`}
+        >
+          {leftRail && <div className="min-w-0 lg:sticky lg:top-6">{leftRail}</div>}
+          <div className="min-w-0">{children}</div>
+          {rightRail && <div className="min-w-0 lg:sticky lg:top-6">{rightRail}</div>}
+        </div>
+      ) : (
+        <div className="relative z-10 mx-auto mt-6 max-w-5xl">{children}</div>
+      )}
 
       <Link
         href="/"

@@ -154,6 +154,40 @@ body {
   }
 }
 
+/* ── Mobile floor (F4 · North Star §Mobile). The phone (≤375px base) IS the
+   design; desktop is garnish. Two guarantees live here so no room re-invents
+   them: (1) the PAGE never scrolls sideways — horizontal scroll is allowed only
+   INSIDE a component with a visible affordance; (2) media never overflows its
+   column. `overflow-x: clip` (not `hidden`) is deliberate: `hidden` on
+   html/body silently promotes them to a scroll container and BREAKS descendant
+   `position: sticky` (Wedges' ring aside, RoomShell rails); `clip` gives the
+   same no-sideways-scroll without touching the sticky containing block. ── */
+html,
+body {
+  overflow-x: clip;
+}
+
+/* Imagery/maps shrink to their column rather than forcing a 375px scrollbar.
+   Element-level (specificity 0,0,1) so any Tailwind width/height utility still
+   wins for intentionally fixed-size art (e.g. the 144px shattered-mirror ring). */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+img {
+  height: auto; /* keep aspect ratio when width is clamped */
+}
+
+/* Collapsible rail primitive (components/CollapsiblePanel.tsx). Look comes from
+   Tailwind on the component; this only guarantees the rail never overflows its
+   grid track on a phone. On `lg:` the rail sits in a fixed side column. */
+.collapsible-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
 /* ── Velvet grain overlay: static dot grid (no feTurbulence, no CPU cost) ── */
 .noise::after {
   content: "";

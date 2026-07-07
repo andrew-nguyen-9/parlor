@@ -567,7 +567,7 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
           <Ghost quip={quip} reduced={reduced} />
 
           {picked && (
-            <div className="mt-5 flex items-center gap-4">
+            <div className="mt-5 flex flex-wrap items-center gap-3">
               <button
                 onClick={next}
                 className="microlabel rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg"

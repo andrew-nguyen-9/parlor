@@ -209,9 +209,10 @@ export default function GauntletGame({
 
   return (
     <div>
-      {/* clock + path */}
-      <div className="flex items-baseline justify-between">
-        <div>
+      {/* clock + path — min-w-0 + gap + a smaller phone timer keep the title and
+          the running clock on one line at 375px (no horizontal scroll). */}
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="display text-3xl sm:text-4xl">The Gauntlet</h1>
           {/* gate plate — re-keyed per trial so it pulses on each stage change */}
           <span
@@ -222,9 +223,9 @@ export default function GauntletGame({
             {trial.obstacle} {trial.name} · trial {i + 1}/5
           </span>
         </div>
-        <div className="text-right">
+        <div className="shrink-0 text-right">
           <div className="microlabel">time</div>
-          <div className="tabular text-5xl font-black text-wildcard">{fmt(liveMs)}</div>
+          <div className="tabular text-4xl font-black text-wildcard sm:text-5xl">{fmt(liveMs)}</div>
         </div>
       </div>
 
