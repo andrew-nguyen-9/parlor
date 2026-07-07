@@ -1,16 +1,17 @@
 /* PARLOR v3 §3.7 — The Séance layout.
  *
- * LAYOUT ONLY. Palette and type stay on the global design system (Tailwind
- * tokens + .microlabel/.display) so this module never forks the colour set —
- * same firewall discipline as Mystery.module.css. The job here is the
- * one-screen mandate.
+ * LAYOUT + a thin ghostly veneer. Palette and type stay on the global design
+ * system (Tailwind tokens + .microlabel/.display + CATEGORY_HEX/INK) so this
+ * module never forks the colour set — same firewall discipline as
+ * Mystery.module.css. Every surface here is built from `--c-*`/`--cat-*`
+ * channel tokens (via rgb()/color-mix), so LIGHT MODE remaps for free: no
+ * hardcoded white overlays, no black shadows. The one literal is the séance
+ * accent violet (#7040a8 = wildcard fill), which is theme-invariant by design.
  *
  * The board is ONE unified matrix: rows = the N seats (the shared anchor axis),
- * columns = the K categories, each contributing its N value columns. Height is
- * always ~N rows + a header band regardless of K, so even Sunday (n=7, K=4)
- * clears 1280×800 / 1920×1080 with no scroll-to-play. Value headers rotate
- * vertical so K·N columns fit the width; the matrix may scroll horizontally
- * INTERNALLY as a safety valve — never the page.
+ * columns = the K categories, each contributing its N value columns. On desktop
+ * the clue rail takes the left third and the matrix the right two-thirds; on a
+ * phone they stack (rail collapsible). No ellipsis anywhere — content fits.
  */
 
 .shell {
@@ -24,47 +25,59 @@
   border-radius: 24px;
 }
 
-/* ── HUD: identity + timer, one compact row ─────────────────────────────── */
+/* HUD: identity + timer, one compact row */
 .hud {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 0.5rem 1.5rem;
-  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-bottom: 1px solid rgb(var(--c-line));
   padding-bottom: 0.7rem;
 }
 
-/* ── main: clues stacked above a FULL-WIDTH matrix ──────────────────────────
- * The board must be seen in full, so it gets the whole content width — never
- * starved by a side column (RoomShell caps width near ~1024, which a beside
- * layout can't split wide enough for the n=7 board). Full-width lets the widest
- * day (28 value columns ≈ 975px) render with NO horizontal scroll. Clues sit
- * above in a shallow, capped, internally-scrolling 2-column ledger so a long
- * clue set never pushes the board below the fold. */
+/* main: clue rail (left 1/3) + full board (right 2/3).
+ * On desktop the clues live in a vertical rail on the left third; the matrix
+ * fills the remaining two-thirds so even the widest day (28 value columns) uses
+ * the space with no wasted gutter. Below `lg` the rail stacks above the board
+ * (the CollapsiblePanel collapses it out of the way on a phone). */
 .main {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-  align-items: flex-start;
+  align-items: stretch;
   flex: 1 1 auto;
   min-height: 0;
 }
-
-/* clue ledger: shallow + internal scroll so it never pushes the board down. */
-.clues {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.25rem 1.25rem;
-  width: 100%;
-  max-height: 8rem;
-  overflow-y: auto;
-  padding-right: 0.25rem;
-}
-@media (min-width: 768px) {
-  .clues {
-    grid-template-columns: 1fr 1fr;
+@media (min-width: 1024px) {
+  .main {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.25rem;
   }
+  .hintRail {
+    flex: 0 0 clamp(15rem, 32%, 22rem);
+    position: sticky;
+    top: 1rem;
+  }
+  .matrixWrap {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+.hintRail {
+  min-width: 0;
+}
+
+/* clue ledger: a vertical stack inside the rail panel. */
+.clues {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+  max-height: min(58vh, 30rem);
+  overflow-y: auto;
+  padding-right: 0.15rem;
 }
 /* a clue row = the trace button + a "mark spent" toggle */
 .clueRow {
@@ -87,11 +100,11 @@
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 .clue:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: color-mix(in srgb, rgb(var(--c-ink)) 5%, transparent);
 }
 .clueActive {
   border-color: currentColor;
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, rgb(var(--c-ink)) 7%, transparent);
 }
 /* clue a hint points at — pulse the accent so the eye lands on it */
 .clueHint .clue {
@@ -104,37 +117,46 @@
 }
 .flagBtn {
   flex: 0 0 auto;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.6rem;
+  height: 1.6rem;
   border-radius: 999px;
   font-size: 0.7rem;
   line-height: 1;
-  color: var(--smoke, #6b6478);
+  color: rgb(var(--c-smoke));
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
 }
 .flagBtn:hover {
-  color: var(--muted, #9a92a8);
-  background: rgba(255, 255, 255, 0.05);
+  color: rgb(var(--c-muted));
+  background: color-mix(in srgb, rgb(var(--c-ink)) 6%, transparent);
 }
 .flagBtn[aria-pressed="true"] {
   color: #7040a8;
 }
 
-/* ── the unified matrix ─────────────────────────────────────────────────── */
-/* safety valve: scroll inside the wrapper, never the page. */
+/* the unified matrix.
+ * safety valve: scroll inside the wrapper, never the page. A faint radial
+ * séance glow behind the grid reads as scrying-table candlelight (decorative,
+ * fixed — no motion, no CPU). */
 .matrixWrap {
   align-self: start;
   max-width: 100%;
   overflow-x: auto;
-  padding-bottom: 0.25rem;
+  padding: 0.4rem 0.25rem 0.25rem;
+  border-radius: 16px;
+  background: radial-gradient(
+    120% 90% at 50% 0%,
+    rgba(112, 64, 168, 0.08),
+    transparent 62%
+  );
 }
 .matrix {
   border-collapse: collapse;
   table-layout: fixed;
+  margin: 0 auto;
 }
 
-/* category band spanning its N value columns */
+/* category band spanning its N value columns — wraps rather than truncates */
 .catBand {
   font-size: 0.62rem;
   font-weight: 400;
@@ -142,14 +164,14 @@
   text-transform: uppercase;
   padding: 0.2rem 0.3rem 0.4rem;
   text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
-/* vertical value headers keep the grid narrow under K·N columns */
+/* vertical value headers keep the grid narrow under K·N columns; the label is
+ * fully shown (no clamp, no ellipsis) — the header band just grows to fit. */
 .valHead {
-  height: 4.75rem;
+  height: 5.75rem;
   vertical-align: bottom;
   padding: 0.15rem 0 0.3rem;
   font-size: 0.65rem;
@@ -159,10 +181,7 @@
   display: inline-block;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  max-height: 4.4rem;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .seatHead {
@@ -182,7 +201,7 @@
 
 /* separator before each category group (skipped on the first) */
 .groupStart {
-  border-left: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+  border-left: 1px solid rgb(var(--c-line));
 }
 
 .cellTd {
@@ -192,16 +211,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(1.5rem, 2.4vw, 1.9rem);
-  height: clamp(1.5rem, 2.4vw, 1.9rem);
-  border: 1px solid var(--line, #2a2333);
+  width: clamp(1.6rem, 2.6vw, 2.05rem);
+  height: clamp(1.6rem, 2.6vw, 2.05rem);
+  border: 1px solid rgb(var(--c-line));
   border-radius: 0.3rem;
   font-size: 0.9rem;
   line-height: 1;
-  transition: border-color 0.12s, background 0.12s;
+  background: color-mix(in srgb, rgb(var(--c-bg)) 40%, transparent);
+  transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
 }
 .cell:hover {
   border-color: var(--brass, #b08d57);
+  background: color-mix(in srgb, rgba(112, 64, 168, 1) 10%, transparent);
 }
 .cell:focus-visible {
   outline: none;
@@ -217,13 +238,13 @@
   box-shadow: inset 0 0 0 1px rgba(112, 64, 168, 0.85);
 }
 
-/* ── pinned controls footer ─────────────────────────────────────────────── */
+/* pinned controls footer */
 .nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem 1rem;
-  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-top: 1px solid rgb(var(--c-line));
   padding-top: 0.8rem;
 }
