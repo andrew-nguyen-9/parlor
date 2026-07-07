@@ -1,56 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { CATEGORY_HEX, type Question } from "@/lib/types";
-import {
-  answerSeconds,
-  flameBrightness,
-  buildStreakDeck,
-} from "@/lib/streak";
-import { buildShare, type Tier } from "@/lib/share";
-import { shuffled } from "@/lib/rng";
-import { usePractice } from "@/lib/usePractice";
-import PracticeBar from "@/components/PracticeBar";
+import type { IgnitePuzzle, IgniteClue } from "@/lib/ignitePuzzle";
+import CollapsiblePanel from "@/components/CollapsiblePanel";
 import styles from "./StreakGame.module.css";
-import { sfx } from "@/lib/sound";
-import { haptic } from "@/lib/haptics";
-import { useProfile, type Achievement } from "@/lib/profile";
-import AchievementToast from "@/components/AchievementToast";
-import LeaderboardPanel from "@/components/LeaderboardPanel";
 
-const BEST_KEY = "parlor:streak:best";
+// Flame brightness in [0.2, 1] from the fraction of runes inscribed. Reuses the
+// shared `.streak-flame` / `.streak-bloom` decoration in globals.css (which sets
+// its size/opacity from --flame and freezes itself under reduced-motion).
+const FLAME_MIN = 0.2;
 
-const fmt = (n: number) =>
-  n >= 10000 ? n.toLocaleString() : Number.isInteger(n) ? String(n) : n.toFixed(1);
-
-function CountUp({ to }: { to: number }) {
-  const [v, setV] = useState(0);
-  useEffect(() => {
-    const t0 = performance.now();
-    let raf: number;
-    const tick = (t: number) => {
-      const p = Math.min(1, (t - t0) / 600);
-      setV(to * (1 - Math.pow(1 - p, 3)));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [to]);
-  return <span className="tabular">{fmt(Math.round(v * 10) / 10)}</span>;
-}
-
-/** The Witch's candle. Bloom + flame scale with --flame; it lives BEHIND the
- *  Q&A (own stacking context, low z) so it can never wash out the text. */
+/** The Witch's candle — bloom + flame scale with --flame, purely decorative and
+ *  BEHIND the board so it can never wash out text. */
 function Candle({ brightness }: { brightness: number }) {
   return (
     <div
-      className="pointer-events-none relative h-24 w-16"
+      className="pointer-events-none relative mx-auto h-24 w-16"
       style={{ ["--flame" as string]: brightness }}
       aria-hidden
     >
-      <div className="streak-bloom absolute inset-x-[-60%] inset-y-[-90%]" />
-      {/* flame */}
+      <div className="streak-bloom absolute inset-x-[-80%] inset-y-[-110%]" />
       <div
         className="streak-flame absolute left-1/2 top-1 h-8 w-4 -translate-x-1/2 rounded-[50%_50%_50%_50%/60%_60%_40%_40%]"
         style={{
@@ -58,371 +28,333 @@ function Candle({ brightness }: { brightness: number }) {
             "radial-gradient(circle at 50% 70%, #fff6d2 0%, #f5c542 35%, #e0871f 75%, #b8392b 100%)",
         }}
       />
-      {/* wick + candle body */}
       <div className="absolute left-1/2 top-9 h-2 w-px -translate-x-1/2 bg-ink/60" />
       <div className="absolute left-1/2 top-10 h-12 w-6 -translate-x-1/2 rounded-t-sm bg-gradient-to-b from-[#efe3c0] to-[#c9a24a]" />
     </div>
   );
 }
 
-export default function StreakGame({ pool }: { pool: Question[] }) {
-  const { practiceMode, togglePractice, saved, saveQ, removeQ, isSaved } = usePractice();
-  const { record } = useProfile();
-  const reduced = Boolean(useReducedMotion());
+export default function StreakGame({
+  puzzle,
+  requestedDate,
+}: {
+  puzzle: IgnitePuzzle | null;
+  requestedDate?: string | null;
+}) {
+  const reduce = Boolean(useReducedMotion());
 
-  const [deck, setDeck] = useState<Question[]>([]);
-  const [streak, setStreak] = useState(0);
-  const [best, setBest] = useState(0);
-  const [phase, setPhase] = useState<"idle" | "guessing" | "reveal-win" | "reveal-loss">(
-    "idle",
+  // ── Dark state: archive-play of a date never generated (DB up, no row). The
+  // zero-env loader always generates inline, so offline play is never dark. ──
+  if (!puzzle) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+        <p className="text-5xl opacity-70" aria-hidden>
+          🕯️
+        </p>
+        <p className="text-muted">
+          {requestedDate
+            ? "No inscription survives from that night."
+            : "The candle is unlit. No incantation waits tonight."}
+        </p>
+        <p className="microlabel text-smoke">
+          the runes are carved nightly — return when the wick catches
+        </p>
+      </div>
+    );
+  }
+
+  return <RuneBoard puzzle={puzzle} reduce={reduce} />;
+}
+
+function RuneBoard({ puzzle, reduce }: { puzzle: IgnitePuzzle; reduce: boolean }) {
+  const K = puzzle.letters.length;
+  const [assign, setAssign] = useState<(number | null)[]>(() =>
+    new Array(K).fill(null),
   );
-  const [timeLeft, setTimeLeft] = useState(0);
+  const [selected, setSelected] = useState<number>(0); // selected glyph index
+  const [activeClue, setActiveClue] = useState<number | null>(null);
+  const [reveals, setReveals] = useState(0); // failed "read" attempts
+  const [shake, setShake] = useState(false);
+  const [won, setWon] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [toasts, setToasts] = useState<Achievement[]>([]);
-  const recorded = useRef(false);
-  const firstRun = useRef(true); // first light of the session = the day-seeded deck
 
-  useEffect(() => {
-    setBest(Number(localStorage.getItem(BEST_KEY) ?? 0));
-  }, []);
+  const filled = assign.filter((a) => a !== null).length;
+  const brightness = won ? 1 : FLAME_MIN + (1 - FLAME_MIN) * (filled / K);
 
-  const q = deck[0];
-  const brightness = reduced ? 0.7 : flameBrightness(streak);
+  // glyph indices lit by the active clue (ring highlight)
+  const litGlyphs = useMemo(() => {
+    const s = new Set<number>();
+    if (activeClue != null) for (const g of puzzle.clues[activeClue].glyphs) s.add(g);
+    return s;
+  }, [activeClue, puzzle.clues]);
 
-  // end the run (wrong call OR timeout)
-  const lose = useCallback(() => {
-    sfx.wrong();
-    haptic.wrong();
-    setPhase("reveal-loss");
-  }, []);
-
-  // record the run when it ends
-  useEffect(() => {
-    if (phase !== "reveal-loss" || recorded.current) return;
-    recorded.current = true;
-    const unlocked = record({ room: "streak", score: streak, xp: streak * 50 });
-    if (unlocked.length) setToasts(unlocked);
-  }, [phase, streak, record]);
-
-  // accelerating countdown — only while actively guessing
-  useEffect(() => {
-    if (phase !== "guessing" || !q) return;
-    const total = answerSeconds(streak);
-    setTimeLeft(total);
-    const start = performance.now();
-    let raf = 0;
-    const tick = (t: number) => {
-      const remaining = total - (t - start) / 1000;
-      if (remaining <= 0) {
-        setTimeLeft(0);
-        lose();
-        return;
-      }
-      setTimeLeft(remaining);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [phase, streak, q, lose]);
-
-  // Auto-advance after a correct call — the accelerating timer otherwise resets
-  // to a standstill on every reveal. Clicking "next pair" still skips ahead; a
-  // reduced-motion preference keeps advancement manual.
-  useEffect(() => {
-    if (phase !== "reveal-win" || reduced) return;
-    const t = setTimeout(() => next(), 1200);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, reduced]);
-
-  // cursor-following glow on the darkness finish
-  function onPointerMove(e: React.PointerEvent) {
-    if (phase !== "reveal-loss" || reduced) return;
-    const x = (e.clientX / window.innerWidth) * 100;
-    const y = (e.clientY / window.innerHeight) * 100;
-    document.documentElement.style.setProperty("--gx", `${x}%`);
-    document.documentElement.style.setProperty("--gy", `${y}%`);
+  function selectGlyph(g: number) {
+    if (won) return;
+    setSelected(g);
   }
 
-  function start() {
-    // First light of the day = the shared, day-seeded deck (everyone comparable).
-    // Every relight reshuffles (Math.random in a click handler — legal, and it
-    // stops a known-answer deck from farming best-streak/leaderboard).
-    setDeck(firstRun.current ? buildStreakDeck(pool) : shuffled(pool, Math.random));
-    firstRun.current = false;
-    setStreak(0);
-    setPhase("guessing");
-    recorded.current = false;
-    setCopied(false);
-  }
-
-  function guess(dir: "higher" | "lower") {
-    if (!q) return;
-    const win = dir === q.correct;
-    if (win) {
-      const s = streak + 1;
-      setStreak(s);
-      if (s > best) {
-        setBest(s);
-        localStorage.setItem(BEST_KEY, String(s));
+  // Tap a letter: unassign it if placed, else drop it on the selected glyph and
+  // advance to the next empty glyph. Keeps the map a strict bijection.
+  function tapLetter(l: number) {
+    if (won) return;
+    const at = assign.indexOf(l);
+    setAssign((prev) => {
+      const next = [...prev];
+      if (at !== -1) {
+        next[at] = null; // toggle off a placed letter
+        return next;
       }
-      sfx.combo(Math.min(s, 8));
-      haptic.correct();
-      setPhase("reveal-win");
-    } else {
-      lose();
+      next[selected] = l;
+      return next;
+    });
+    if (at === -1) {
+      const nextEmpty = assign.findIndex((a, i) => a === null && i !== selected);
+      if (nextEmpty !== -1) setSelected(nextEmpty);
     }
   }
 
-  function next() {
-    setDeck((d) => d.slice(1));
-    setPhase("guessing");
+  function clearGlyph(g: number) {
+    if (won) return;
+    setAssign((prev) => {
+      const next = [...prev];
+      next[g] = null;
+      return next;
+    });
+    setSelected(g);
   }
 
-  // The run as a share card via the canonical seam (lib/share.ts): one 🟩 per
-  // correct call, a trailing ⬛ where the candle guttered, wrapped 10 wide.
-  function streakCard() {
-    const date = new Date().toISOString().slice(0, 10);
-    const tiers: Tier[] = [...(Array(streak).fill("hit") as Tier[]), "miss"];
-    return buildShare({ room: "/streak", date, tiers, score: streak, columns: 10 });
+  function readTheRunes() {
+    if (filled < K || won) return;
+    const correct = assign.every((a, g) => a === puzzle.solution[g]);
+    if (correct) {
+      setWon(true);
+    } else {
+      setReveals((n) => n + 1);
+      setShake(true);
+      setTimeout(() => setShake(false), reduce ? 0 : 500);
+    }
+  }
+
+  function reset() {
+    setAssign(new Array(K).fill(null));
+    setSelected(0);
+    setWon(false);
+    setActiveClue(null);
   }
 
   async function share() {
+    const runes = puzzle.glyphs.map((g) => g.rune).join("");
+    const text = `IGNITE ${puzzle.date}\n${runes}\n${puzzle.runeSet} deciphered${reveals ? ` · ${reveals} misread${reveals > 1 ? "s" : ""}` : " · flawless"} 🔥\nparlor`;
     try {
-      await navigator.clipboard.writeText(streakCard().text);
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* clipboard unavailable — the grid is on screen anyway */
+      /* clipboard blocked — nothing to do */
     }
   }
 
-  if (phase === "idle" || pool.length === 0) {
-    return (
-      <>
-        <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-          <Candle brightness={0.5} />
-          <h1 className="display mt-4 text-5xl sm:text-6xl">Ignite</h1>
-          <p className="microlabel mt-2 text-history">The Witch of the Order</p>
-          <p className="mt-3 max-w-md text-muted">
-            Feed her flame. Higher or lower? Each correct call burns brighter — but
-            the candle gutters faster as you climb. One wrong call or a guttered
-            flame ends the run. Best so far:{" "}
-            <span className="font-black text-ink">{best}</span>
-          </p>
-          {pool.length === 0 ? (
-            <p className="mt-6 text-muted">The bank is still warming up.</p>
-          ) : (
-            <button
-              onClick={start}
-              className="microlabel mt-8 rounded-full border border-screen px-8 py-3 text-screen transition hover:bg-screen hover:text-bg"
-            >
-              light the candle
-            </button>
-          )}
-        </div>
-        <PracticeBar
-          practiceMode={practiceMode}
-          onToggle={togglePractice}
-          saved={saved}
-          onRemove={removeQ}
-        />
-      </>
-    );
-  }
-
-  if (!q) {
-    return (
-      <>
-        <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-          <p className="display text-4xl text-screen">
-            Bank exhausted — streak {streak}!
-          </p>
-          <button
-            onClick={start}
-            className="microlabel mt-8 rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg"
-          >
-            relight
-          </button>
-        </div>
-        <PracticeBar
-          practiceMode={practiceMode}
-          onToggle={togglePractice}
-          saved={saved}
-          onRemove={removeQ}
-        />
-      </>
-    );
-  }
-
-  const revealing = phase !== "guessing";
-  const lost = phase === "reveal-loss";
-  const hex = CATEGORY_HEX[q.category];
-  const total = answerSeconds(streak);
-  const timerPct = Math.max(0, Math.min(1, timeLeft / total));
+  const letterAssignedTo = (l: number) => assign.indexOf(l); // glyph or -1
 
   return (
-    <div className="relative" onPointerMove={onPointerMove}>
-      {/* darkness finish — fixed, BEHIND the content (z-0); content sits at z-10 */}
-      {lost && <div className="streak-dark" aria-hidden />}
+    <div className="relative">
+      <header className="flex items-baseline justify-between gap-3">
+        <div>
+          <h1 className="display text-4xl sm:text-5xl">Ignite</h1>
+          <p className="microlabel mt-1 text-history">
+            {puzzle.runeSet} · the Witch&apos;s cipher
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="microlabel">runes lit</div>
+          <div className="tabular text-3xl font-black text-[#e0871f]">
+            {won ? K : filled}/{K}
+          </div>
+        </div>
+      </header>
 
-      <AchievementToast queue={toasts} />
+      {/* The inscription — the incantation spelled in runes; each rune shows the
+          player's chosen letter beneath it, so cracking the key lights the word. */}
+      <section className={`${styles.inscription} mt-6`} aria-label="the inscription">
+        <Candle brightness={brightness} />
+        <div className="mt-3 flex flex-wrap items-end justify-center gap-2">
+          {puzzle.cipher.map((g, i) => {
+            const l = assign[g];
+            return (
+              <div key={i} className={styles.inscriptionCell}>
+                <span className={styles.inscriptionRune} aria-hidden>
+                  {puzzle.glyphs[g].rune}
+                </span>
+                <span
+                  className={`${styles.inscriptionLetter} ${won ? styles.inscriptionLit : ""}`}
+                >
+                  {l != null ? puzzle.letters[l] : "·"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
-      <div className="relative z-10">
-        <div className="flex items-baseline justify-between">
+      {won ? (
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-auto mt-8 max-w-md rounded-2xl border border-[#e0871f]/50 bg-surface p-6 text-center"
+        >
+          <p className="display text-3xl text-[#e0871f]">The inscription blazes</p>
+          <p className="mt-2 text-2xl font-black tracking-[0.3em] text-ink">
+            {puzzle.incantation}
+          </p>
+          <p className="mt-2 text-muted">
+            {reveals === 0
+              ? "Read flawlessly — the Order is impressed."
+              : `${reveals} misread${reveals > 1 ? "s" : ""} before the wick caught.`}
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <button
+              onClick={share}
+              className="microlabel rounded-full border border-history px-6 py-3 text-history transition hover:bg-history hover:text-bg"
+            >
+              {copied ? "copied ✓" : "share"}
+            </button>
+            <button
+              onClick={reset}
+              className="microlabel rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg"
+            >
+              inscribe again
+            </button>
+          </div>
+        </motion.div>
+      ) : (
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,18rem)] lg:items-start">
+          {/* Rune key + letter tray */}
           <div>
-            <h1 className="display text-4xl sm:text-5xl">Ignite</h1>
-            <p className="microlabel mt-1 text-history">The Witch of the Order</p>
-          </div>
-          {!lost && (
-            <div className="flex items-center gap-4">
-              {/* candle wrapped in the accelerating countdown ring (the timer) */}
-              <div className={styles.ringWrap}>
-                {!revealing && (
-                  <div
-                    className={styles.ring}
-                    style={{
-                      ["--p" as string]: timerPct,
-                      ["--ring" as string]: timerPct < 0.3 ? "#b83468" : "#f5c542",
-                    }}
-                    aria-hidden
-                  />
-                )}
-                <Candle brightness={brightness} />
-              </div>
-              <div className="text-right">
-                <div className="microlabel">streak · best {best}</div>
-                <div className="tabular text-3xl font-black text-screen">{streak}</div>
-                {!revealing && (
-                  <div className="microlabel tabular mt-1 text-history">
-                    {timeLeft.toFixed(1)}s
-                  </div>
-                )}
-              </div>
+            <p className="microlabel">the rune key — bind each rune to a letter</p>
+            <div
+              className={`mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 ${shake ? styles.shake : ""}`}
+            >
+              {puzzle.glyphs.map((glyph, g) => {
+                const l = assign[g];
+                const isSel = selected === g;
+                const isLit = litGlyphs.has(g);
+                return (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => (l != null ? clearGlyph(g) : selectGlyph(g))}
+                    aria-pressed={isSel}
+                    aria-label={`${glyph.name} rune${l != null ? `, letter ${puzzle.letters[l]} — tap to clear` : ", tap to select"}`}
+                    className={`${styles.glyphTile} ${isSel ? styles.glyphSelected : ""} ${isLit ? styles.glyphLit : ""}`}
+                  >
+                    <span className={styles.glyphRune} aria-hidden>
+                      {glyph.rune}
+                    </span>
+                    <span className="microlabel text-[0.65rem] opacity-75">
+                      {glyph.name}
+                    </span>
+                    <span className={styles.glyphLetter}>
+                      {l != null ? puzzle.letters[l] : ""}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          )}
-        </div>
 
-        <p className="microlabel mt-5">{q.prompt}</p>
-
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-line bg-surface p-6">
-            <p className="microlabel">{q.unit}</p>
-            <p className="display mt-2 text-3xl">{q.subject_a}</p>
-            <p className="tabular mt-4 text-4xl font-black" style={{ color: hex }}>
-              {fmt(q.value_a!)}
-            </p>
-          </div>
-
-          <div
-            className="rounded-2xl border p-6"
-            style={{ borderColor: hex, background: `${hex}10` }}
-          >
-            <p className="microlabel">{q.unit}</p>
-            <p className="display mt-2 text-3xl">{q.subject_b}</p>
-            <p className="mt-4 text-4xl font-black" style={{ color: hex }}>
-              {revealing ? <CountUp to={q.value_b!} /> : "???"}
-            </p>
-          </div>
-        </div>
-
-        {!revealing ? (
-          <div className="mt-6 flex justify-center gap-4">
-            <button
-              onClick={() => guess("higher")}
-              className="microlabel rounded-full border border-sports px-8 py-4 text-sports transition hover:bg-sports hover:text-bg"
-            >
-              ▲ higher
-            </button>
-            <button
-              onClick={() => guess("lower")}
-              className="microlabel rounded-full border border-music px-8 py-4 text-music transition hover:bg-music hover:text-bg"
-            >
-              ▼ lower
-            </button>
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6 text-center"
-          >
-            {lost ? (
-              <div className="mx-auto max-w-md rounded-2xl border border-screen/40 bg-bg/90 p-6 backdrop-blur">
-                <p className="display text-3xl text-music">
-                  The candle gutters — streak {streak}
-                </p>
-                <p className="mt-2 text-muted">
-                  {timeLeft <= 0 ? "Time ran out." : "Wrong call."} The Witch waits.
-                </p>
-                <pre className="mt-3 whitespace-pre text-center text-sm leading-tight tracking-widest">
-                  {streakCard().grid}
-                </pre>
-                <div className="mt-3 flex flex-wrap justify-center gap-3">
+            <p className="microlabel mt-5">the letters — tap to place on the lit rune</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {puzzle.letters.map((letter, l) => {
+                const placedAt = letterAssignedTo(l);
+                const placed = placedAt !== -1;
+                return (
                   <button
-                    onClick={share}
-                    className="microlabel rounded-full border border-history px-6 py-3 text-history transition hover:bg-history hover:text-bg"
+                    key={l}
+                    type="button"
+                    onClick={() => tapLetter(l)}
+                    aria-pressed={placed}
+                    className={`${styles.letterChip} ${placed ? styles.letterPlaced : ""}`}
                   >
-                    {copied ? "copied ✓" : "share result"}
+                    {letter}
                   </button>
-                  <button
-                    onClick={start}
-                    className="microlabel rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg"
-                  >
-                    relight
-                  </button>
-                </div>
-                <div className="mt-4 flex justify-center">
-                  <LeaderboardPanel room="streak" score={streak} accent="screen" />
-                </div>
-              </div>
-            ) : (
-              <>
-                <p className="display text-3xl text-sports">Brighter ✓</p>
-                <button
-                  onClick={next}
-                  className="microlabel mt-5 rounded-full border border-ink px-8 py-3 transition hover:bg-ink hover:text-bg"
-                >
-                  next pair →
-                </button>
-              </>
-            )}
-            {practiceMode && (
-              <div className="mt-3">
-                <button
-                  onClick={() => (isSaved(q) ? removeQ(q.prompt) : saveQ(q))}
-                  className={`microlabel rounded-full border px-4 py-2 transition ${
-                    isSaved(q)
-                      ? "border-history text-history"
-                      : "border-line text-muted hover:border-history hover:text-history"
-                  }`}
-                >
-                  {isSaved(q) ? "★ saved" : "☆ save question"}
-                </button>
-              </div>
-            )}
-            {q.source_url && (
-              <div className="mt-3">
-                <a
-                  href={q.source_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="microlabel underline"
-                >
-                  source
-                </a>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </div>
+                );
+              })}
+            </div>
 
-      <PracticeBar
-        practiceMode={practiceMode}
-        onToggle={togglePractice}
-        saved={saved}
-        onRemove={removeQ}
-      />
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                onClick={readTheRunes}
+                disabled={filled < K}
+                className="microlabel rounded-full border border-[#e0871f] px-8 py-3 text-[#e0871f] transition enabled:hover:bg-[#e0871f] enabled:hover:text-bg disabled:opacity-40"
+              >
+                read the runes
+              </button>
+              {filled > 0 && (
+                <button
+                  onClick={reset}
+                  className="microlabel rounded-full border border-line px-5 py-3 text-muted transition hover:border-ink hover:text-ink"
+                >
+                  clear
+                </button>
+              )}
+              {reveals > 0 && (
+                <span className="microlabel self-center text-music">
+                  the runes resist — {reveals} misread{reveals > 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Clues — collapsible on mobile (F4 primitive) */}
+          <CollapsibleClues
+            clues={puzzle.clues}
+            active={activeClue}
+            onHover={setActiveClue}
+          />
+        </div>
+      )}
     </div>
+  );
+}
+
+// Thin wrapper so the clue list can collapse on 375px while staying a sticky
+// rail on desktop. Uses F4's CollapsiblePanel.
+function CollapsibleClues({
+  clues,
+  active,
+  onHover,
+}: {
+  clues: IgniteClue[];
+  active: number | null;
+  onHover: (i: number | null) => void;
+}) {
+  return (
+    <CollapsiblePanel
+      side="right"
+      title={`the oracle's clues (${clues.length})`}
+      accent="#e0871f"
+      storageKey="parlor:ignite:clues"
+    >
+      <ol className="space-y-2">
+        {clues.map((c, i) => (
+          <li key={i}>
+            <button
+              type="button"
+              onMouseEnter={() => onHover(i)}
+              onMouseLeave={() => onHover(null)}
+              onFocus={() => onHover(i)}
+              onBlur={() => onHover(null)}
+              onClick={() => onHover(active === i ? null : i)}
+              className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition ${
+                active === i
+                  ? "border-[#e0871f] bg-[#e0871f]/10 text-ink"
+                  : "border-line text-muted hover:border-[#e0871f]/60"
+              }`}
+            >
+              {c.text}
+            </button>
+          </li>
+        ))}
+      </ol>
+    </CollapsiblePanel>
   );
 }
