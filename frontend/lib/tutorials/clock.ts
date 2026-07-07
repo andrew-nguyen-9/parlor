@@ -1,19 +1,21 @@
 import type { Tutorial } from "./types";
 
-// STUB (F2) — Chronos is being revamped this cycle; that game unit overwrites
-// this file with final rules + example. Keep the shape; the overlay reads it.
+// CHRONOS — clockwork logic box (G3). Rules describe the deduction puzzle; the
+// worked example proves it is solvable by reasoning alone, trivia optional.
 export const tutorial: Tutorial = {
   href: "/clock",
   title: "Chronos",
   accent: "music",
-  tagline: "When did it happen? Drag the year — closer guesses, bigger points.",
+  tagline: "Assemble the gear-train in the one order the backplate allows.",
   rules: [
-    "You're shown an event, a photo, or a track and asked when it dates from.",
-    "Drag the slider to the year you think is right and lock it in.",
-    "The closer your guess, the more you score — across five rounds against the century.",
+    "A clockwork train has several wheels; each must sit at a distinct stage — 1 winds the mainspring, the last drives the dial.",
+    "Tap a wheel in the tray, then tap a stage to seat it. Tap a seated wheel to lift it back.",
+    "The engraved rules on the backplate pin down exactly one legal order — a ✓ means a rule is satisfied, a ✕ means the train would jam.",
+    "It is pure logic: reason it out from the rules. The founding-year engravings behind “cheat with history” are only a shortcut, never required.",
   ],
   example: {
-    prompt: "“When was this photograph taken?”",
-    walkthrough: "Guess 1969; if the answer is 1971 you're only two years off and still bank most of the points.",
+    prompt: "“The Fusée turns before the Escape Wheel; the Escape Wheel drives the dial.”",
+    walkthrough:
+      "Two rules, two wheels: the Escape Wheel must be last, so the Fusée seats earlier in the train — no dates needed to place them.",
   },
 };

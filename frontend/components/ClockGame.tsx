@@ -1,658 +1,328 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { CATEGORY_HEX, CATEGORY_LABEL, type Question } from "@/lib/types";
-import { usePractice } from "@/lib/usePractice";
-import PracticeBar from "@/components/PracticeBar";
-import { mulberry32, shuffled } from "@/lib/rng";
-import { playMelody, sfx } from "@/lib/sound";
-import { haptic } from "@/lib/haptics";
-import { useProfile, type Achievement } from "@/lib/profile";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-// code-split: the win-only canvas confetti is fetched on demand, not in
-// the room's initial bundle (perf 2.16).
+import { CATEGORY_HEX } from "@/lib/types";
+import { labelFor } from "@/lib/calendars";
+import type {
+  ChronosPuzzle,
+  ChronosConstraint,
+} from "@/lib/chronosPuzzle";
+
+// win-only canvas confetti, code-split (kept out of the room's initial bundle)
 const Confetti = dynamic(() => import("@/components/Confetti"), { ssr: false });
-import AchievementToast from "@/components/AchievementToast";
-import LeaderboardPanel from "@/components/LeaderboardPanel";
-import { buildPuzzle, type ClockPuzzle } from "@/lib/clockLogic";
-import { CLOCKKEEPER, labelFor, type CalendarSystem } from "@/lib/calendars";
-import { buildShare, type GameResult, type Tier } from "@/lib/share";
-import styles from "./ClockGame.module.css";
 
-const MIN_YEAR = 1800;
-const MAX_YEAR = new Date().getFullYear();
-const HINT_CAP = 80; // max points when the calendar-conversion hint is used
+const ACCENT = CATEGORY_HEX.music;
 
-// Score decays with distance from the truth. Calendar-twist days (non-Gregorian)
-// decay faster — the "harder daily twist" the §3.2 mandate asks for, applied
-// entirely here so no shared file is touched.
-const pointsFor = (guess: number, truth: number, hintUsed: boolean, decay: number) =>
-  Math.min(
-    hintUsed ? HINT_CAP : 100,
-    Math.max(0, 100 - decay * Math.abs(guess - truth)),
-  );
+type Status = "ok" | "bad" | "pending";
 
-// A guess is "close" when within the streak band; the band tightens on hard days.
-const closeBand = (hard: boolean) => (hard ? 7 : 10);
-// Consecutive closes COMPOUND: the 2nd close adds +15, the 3rd +30, the 4th +45…
-// (the first close just primes the streak). Reset to 0 the moment a guess misses.
-const streakBonus = (streak: number) => (streak > 1 ? (streak - 1) * 15 : 0);
-
-// Per-round proximity → share tier. Mirrors share.ts's green/yellow/black bands.
-const tierFor = (off: number): Tier => (off <= 5 ? "hit" : off <= 20 ? "near" : "miss");
-
-const BPM = 132;
-const melodyMs = (q: Question) =>
-  (q.melody ?? []).reduce((s, n) => s + n.d, 0) * (60 / BPM) * 1000;
+// Live-evaluate an engraved rule against the current (possibly partial) assembly.
+// "pending" = not enough wheels placed yet to judge; "bad" = contradicted.
+function evalConstraint(
+  c: ChronosConstraint,
+  assign: Record<string, number | null>,
+  stages: number,
+): Status {
+  const a = assign[c.a];
+  const b = c.b !== undefined ? assign[c.b] : undefined;
+  const needB = c.b !== undefined;
+  if (a == null || (needB && b == null)) return "pending";
+  switch (c.kind) {
+    case "first":
+      return a === 1 ? "ok" : "bad";
+    case "last":
+      return a === stages ? "ok" : "bad";
+    case "fixed":
+      return a === c.k ? "ok" : "bad";
+    case "before":
+      return (b as number) > a ? "ok" : "bad";
+    case "imm-before":
+      return (b as number) === a + 1 ? "ok" : "bad";
+    case "gap":
+      return (b as number) - a === (c.k ?? 0) ? "ok" : "bad";
+    case "adjacent":
+      return Math.abs(a - (b as number)) === 1 ? "ok" : "bad";
+    case "parity":
+      return (c.flag === "even") === (a % 2 === 0) ? "ok" : "bad";
+    default:
+      return "pending";
+  }
+}
 
 export default function ClockGame({
-  rounds: initialRounds,
-  pool,
-  calendar,
-  daySeed: seed,
+  puzzle,
+  requestedDate,
 }: {
-  rounds: Question[];
-  pool?: Question[];
-  calendar: CalendarSystem;
-  daySeed: number;
+  puzzle: ChronosPuzzle | null;
+  requestedDate?: string | null;
 }) {
-  const reduced = useReducedMotion();
-  const { practiceMode, togglePractice, saved, saveQ, removeQ, isSaved } = usePractice();
-  const { record } = useProfile();
+  // Dark state — the archive is unreachable. Never throw; the room stays whole.
+  if (!puzzle) {
+    return (
+      <div className="mx-auto max-w-md rounded-2xl border border-line bg-surface/60 p-8 text-center">
+        <p className="text-2xl" aria-hidden>
+          ⚙
+        </p>
+        <p className="mt-3 microlabel text-muted">the mechanism is silent</p>
+        <p className="mt-2 text-sm text-muted">
+          {requestedDate
+            ? "No clockwork was wound for that day."
+            : "The archive is unreachable right now — wind it again shortly."}
+        </p>
+      </div>
+    );
+  }
+  return <Box puzzle={puzzle} />;
+}
 
-  const [rounds, setRounds] = useState(initialRounds);
-  const [i, setI] = useState(0);
-  const [locked, setLocked] = useState(false);
-  const [hintUsed, setHintUsed] = useState(false);
-  const [score, setScore] = useState(0);
-  const [done, setDone] = useState(false);
-  const [burst, setBurst] = useState(0);
-  const [toasts, setToasts] = useState<Achievement[]>([]);
-  const [playing, setPlaying] = useState(false);
-  // Proximity-streak state: `streak` = consecutive closes so far; `roundBonus` =
-  // the bonus the just-locked round earned; `offs` = per-round distance (drives
-  // the shareable proximity line). `copied` flashes the share confirmation.
-  const [streak, setStreak] = useState(0);
-  const [roundBonus, setRoundBonus] = useState(0);
-  const [offs, setOffs] = useState<number[]>([]);
-  const [copied, setCopied] = useState(false);
-  const recorded = useRef(false);
-
-  const stopRef = useRef<{ stop: () => void } | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const playTimer = useRef<ReturnType<typeof setTimeout>>();
-
-  const q = rounds[i];
-  const truth = q ? q.year ?? Number(q.correct) : 0;
-  const isAudio = Boolean(q && (q.audio_url || q.melody?.length));
-  const hard = calendar.key !== "gregorian"; // calendar-twist day ⇒ steeper play
-  const decay = hard ? 3 : 2;
-
-  // Per-round logic puzzle: clues bound the year to a deducible window. Derived
-  // lazily from the target year + a per-round seed (SSR/client agree).
-  const puzzle: ClockPuzzle = useMemo(
-    () =>
-      q
-        ? buildPuzzle(truth, MAX_YEAR, (seed * 131 + i * 17) >>> 0)
-        : { clues: [], min: MIN_YEAR, max: MAX_YEAR },
-    [q, truth, seed, i],
+function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
+  const { gears, constraints, stages, solution, calendarSkin } = puzzle;
+  const stageList = useMemo(
+    () => Array.from({ length: stages }, (_, i) => i + 1),
+    [stages],
   );
 
-  // The hands start at the centre of the deduced window, not a fixed year, so
-  // the constraint frames the guess. Reset when the round (window) changes.
-  const [guess, setGuess] = useState(0);
+  // assignment: gearKey → stage (null = still in the tray)
+  const [assign, setAssign] = useState<Record<string, number | null>>(() =>
+    Object.fromEntries(gears.map((g) => [g.key, null])),
+  );
+  const [selected, setSelected] = useState<string | null>(null);
+  const [peek, setPeek] = useState(false); // trivia shortcut flap
+  const [solved, setSolved] = useState(false);
+
+  const stageToGear = useMemo(() => {
+    const m: Record<number, string> = {};
+    for (const g of gears) {
+      const st = assign[g.key];
+      if (st != null) m[st] = g.key;
+    }
+    return m;
+  }, [assign, gears]);
+
+  const gearOf = (k: string) => gears.find((g) => g.key === k)!;
+  const placedCount = Object.values(assign).filter((v) => v != null).length;
+  const full = placedCount === stages;
+
+  // check for the win whenever a full assembly is reached
   useEffect(() => {
-    setGuess(Math.round((puzzle.min + puzzle.max) / 2));
-  }, [puzzle.min, puzzle.max]);
-
-  useEffect(() => () => stopPlayback(), []);
-
-  function stopPlayback() {
-    clearTimeout(playTimer.current);
-    stopRef.current?.stop();
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    setPlaying(false);
-  }
-
-  function playClip() {
-    if (!q) return;
-    stopPlayback();
-    setPlaying(true);
-    if (q.audio_url) {
-      const el = new Audio(q.audio_url);
-      el.volume = 0.8;
-      audioRef.current = el;
-      void el.play().catch(() => setPlaying(false));
-      el.onended = () => setPlaying(false);
-      playTimer.current = setTimeout(() => stopPlayback(), 12000);
-    } else if (q.melody?.length) {
-      stopRef.current = playMelody(q.melody, BPM);
-      playTimer.current = setTimeout(() => setPlaying(false), melodyMs(q) + 100);
-    } else {
-      setPlaying(false);
-    }
-  }
-
-  useEffect(() => {
-    if (!done || recorded.current) return;
-    recorded.current = true;
-    const win = score >= rounds.length * 60;
-    if (win) {
-      sfx.win();
-      haptic.win();
-      setBurst((b) => b + 1);
-    } else {
-      sfx.lose();
-    }
-    const unlocked = record({ room: "clock", score, xp: score });
-    if (unlocked.length) setToasts(unlocked);
-  }, [done, score, rounds.length, record]);
-
-  if (rounds.length === 0) {
-    return (
-      <p className="text-muted">The bank is still warming up — no dated facts yet.</p>
-    );
-  }
-
-  const pts = pointsFor(guess, truth, hintUsed, decay);
-  // Hand angle: map the deduced window onto a 12-hour sweep (−150°..+150°),
-  // so the constraint — not the whole century — drives the dial.
-  const span = Math.max(1, puzzle.max - puzzle.min);
-  const frac = Math.min(1, Math.max(0, (guess - puzzle.min) / span));
-  const truthFrac = Math.min(1, Math.max(0, (truth - puzzle.min) / span));
-  const minuteAngle = -150 + frac * 300;
-  const hourAngle = -150 + frac * 300 * 0.5;
-  const truthAngle = -150 + truthFrac * 300;
-
-  function showHint() {
-    setHintUsed(true);
-  }
-
-  function lock() {
-    stopPlayback();
-    setLocked(true);
-    const off = Math.abs(guess - truth);
-    const close = off <= closeBand(hard);
-    const nextStreak = close ? streak + 1 : 0;
-    const bonus = streakBonus(nextStreak);
-    setStreak(nextStreak);
-    setRoundBonus(bonus);
-    setScore((s) => s + pts + bonus);
-    setOffs((o) => [...o, off]);
-    if (pts >= 80) {
-      sfx.correct();
-      haptic.correct();
-    } else if (pts >= 40) {
-      sfx.select();
-    } else {
-      sfx.wrong();
-    }
-  }
-
-  function next() {
-    if (i + 1 >= rounds.length) {
-      setDone(true);
+    if (!full) {
+      setSolved(false);
       return;
     }
-    stopPlayback();
-    setI(i + 1);
-    setLocked(false);
-    setHintUsed(false);
-    setRoundBonus(0);
-  }
-
-  function restart() {
-    // Replay = practice: draw fresh rounds from the unused pool (Math.random is
-    // fine here — click handler, not an SSR path) and NEVER re-record, so a
-    // replay can't farm the leaderboard on a known-answer deck.
-    const used = new Set(rounds.map((r) => r.prompt));
-    const fresh = (pool ?? []).filter((qq) => !used.has(qq.prompt));
-    const source =
-      fresh.length >= rounds.length
-        ? fresh
-        : pool && pool.length >= rounds.length
-          ? pool
-          : rounds;
-    setRounds(shuffled(source, Math.random).slice(0, rounds.length));
-    setI(0);
-    setLocked(false);
-    setHintUsed(false);
-    setScore(0);
-    setDone(false);
-    setStreak(0);
-    setRoundBonus(0);
-    setOffs([]);
-    setCopied(false);
-    recorded.current = true; // practice replays never re-record
-  }
-
-  if (done) {
-    // The shareable run: one tier per round → the 5-square proximity line +
-    // OG card, all via the §3.0 share seam. `date` is a cosmetic label only;
-    // the actual puzzle is day-seeded server-side, so deriving it client-side
-    // on this user click is safe (no SSR/hydration path).
-    // ponytail: client Date() here, not a passed prop — page.tsx isn't ours to edit.
-    const result: GameResult = {
-      room: "/clock",
-      date: new Date().toISOString().slice(0, 10),
-      tiers: offs.map(tierFor),
-      score,
-      maxScore: rounds.length * 100,
-      columns: 5,
-    };
-    const card = buildShare(result);
-    const shareResult = () => {
+    const win = Object.entries(solution).every(([k, st]) => assign[k] === st);
+    setSolved(win);
+    if (win && typeof window !== "undefined") {
       try {
-        if (typeof navigator !== "undefined" && navigator.share) {
-          void navigator.share({ text: card.text, url: card.url }).catch(() => {});
-        } else {
-          void navigator.clipboard?.writeText(card.text);
-        }
+        localStorage.setItem(`parlor:chronos:${puzzle.date}`, "solved");
       } catch {
-        /* clipboard/share unavailable — silently no-op */
+        /* private mode — scores are cosmetic, never block play */
       }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    };
+    }
+  }, [full, assign, solution, puzzle.date]);
 
-    return (
-      <>
-        <Confetti trigger={burst} />
-        <AchievementToast queue={toasts} />
-        <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-          <p className="microlabel">final score</p>
-          <p className="display tabular text-8xl text-music">{score}</p>
-          <p className="mt-2 text-muted">out of {rounds.length * 100}</p>
-
-          {/* The 5-round proximity line — the §3.2 social artifact. */}
-          <p className="microlabel mt-6 text-muted">your proximity line</p>
-          <div className={`mt-1 ${styles.proximity}`} aria-label="per-round proximity">
-            {card.grid}
-          </div>
-          <p className="microlabel mt-1 text-muted">
-            {offs.map((o) => `${o}y`).join(" · ")}
-          </p>
-
-          <LeaderboardPanel room="clock" score={score} accent="music" />
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <button
-              onClick={shareResult}
-              className="microlabel rounded-full border border-music px-6 py-3 text-music transition hover:bg-music hover:text-bg"
-            >
-              {copied ? "copied ✓" : "share result"}
-            </button>
-            <button
-              onClick={restart}
-              className="microlabel rounded-full border border-ink px-6 py-3 transition hover:bg-ink hover:text-bg"
-            >
-              rewind the clock
-            </button>
-          </div>
-        </div>
-        <PracticeBar
-          practiceMode={practiceMode}
-          onToggle={togglePractice}
-          saved={saved}
-          onRemove={removeQ}
-        />
-      </>
-    );
+  function placeAt(stage: number) {
+    setSelected((sel) => {
+      if (sel == null) {
+        // no wheel in hand — lift the one already at this stage back to the tray
+        const occupant = stageToGear[stage];
+        if (occupant) setAssign((a) => ({ ...a, [occupant]: null }));
+        return null;
+      }
+      setAssign((a) => {
+        const next = { ...a };
+        // if another wheel sits here, bump it back to the tray
+        const occupant = Object.keys(next).find((k) => next[k] === stage);
+        if (occupant) next[occupant] = null;
+        next[sel] = stage;
+        return next;
+      });
+      return null;
+    });
   }
 
-  const dialHex = calendar.accent;
+  function toggleTray(k: string) {
+    if (assign[k] != null) {
+      setAssign((a) => ({ ...a, [k]: null })); // pull a placed wheel back
+      setSelected(null);
+      return;
+    }
+    setSelected((s) => (s === k ? null : k));
+  }
+
+  function reset() {
+    setAssign(Object.fromEntries(gears.map((g) => [g.key, null])));
+    setSelected(null);
+  }
+
+  const trayGears = gears.filter((g) => assign[g.key] == null);
 
   return (
-    <div>
-      <Confetti trigger={burst} />
-      <AchievementToast queue={toasts} />
-      <div className="flex items-baseline justify-between">
-        <h1 className="display text-4xl sm:text-5xl">Chronos</h1>
-        <div className="text-right">
-          <div className="microlabel">
-            round {i + 1}/{rounds.length} · score
-          </div>
-          <div className="tabular text-3xl font-black text-music">{score}</div>
-        </div>
+    <div className="mx-auto max-w-3xl">
+      <Confetti active={solved} />
+
+      {/* header plate */}
+      <div className="rounded-2xl border border-line bg-surface/50 p-4 text-center">
+        <p className="microlabel" style={{ color: ACCENT }}>
+          {puzzle.mechanism}
+        </p>
+        <p className="mt-1 text-sm text-muted">{puzzle.provenance}</p>
+        <p className="mt-2 text-xs text-muted">
+          Dial skin: {calendarSkin.name} {calendarSkin.glyph} · assemble the train
+          from mainspring to dial.
+        </p>
       </div>
 
-      {/* Clockkeeper nameplate + calendar of the day */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface/60 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <span
-            className="grid h-9 w-9 place-items-center rounded-full border text-lg"
-            style={{ borderColor: `${dialHex}88`, color: dialHex }}
-            aria-hidden
-          >
-            {calendar.glyph}
-          </span>
-          <div>
-            <div className="microlabel" style={{ color: dialHex }}>
-              {CLOCKKEEPER.name}
-            </div>
-            <div className="text-xs text-muted">{CLOCKKEEPER.title}</div>
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="microlabel flex items-center justify-end gap-2" style={{ color: dialHex }}>
-            {hard && <span title="harder scoring today">⌛ hard twist</span>}
-            {calendar.name}
-          </div>
-          <div className="text-xs text-muted">{calendar.blurb}</div>
-          {calendar.key !== "gregorian" && (
-            <div className="text-xs text-muted">how to read it: {calendar.method}</div>
-          )}
-        </div>
-      </div>
-
-      {/* One-screen play grid: prompt/clues on the left, the dial + slider +
-          per-round feedback on the right (stacks on mobile). */}
-      <div className={`mt-6 ${styles.play}`}>
-        <div className="rounded-2xl border border-line bg-surface p-6 sm:p-7">
-          <span className="microlabel" style={{ color: CATEGORY_HEX[q.category] }}>
-            {CATEGORY_LABEL[q.category]}
-            {isAudio && " · audio round"}
-          </span>
-          {isAudio ? (
-            <div className="mt-3">
-              <p className="display text-2xl leading-tight sm:text-3xl">
-                Hear the clip — when was it released?
-              </p>
+      {/* THE TRAIN — the stage slots */}
+      <div className="mt-5">
+        <p className="microlabel text-muted">the train · stage 1 winds the mainspring</p>
+        <div className="mt-2 flex flex-wrap items-stretch gap-2">
+          {stageList.map((stage) => {
+            const occ = stageToGear[stage];
+            const g = occ ? gearOf(occ) : null;
+            return (
               <button
-                onClick={playClip}
-                className="microlabel mt-4 rounded-full border px-8 py-3 transition"
-                style={{ borderColor: CATEGORY_HEX[q.category], color: CATEGORY_HEX[q.category] }}
+                key={stage}
+                onClick={() => placeAt(stage)}
+                aria-label={
+                  g
+                    ? `Stage ${stage}: ${g.label}. Tap to clear.`
+                    : `Stage ${stage}, empty. Tap to place the selected wheel.`
+                }
+                className="flex min-h-[88px] min-w-[88px] flex-1 flex-col items-center justify-center rounded-xl border p-2 transition"
+                style={{
+                  borderColor: g ? ACCENT : undefined,
+                  background: g ? `${ACCENT}14` : undefined,
+                }}
               >
-                {playing ? "♪ playing…" : "▶ play the clip"}
-              </button>
-              {!q.audio_url && (
-                <p className="microlabel mt-2 text-muted">synthesized — no spoilers</p>
-              )}
-            </div>
-          ) : (
-            <p className="display mt-3 text-2xl leading-tight sm:text-3xl">{q.prompt}</p>
-          )}
-
-          {/* Logic-puzzle layer: clues that constrain the date range */}
-          <div className="mt-5">
-            <p className="microlabel text-muted">the clockkeeper&apos;s clues</p>
-            <ul className="mt-2 space-y-1">
-              {puzzle.clues.map((c, k) => (
-                <li key={k} className="flex items-start gap-2 text-sm">
-                  <span style={{ color: dialHex }} aria-hidden>
-                    ◷
+                <span className="microlabel text-muted">stage {stage}</span>
+                {g ? (
+                  <>
+                    <span className="mt-1 text-2xl" aria-hidden>
+                      {g.glyph}
+                    </span>
+                    <span className="text-center text-xs">{g.label}</span>
+                  </>
+                ) : (
+                  <span className="mt-1 text-2xl text-muted" aria-hidden>
+                    ◌
                   </span>
-                  <span>{c.text}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* THE TRAY — unplaced wheels */}
+      <div className="mt-5">
+        <p className="microlabel text-muted">
+          {selected ? "tap a stage to seat this wheel" : "the wheel-tray · tap to pick up"}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2" aria-live="polite">
+          {trayGears.length === 0 && (
+            <span className="text-sm text-muted">every wheel is seated.</span>
+          )}
+          {trayGears.map((g) => (
+            <button
+              key={g.key}
+              onClick={() => toggleTray(g.key)}
+              aria-pressed={selected === g.key}
+              className="flex min-h-[44px] items-center gap-2 rounded-full border px-4 py-2 text-sm transition"
+              style={{
+                borderColor: selected === g.key ? ACCENT : undefined,
+                background: selected === g.key ? `${ACCENT}22` : undefined,
+              }}
+            >
+              <span className="text-lg" aria-hidden>
+                {g.glyph}
+              </span>
+              {g.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* THE BACKPLATE — engraved constraints, live-checked */}
+      <div className="mt-6 rounded-2xl border border-line bg-surface/40 p-4">
+        <p className="microlabel text-muted">the backplate · engraved rules</p>
+        <ul className="mt-2 space-y-1.5">
+          {constraints.map((c, i) => {
+            const st = evalConstraint(c, assign, stages);
+            const mark = st === "ok" ? "✓" : st === "bad" ? "✕" : "·";
+            const color =
+              st === "ok" ? ACCENT : st === "bad" ? "#c0392b" : undefined;
+            return (
+              <li key={i} className="flex items-start gap-2 text-sm">
+                <span
+                  aria-hidden
+                  className="mt-0.5 w-4 text-center"
+                  style={{ color }}
+                >
+                  {mark}
+                </span>
+                <span className={st === "bad" ? "text-muted line-through" : ""}>
+                  {c.text}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* OPTIONAL TRIVIA SHORTCUT — never needed, only faster */}
+      <div className="mt-4 rounded-2xl border border-dashed border-line p-4">
+        <button
+          onClick={() => setPeek((p) => !p)}
+          className="microlabel flex min-h-[44px] items-center gap-2"
+          aria-expanded={peek}
+        >
+          <span aria-hidden>{peek ? "▾" : "▸"}</span> cheat with history (optional)
+        </button>
+        {peek && (
+          <div className="mt-2 text-sm text-muted">
+            <p>{puzzle.triviaHint}</p>
+            <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+              {gears.map((g) => (
+                <li key={g.key}>
+                  <span aria-hidden>{g.glyph}</span> {g.label}:{" "}
+                  <span style={{ color: ACCENT }}>
+                    {labelFor(calendarSkin.key, g.cast)}
+                  </span>
                 </li>
               ))}
             </ul>
-            <p className="microlabel mt-2 text-muted">
-              deduced window: {puzzle.min}–{puzzle.max}
+            <p className="mt-2 text-xs">
+              Assembled, the train points its dial to{" "}
+              {labelFor(calendarSkin.key, puzzle.dialYear)}.
             </p>
           </div>
-
-          {/* Calendar conversion hint */}
-          {hintUsed && !locked && calendar.key !== "gregorian" && (
-            <motion.div
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 flex flex-wrap items-center gap-2 rounded-lg border px-4 py-2"
-              style={{ borderColor: `${dialHex}66`, background: `${dialHex}1a` }}
-            >
-              <span style={{ color: dialHex }}>⌛</span>
-              <span className="microlabel" style={{ color: dialHex }}>
-                In {calendar.name}, the answer falls between{" "}
-                {labelFor(calendar.key, truth - (truth % 10))} and{" "}
-                {labelFor(calendar.key, truth - (truth % 10) + 9)}
-              </span>
-              <span className="microlabel ml-auto text-muted">max {HINT_CAP} pts</span>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Grandfather clock: ornate face, pendulum, hands = the year selector */}
-        <div className={styles.dialCol}>
-          <ClockFace
-            hourAngle={hourAngle}
-            minuteAngle={minuteAngle}
-            truthAngle={locked ? truthAngle : null}
-            accent={dialHex}
-            reduced={Boolean(reduced)}
-            className={styles.clock}
-          />
-
-          {/* Live streak meter — visible momentum so compounding is legible. */}
-          <div className="microlabel mt-2 h-4" style={{ color: dialHex }}>
-            {streak > 0 && `🔥 streak ×${streak}`}
-          </div>
-
-          {/* The calendar-of-the-day reading is the PRIMARY answer surface on
-              twist days (§wishlist 7) — the Gregorian year is the secondary,
-              smaller readout below it. On plain Gregorian days they're the
-              same number, so only the primary line renders. */}
-          <div className="mt-1 text-center">
-            <div className="microlabel">
-              {locked ? "the truth" : "your guess"}
-              {calendar.key !== "gregorian" && ` · ${calendar.name}`}
-            </div>
-            <motion.div
-              key={guess}
-              initial={reduced || !locked ? {} : { scale: 1.2 }}
-              animate={{ scale: 1 }}
-              className="display tabular text-[clamp(2.5rem,9vw,5rem)]"
-              style={{
-                color: locked
-                  ? CATEGORY_HEX[q.category]
-                  : calendar.key !== "gregorian"
-                    ? dialHex
-                    : undefined,
-              }}
-            >
-              {calendar.key !== "gregorian"
-                ? labelFor(calendar.key, locked ? truth : guess)
-                : locked
-                  ? truth
-                  : guess}
-            </motion.div>
-            {calendar.key !== "gregorian" && (
-              <div className="microlabel text-muted">
-                Gregorian: {locked ? truth : guess}
-              </div>
-            )}
-          </div>
-
-          {!locked ? (
-            <div className="mt-3 w-full max-w-md">
-              <input
-                type="range"
-                min={puzzle.min}
-                max={puzzle.max}
-                value={guess}
-                onChange={(e) => setGuess(Number(e.target.value))}
-                className="h-11 w-full"
-                style={{ accentColor: dialHex }}
-                aria-label="turn the clock hands to a year"
-              />
-              <div className="microlabel mt-1 flex justify-between">
-                <span>{puzzle.min}</span>
-                <span>{puzzle.max}</span>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-                {!hintUsed && calendar.key !== "gregorian" && (
-                  <button
-                    onClick={showHint}
-                    className="microlabel rounded-full border px-6 py-3 transition"
-                    style={{ borderColor: dialHex, color: dialHex }}
-                  >
-                    ⌛ read the {calendar.name} (−20 max pts)
-                  </button>
-                )}
-                <button
-                  onClick={lock}
-                  className="microlabel rounded-full border border-music px-8 py-3 text-music transition hover:bg-music hover:text-bg"
-                >
-                  lock it in
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-3 text-center">
-              <p className="text-muted">
-                you said{" "}
-                <span className="tabular font-black text-ink">{guess}</span> — off by{" "}
-                <span className="tabular font-black text-ink">
-                  {Math.abs(guess - truth)}
-                </span>{" "}
-                {Math.abs(guess - truth) === 1 ? "year" : "years"}
-                {hintUsed && (
-                  <span style={{ color: dialHex }}> (hint used, capped at {HINT_CAP})</span>
-                )}
-              </p>
-              <p className="mt-2 text-2xl font-black text-music">+{pts} pts</p>
-              {roundBonus > 0 && (
-                <p className="microlabel mt-1" style={{ color: dialHex }}>
-                  🔥 streak ×{streak} · +{roundBonus} bonus
-                </p>
-              )}
-              {q.source_url && (
-                <a
-                  href={q.source_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="microlabel underline"
-                >
-                  source
-                </a>
-              )}
-              {practiceMode && (
-                <div className="mt-3">
-                  <button
-                    onClick={() => (isSaved(q) ? removeQ(q.prompt) : saveQ(q))}
-                    className={`microlabel rounded-full border px-4 py-2 transition ${
-                      isSaved(q)
-                        ? "border-history text-history"
-                        : "border-line text-muted hover:border-history hover:text-history"
-                    }`}
-                  >
-                    {isSaved(q) ? "★ saved" : "☆ save question"}
-                  </button>
-                </div>
-              )}
-              <div>
-                <button
-                  onClick={next}
-                  className="microlabel mt-4 rounded-full border border-ink px-8 py-3 transition hover:bg-ink hover:text-bg"
-                >
-                  {i + 1 >= rounds.length ? "finish" : "next →"}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
-      <PracticeBar
-        practiceMode={practiceMode}
-        onToggle={togglePractice}
-        saved={saved}
-        onRemove={removeQ}
-      />
-    </div>
-  );
-}
-
-/** Ornate grandfather-clock face. Hands rotate to the guess; pendulum swings via
- *  CSS (frozen under reduced-motion). The minute hand IS the year selector.
- *  `className` controls the rendered width (capped on desktop for one-screen fit). */
-function ClockFace({
-  hourAngle,
-  minuteAngle,
-  truthAngle,
-  accent,
-  reduced,
-  className,
-}: {
-  hourAngle: number;
-  minuteAngle: number;
-  truthAngle: number | null;
-  accent: string;
-  reduced: boolean;
-  className?: string;
-}) {
-  const ticks = Array.from({ length: 60 });
-  // Round trig output so server- and client-rendered SVG attributes are
-  // byte-identical (raw doubles can differ in the last bit → hydration warning).
-  const px = (n: number) => Math.round(n * 1000) / 1000;
-  return (
-    <div className={`relative ${className ?? ""}`}>
-      <svg viewBox="0 0 200 270" className="w-full" role="img" aria-label="grandfather clock">
-        {/* case */}
-        <rect x="18" y="4" width="164" height="262" rx="14"
-          fill="#1b140f" stroke={`${accent}55`} strokeWidth="2" />
-        <rect x="30" y="14" width="140" height="142" rx="10"
-          fill="#0f0b08" stroke={`${accent}88`} strokeWidth="1.5" />
-        {/* dial */}
-        <circle cx="100" cy="85" r="62" fill="#14100c" stroke={accent} strokeWidth="2.5" />
-        <circle cx="100" cy="85" r="62" fill="none"
-          stroke={`${accent}33`} strokeWidth="8" />
-        {/* minute ticks */}
-        {ticks.map((_, k) => {
-          const a = (k * 6 * Math.PI) / 180;
-          const r1 = k % 5 === 0 ? 50 : 55;
-          const r2 = 60;
-          return (
-            <line
-              key={k}
-              x1={px(100 + r1 * Math.sin(a))}
-              y1={px(85 - r1 * Math.cos(a))}
-              x2={px(100 + r2 * Math.sin(a))}
-              y2={px(85 - r2 * Math.cos(a))}
-              stroke={k % 5 === 0 ? accent : `${accent}66`}
-              strokeWidth={k % 5 === 0 ? 1.6 : 0.8}
-            />
-          );
-        })}
-        {/* truth marker (after lock) */}
-        {truthAngle !== null && (
-          <line
-            x1="100" y1="85"
-            x2={px(100 + 50 * Math.sin((truthAngle * Math.PI) / 180))}
-            y2={px(85 - 50 * Math.cos((truthAngle * Math.PI) / 180))}
-            stroke="#2d9155" strokeWidth="2.5" strokeLinecap="round"
-            strokeDasharray="3 3"
-          />
-        )}
-        {/* hour hand */}
-        <line
-          x1="100" y1="85"
-          x2={px(100 + 30 * Math.sin((hourAngle * Math.PI) / 180))}
-          y2={px(85 - 30 * Math.cos((hourAngle * Math.PI) / 180))}
-          stroke="#e7dcc8" strokeWidth="4" strokeLinecap="round"
-        />
-        {/* minute hand = the selector */}
-        <line
-          x1="100" y1="85"
-          x2={px(100 + 48 * Math.sin((minuteAngle * Math.PI) / 180))}
-          y2={px(85 - 48 * Math.cos((minuteAngle * Math.PI) / 180))}
-          stroke={accent} strokeWidth="2.5" strokeLinecap="round"
-        />
-        <circle cx="100" cy="85" r="4" fill={accent} />
-
-        {/* pendulum window */}
-        <rect x="46" y="164" width="108" height="96" rx="8"
-          fill="#0f0b08" stroke={`${accent}66`} strokeWidth="1" />
-        <g
-          className={reduced ? undefined : "clock-pendulum"}
-          style={{ transformOrigin: "100px 168px" }}
+      {/* verdict + controls */}
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <button
+          onClick={reset}
+          className="min-h-[44px] rounded-full border border-line px-5 py-2 text-sm transition hover:border-brass"
         >
-          <line x1="100" y1="168" x2="100" y2="234" stroke={accent} strokeWidth="1.5" />
-          <circle cx="100" cy="240" r="11" fill={accent} stroke="#1b140f" strokeWidth="2" />
-        </g>
-      </svg>
+          Strip the train
+        </button>
+        <p className="text-sm" aria-live="assertive">
+          {solved ? (
+            <span style={{ color: ACCENT }}>
+              The escapement ticks. The mechanism runs true.
+            </span>
+          ) : full ? (
+            <span className="text-muted">
+              It jams — a wheel is out of order. Re-read the backplate.
+            </span>
+          ) : (
+            <span className="text-muted">
+              {placedCount}/{stages} wheels seated.
+            </span>
+          )}
+        </p>
+      </div>
     </div>
   );
 }
