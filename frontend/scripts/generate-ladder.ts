@@ -40,7 +40,9 @@ async function main() {
             seed    = excluded.seed,
             payload = excluded.payload`;
     written++;
-    console.log(`🪜 ${date}  ${p.rite} (${p.rungs.length} rungs)`);
+    console.log(
+      `🪜 ${date}  ${p.rite} — ${p.rungs.map((r) => `${r.kind}${r.n}`).join(", ")}`,
+    );
   }
   console.log(`\nLadder archive: ${written} day(s) written.`);
 }
