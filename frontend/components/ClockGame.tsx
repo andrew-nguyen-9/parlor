@@ -378,7 +378,7 @@ export default function ClockGame({
 
           {/* Logic-puzzle layer: clues that constrain the date range */}
           <div className="mt-5">
-            <p className="microlabel text-muted">the clockkeeper's clues</p>
+            <p className="microlabel text-muted">the clockkeeper&apos;s clues</p>
             <ul className="mt-2 space-y-1">
               {puzzle.clues.map((c, k) => (
                 <li key={k} className="flex items-start gap-2 text-sm">

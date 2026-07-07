@@ -19,7 +19,6 @@ const DARK_STYLES = [
   { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#26263a" }] },
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyMap = any;
 
 export default function GoogleMap({
@@ -62,7 +61,6 @@ export default function GoogleMap({
       })
       .then(() => {
         if (!divRef.current) return;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const g = (window as any).google;
         refs.current.g = g;
 

@@ -130,19 +130,16 @@ export default function MapGame({
     }
   }, [done, score, rounds.length, record, practiceMode, results, dayKey]);
 
-  if (rounds.length === 0) {
-    return (
-      <p className="text-muted">The bank is still warming up — no pinnable facts yet.</p>
-    );
-  }
-
+  // Derived from the current round. Null-safe against an empty bank so the
+  // Artifact-reveal effect below can run unconditionally (Rules of Hooks — no
+  // hook may sit after an early return).
   const q = rounds[i];
-  const isPin = q.qtype === "where";
-  const isImage = q.qtype === "image_guess";
-  const truth: LatLng = { lat: q.lat ?? 0, lng: q.lng ?? 0 };
+  const isPin = q?.qtype === "where";
+  const isImage = q?.qtype === "image_guess";
+  const truth: LatLng = { lat: q?.lat ?? 0, lng: q?.lng ?? 0 };
   const km = guess ? Math.round(haversineKm(guess, truth)) : 0;
   const pts = guess ? mapPoints(km) : 0;
-  const accent = civ?.accent ?? CATEGORY_HEX[q.category];
+  const accent = civ?.accent ?? (q ? CATEGORY_HEX[q.category] : "#7a4b4b");
 
   // Artifact reveal (folded-in Gallery mechanic): the image sharpens over time;
   // an earlier correct identification keeps more of the blur-bonus.
@@ -161,6 +158,12 @@ export default function MapGame({
     raf.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf.current ?? 0);
   }, [i, picked, locked, isImage, reduced]);
+
+  if (rounds.length === 0) {
+    return (
+      <p className="text-muted">The bank is still warming up — no pinnable facts yet.</p>
+    );
+  }
 
   function lock() {
     if (!guess) return;
