@@ -83,6 +83,11 @@ python question_forge.py --from-bronze   # forge from data/raw/*.jsonl
 python export_seed.py --from-bronze      # regenerate seed bank locally
 ```
 
+## Orchestrator (canonical DoD — do not remove)
+DoD: `cd frontend && npm run build && npm run test && npm run lint` all green (build=`next build`, test=`vitest run`, lint=`next lint`); pipeline-touching units ALSO `cd pipeline && python selftest.py`. App must build+test with zero env vars (seed-bank fallback).
+Secrets: root `.env` (gitignored) locally; GitHub Actions repo secrets in CI (`DATABASE_URL`, `TMDB_API_KEY`, etc.). Never require secrets to build/test — seed bank makes the app zero-env playable.
+Branches: prefix `feat/`; unit branches `feat/<unit>` off `integration`; `integration` off `main`; fast-forward `main` at land (local-branch-merge, no PRs).
+
 ## Do Not
 - Do not commit `.env` / service-role keys
 - Do not write to the database from the frontend
