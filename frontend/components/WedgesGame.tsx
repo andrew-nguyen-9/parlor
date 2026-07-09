@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   CATEGORIES,
@@ -55,17 +55,21 @@ function ShatteredMirror({
   earned: Set<Category>;
   reduced: boolean;
 }) {
+  // Token-driven so the mirror adapts to light/dark (was fixed dark hex):
+  // glass = bg token, cracks = line token, filled shards keep CATEGORY_HEX.
+  const glass = "rgb(var(--c-bg))";
+  const crack = "rgb(var(--c-line))";
   return (
-    <svg viewBox="0 0 120 120" className="h-36 w-36 drop-shadow-[0_0_12px_rgba(0,0,0,0.6)]">
-      <circle cx={60} cy={60} r={56} fill="#06060a" stroke="#1a1a2e" />
+    <svg viewBox="0 0 120 120" className={`h-36 w-36 ${styles.mirror}`}>
+      <circle cx={60} cy={60} r={56} fill={glass} stroke={crack} />
       {shards.map((shard) => {
         const has = earned.has(shard.category);
         return (
           <motion.path
             key={shard.category}
             d={shard.path}
-            fill={has ? shard.fill : "#0d0d18"}
-            stroke="#1a1a2e"
+            fill={has ? shard.fill : "rgb(var(--c-surface))"}
+            stroke={crack}
             strokeWidth="0.8"
             animate={has && !reduced ? { opacity: [0.4, 1], scale: [1, 1.08, 1] } : {}}
             transition={{ duration: 0.4 }}
@@ -73,8 +77,8 @@ function ShatteredMirror({
           />
         );
       })}
-      <circle cx={60} cy={60} r={18} fill="#06060a" stroke="#1a1a2e" />
-      <text x={60} y={64} textAnchor="middle" fill="#f0ede6" fontSize="11" fontWeight="900">
+      <circle cx={60} cy={60} r={18} fill={glass} stroke={crack} />
+      <text x={60} y={64} textAnchor="middle" fill="rgb(var(--c-ink))" fontSize="11" fontWeight="900">
         {earned.size}/6
       </text>
     </svg>
@@ -475,7 +479,10 @@ export default function WedgesGame({ pool, day }: { pool: Question[]; day: numbe
       <div className={styles.play}>
         {/* Ring column — leads on mobile, swaps to the right on desktop so the
             ring + score + legend sit beside the question within one screen. */}
-        <aside className={styles.aside}>
+        <aside
+          className={styles.aside}
+          style={{ ["--accent" as string]: CATEGORY_HEX[q.category] } as CSSProperties}
+        >
           <div className="text-center">
             <h1 className="display text-3xl sm:text-4xl">Fractures</h1>
             <p className="microlabel mt-1">

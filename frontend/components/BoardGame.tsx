@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { buildBoardColumns, type BoardColumn } from "@/lib/board";
 import { CATEGORY_HEX, CATEGORY_LABEL, type Category, type Question } from "@/lib/types";
@@ -281,13 +281,19 @@ export default function BoardGame({
       {/* Compact one-screen header: host nameplate · mode/settings · score · share */}
       <header className="mb-3 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <div
+          <motion.div
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-lg"
             style={{ borderColor: theme.accent, color: theme.accent }}
+            animate={
+              reduced
+                ? {}
+                : { boxShadow: [`0 0 0px ${theme.accent}00`, `0 0 10px ${theme.accent}80`, `0 0 0px ${theme.accent}00`] }
+            }
+            transition={reduced ? {} : { duration: 3, repeat: Infinity }}
             aria-hidden
           >
             {theme.glyph}
-          </div>
+          </motion.div>
           <div className="min-w-0 leading-tight">
             <div className="display truncate text-base" style={{ color: theme.accent }}>
               {BOARD_HOST.name}
@@ -420,7 +426,10 @@ export default function BoardGame({
           The bank is still warming up — not enough clue categories yet.
         </p>
       ) : (
-        <div className={styles.boardWrap}>
+        <div
+          className={styles.boardWrap}
+          style={{ ["--accent" as string]: theme.accent } as CSSProperties}
+        >
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
           <div
             className="grid grid-cols-5 gap-2"
@@ -471,7 +480,7 @@ export default function BoardGame({
                         onFocus={() => setCursor([c, r])}
                         onClick={() => openCell(c, r)}
                         aria-label={`${themedLabel(theme, col.category, CATEGORY_LABEL[col.category])}, $${(r + 1) * 200}${isDD(c, r) ? ", daily double" : ""}${st ? ` — answered ${st === "right" ? "correctly" : "incorrectly"}` : ""}`}
-                        className={`${styles.tile} flip-face tabular absolute inset-0 flex items-center justify-center rounded-lg border border-line bg-surface text-base font-black text-history transition hover:border-history hover:bg-history/10 sm:text-xl`}
+                        className={`${styles.tile} flip-face tabular absolute inset-0 flex items-center justify-center rounded-lg border border-line bg-surface text-base font-black text-history transition sm:text-xl`}
                       >
                         {/* ponytail: 6.4 wants the DD visibly marked on the board
                             (not hidden like classic Jeopardy) — a corner star. */}

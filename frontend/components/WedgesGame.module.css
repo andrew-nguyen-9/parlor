@@ -33,12 +33,30 @@
   }
 }
 
-/* The ring column: ring, score, and the six-wedge legend, centered. */
+/* The ring column: ring, score, and the six-wedge legend, centered.
+   Dynamic theming: a soft radial wash behind the ring tinted by --accent (the
+   active wedge's category hex, set inline) so the column reskins as the run
+   moves category to category — token-safe, adapts to light/dark. */
 .aside {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+  border-radius: 1.25rem;
+  padding: 1rem 0.5rem;
+  background: radial-gradient(
+    55% 40% at 50% 22%,
+    color-mix(in srgb, var(--accent, transparent) 16%, transparent),
+    transparent 72%
+  );
+  transition: background 0.5s ease;
+}
+
+/* The mirror glows in the active wedge's colour (theme-invariant glass, coloured
+   halo) instead of a fixed black drop-shadow that vanished in light mode. */
+.mirror {
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent, #000) 55%, transparent));
+  transition: filter 0.5s ease;
 }
 
 /* Six category chips, two columns — the per-wedge lockout legend. */
