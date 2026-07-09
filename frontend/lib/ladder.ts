@@ -1,16 +1,18 @@
 // ─────────────────────────────────────────────────────────────
 // CLIMB OF THE INITIATE — daily logic-puzzle LIBRARY (G8 revamp).
 //
-// De-Queens'd. The ascent is now a small stack of genuine deduction grids drawn
-// from a library of DISTINCT logic-puzzle families, each proven to have a UNIQUE
-// solution by a dedicated solver (no solve-time RNG — generators use the seeded
-// PRNG, solvers are pure enumeration). The daily pull rotates which families a
-// climb uses by date-seed, and rungs escalate 5×5 → 8×8.
+// The ascent is a small stack of genuine deduction grids drawn from a library
+// of DISTINCT logic-puzzle families, each proven to have a UNIQUE solution by
+// a dedicated solver (no solve-time RNG — generators use the seeded PRNG,
+// solvers are pure enumeration). The daily pull rotates which families a
+// climb uses by date-seed, and rungs are sized 5×5 → 6×6 (budget: 2–3min
+// normal players, 30s–1min skilled).
 //
-// Families (all Latin-square / binary, none a Queens clone):
+// Families:
 //   skyscrapers : Latin square (1..n) read via edge "visible skyline" clues
 //   futoshiki   : Latin square constrained by < / > relations between neighbours
 //   binairo     : balanced binary grid (Takuzu) — no 3-in-a-row, all lines unique
+//   queens      : N non-attacking queens, one per row/col, none sharing a diagonal
 //
 // Pure + deterministic: generated once server-side (scripts/generate-ladder.ts)
 // and archived to Neon (`ladder_puzzles`, flexible jsonb payload). The browser
@@ -19,7 +21,7 @@
 import { mulberry32, shuffled } from "./rng";
 import { TRICKSTERS, LADDER_WEEKS } from "./ladderFlavor";
 
-export type PuzzleKind = "skyscrapers" | "futoshiki" | "binairo";
+export type PuzzleKind = "skyscrapers" | "futoshiki" | "binairo" | "queens";
 
 export interface BaseRung {
   kind: PuzzleKind;
@@ -58,7 +60,15 @@ export interface BinairoRung extends BaseRung {
   solution: number[][]; // n×n, 0 | 1
 }
 
-export type Rung = SkyscrapersRung | FutoshikiRung | BinairoRung;
+export interface QueensRung extends BaseRung {
+  kind: "queens";
+  // n×n, -1 empty, else 0 forced-empty | 1 queen. Only queen cells are ever
+  // revealed as givens (mirrors the pre-de-Queens generator).
+  givens: number[][];
+  solution: number[][]; // n×n, one 1 per row/col, rest 0
+}
+
+export type Rung = SkyscrapersRung | FutoshikiRung | BinairoRung | QueensRung;
 
 export interface LadderPuzzle {
   date: string;
@@ -77,24 +87,28 @@ interface WeekdayConfig {
   rite: string;
 }
 
+// ponytail: shrunk vs. the pre-G8 config (was up to 4 rungs / 8×8) to hit the
+// 2–3min normal / 30s–1min skilled solve-time budget — fewer rungs, smaller
+// grids, same shape.
 export const WEEKDAY: Record<number, WeekdayConfig> = {
-  1: { rungs: 2, sizes: [5, 6], rite: "Stable Ascent" }, // Mon
-  2: { rungs: 2, sizes: [6, 6], rite: "First Distortion" }, // Tue
-  3: { rungs: 3, sizes: [5, 6, 7], rite: "Dual Logic" }, // Wed
-  4: { rungs: 3, sizes: [6, 6, 8], rite: "Layer Shift" }, // Thu
-  5: { rungs: 3, sizes: [6, 7, 8], rite: "Adversarial Logic" }, // Fri
-  6: { rungs: 4, sizes: [5, 6, 7, 8], rite: "Ritual Instability" }, // Sat
-  0: { rungs: 4, sizes: [6, 7, 8, 8], rite: "The Impossible Ascent" }, // Sun
+  1: { rungs: 2, sizes: [5, 5], rite: "Stable Ascent" }, // Mon
+  2: { rungs: 2, sizes: [5, 6], rite: "First Distortion" }, // Tue
+  3: { rungs: 2, sizes: [6, 6], rite: "Dual Logic" }, // Wed
+  4: { rungs: 3, sizes: [5, 5, 6], rite: "Layer Shift" }, // Thu
+  5: { rungs: 3, sizes: [5, 6, 6], rite: "Adversarial Logic" }, // Fri
+  6: { rungs: 3, sizes: [5, 6, 6], rite: "Ritual Instability" }, // Sat
+  0: { rungs: 3, sizes: [6, 6, 6], rite: "The Impossible Ascent" }, // Sun
 };
 
-const FAMILIES: PuzzleKind[] = ["skyscrapers", "futoshiki", "binairo"];
+const FAMILIES: PuzzleKind[] = ["skyscrapers", "futoshiki", "binairo", "queens"];
 
-// Family → allowed grid sizes (skyscrapers kept small so the exhaustive
+// Family → allowed grid sizes (skyscrapers/queens kept small so the exhaustive
 // uniqueness solver stays fast; binairo must be even).
 const SIZE_RANGE: Record<PuzzleKind, number[]> = {
   skyscrapers: [5, 6],
   futoshiki: [5, 6],
   binairo: [6, 8],
+  queens: [5, 6],
 };
 
 function clampSize(kind: PuzzleKind, want: number): number {
@@ -112,9 +126,10 @@ function clampSize(kind: PuzzleKind, want: number): number {
 }
 
 const KIND_HOST: Record<PuzzleKind, string> = {
-  skyscrapers: "Prof. Marlow",
+  skyscrapers: "Silas Crowe",
   futoshiki: "Dr. Chen",
   binairo: "Astrid Moon",
+  queens: "Prof. Marlow", // "No two may touch" — literally the queens rule
 };
 
 function hostOf(kind: PuzzleKind): { modifier: string; whisper: string } {
@@ -601,6 +616,91 @@ function makeBinairo(n: number, rand: () => number, resonance: number): BinairoR
 }
 
 // ─────────────────────────────────────────────────────────────
+// QUEENS — N non-attacking queens (one per row/col, none sharing a diagonal).
+// ─────────────────────────────────────────────────────────────
+
+/** Count boards consistent with givens: 1 queen per row/col, no shared diagonal. Pure. */
+export function countQueens(n: number, givens: number[][], cap = 2): number {
+  const place: number[] = Array(n).fill(-1);
+  const cols = new Set<number>();
+  let count = 0;
+  function ok(r: number, c: number): boolean {
+    if (cols.has(c)) return false;
+    for (let rr = 0; rr < r; rr++) if (Math.abs(place[rr] - c) === r - rr) return false;
+    return true;
+  }
+  function rec(r: number): void {
+    if (count >= cap) return;
+    if (r === n) {
+      count++;
+      return;
+    }
+    const forced = givens[r].indexOf(1);
+    const cands = forced >= 0 ? [forced] : [...Array(n).keys()];
+    for (const c of cands) {
+      if (givens[r][c] === 0) continue; // forced-empty
+      if (!ok(r, c)) continue;
+      place[r] = c;
+      cols.add(c);
+      rec(r + 1);
+      cols.delete(c);
+      place[r] = -1;
+      if (count >= cap) return;
+    }
+  }
+  rec(0);
+  return count;
+}
+
+/** One valid non-attacking placement (row → col), seeded + deterministic. */
+function buildQueensPerm(n: number, rand: () => number): number[] {
+  const place: number[] = Array(n).fill(-1);
+  function ok(r: number, c: number): boolean {
+    for (let rr = 0; rr < r; rr++) {
+      if (place[rr] === c || Math.abs(place[rr] - c) === r - rr) return false;
+    }
+    return true;
+  }
+  function rec(r: number): boolean {
+    if (r === n) return true;
+    for (const c of shuffled([...Array(n).keys()], rand)) {
+      if (!ok(r, c)) continue;
+      place[r] = c;
+      if (rec(r + 1)) return true;
+      place[r] = -1;
+    }
+    return false;
+  }
+  rec(0);
+  return place;
+}
+
+function makeQueens(n: number, rand: () => number, resonance: number): QueensRung {
+  const perm = buildQueensPerm(n, rand);
+  const solution: number[][] = perm.map((c) =>
+    Array.from({ length: n }, (_, cc) => (cc === c ? 1 : 0)),
+  );
+  const givens: number[][] = Array.from({ length: n }, () => Array(n).fill(-1));
+
+  // Reveal queen givens, one row at a time, until the board is uniquely solvable.
+  const order = shuffled([...Array(n).keys()], rand);
+  let oi = 0;
+  while (countQueens(n, givens) > 1 && oi < n) {
+    const r = order[oi++];
+    givens[r][perm[r]] = 1;
+  }
+
+  return {
+    kind: "queens",
+    n,
+    ...hostOf("queens"),
+    resonance,
+    givens,
+    solution,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
 // The daily climb
 // ─────────────────────────────────────────────────────────────
 
@@ -611,6 +711,7 @@ function resonanceBump(rung: Rung): number {
 function makeRung(kind: PuzzleKind, n: number, rand: () => number, resonance: number): Rung {
   if (kind === "skyscrapers") return makeSkyscrapers(n, rand, resonance);
   if (kind === "futoshiki") return makeFutoshiki(n, rand, resonance);
+  if (kind === "queens") return makeQueens(n, rand, resonance);
   return makeBinairo(n, rand, resonance);
 }
 
