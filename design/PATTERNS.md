@@ -14,7 +14,7 @@ always one tap away. Suit = category; the deck runs Ace(1)→11 plus one Joker
 |-----------|--------|----------|
 | Deck / lobby | full-bleed card grid, deal-in on load, flip-to-blurb | home |
 | Room | `RoomShell` chrome + `max-w-5xl` centered play area on `--body-grad` | every game |
-| Play surface | room-owned board/ring/map/clock inside the shell | the game itself |
+| Play surface | room-owned board/ring/map/clock inside the shell; WebGL rooms guard renderer creation + degrade to an accessible static/DOM fallback, never a full-page crash | the game itself |
 | Result / share | results card above a dimmed backdrop; share line of squares | end of a run |
 | Coming-soon | `RoomShell` + minimal `*.module.css` panel | unbuilt rooms |
 | Utility | RoomShell (no href → no rank badge) | profile, about, sitemap |
@@ -28,13 +28,13 @@ via category tokens; never invent a per-room palette.
 |--------------|-----------|---------------|-----------|--------|-------------------------------|
 | mystery `/mystery` | Sanctum Mysterii | ♦ history | the Order | ◉ eye | `eye-glow` seal pulse; dossier investigation |
 | board `/board` | Codex | ♦ history | the Host | ⌘ codex | `flip-scene` 3D cell flip to reveal |
-| clock `/clock` | Chronos | ♥ music | the Clockkeeper | ⧗ clock | `clock-pendulum` swing; drag-the-year |
+| clock `/clock` | Chronos | ♥ music | the Clockkeeper | ⧗ clock | gear-train ratio-lock: Three.js cogs via `ThreeStage` — each wheel's tooth-count steps a shared index toward its engraved notch, kinematic only; calendarSkin dial + cast-year peek-flap trivia retained |
 | wedges `/wedges` | Fractures | ♣ sports | the Ghost | ⬡ shard | shattered-mirror ring fills wedge by wedge |
-| streak `/streak` | Ignite | ♠ screen | the Witch | ✦ flame | `streak-flame` candle bloom (scales with streak) + `streak-dark` cursor-glow finish |
-| map `/map` | Atlas Obscura | ✦ geography | the Cartographer | ⌖ pin | `WorldMap` polygons (offline-required); pin drop, scored by km |
-| gauntlet `/gauntlet` | The Gauntlet | ✧ wildcard | the Adventurer | ⧈ run | daily one-round-per-room; shareable line of squares |
+| streak `/streak` | Ignite | ♠ screen | the Witch | ✦ flame | Phaser canvas render layer (candle+flame, rune grid) driven by React state; `streak-flame` bloom scales with streak; wrong answer = camera shake (reduced-motion: static draw) |
+| map `/map` | Atlas Obscura | ✦ geography | the Cartographer | ⌖ pin | constellation deduction ("read the omens") over a Three.js starfield (`ThreeStage`, ~1400 drifting stars); tap/raycast + numbered DOM chip strip to rule out and name — no astronomy knowledge required, structural clues only |
+| gauntlet `/gauntlet` | The Gauntlet | ✧ wildcard | the Adventurer | ⧈ run | daily one-round-per-room incl. a `WorldMap` polygon pin-drop scored by km (offline-required); shareable line of squares |
 | thread `/thread` | Thread of Fate | ♦ history | the Weaver | ⌇ stitch | chain links reveal one at a time |
-| seance `/seance` | The Séance | ✧ wildcard | the Medium | ☍ moon | `animate-flicker` candle; clue-by-clue reveal, each costs a point |
+| seance `/seance` | The Séance | ✧ wildcard | the Medium | ☍ moon | `animate-flicker` candle; clue-by-clue reveal, each costs a point — board sits in `FluidStage` (fluid full-width, no dead gutters), rotates portrait via a measured footprint below `lg` |
 | ladder `/ladder` | Climb of the Initiate | ♥ music | the Trickster | ☰ rungs | rung-by-rung climb; hints reveal shared attributes |
 | overture `/overture` | The Overture | ♥ music (Joker 🃏) | the Maestro | ♪ note | audio room; name the track before the needle lifts |
 
@@ -56,7 +56,9 @@ via category tokens; never invent a per-room palette.
 - Mobile-first, pointer-enhanced: base styles ARE the phone; `lg:`/1024px adds
   density via the `--d-*` block. Nothing is desktop-only content — only garnish.
 - Touch targets ≥44px (deck buttons + `.microlabel` pills hit the floor at ≤640px
-  via the scoped `min-height:44px` rule; desktop proportions untouched).
+  via the scoped `min-height:44px` rule; desktop proportions untouched) — the
+  floor applies to in-game grid/board cells and chips too, not chrome only;
+  a dense board (many cells) redesigns its density before it shrinks below the floor.
 - Hover is garnish, never information: anything on hover is also reachable by
   tap/focus. Tilt/lift = `@media (hover:hover)`; touch gets a pressed state instead.
 - Horizontal scroll only INSIDE a component with a visible affordance — never the page.
