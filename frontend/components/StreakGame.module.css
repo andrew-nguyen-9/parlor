@@ -1,133 +1,42 @@
-/* IGNITE — component-scoped chrome for the Witch's rune cipher (§3.4).
-   The candle bloom/flame decoration lives in globals.css (shared, low-z, never
-   tints text, already reduced-motion-frozen). This file styles the glyph board,
-   letter tray and the inscription, plus an ember-glow that respects
-   prefers-reduced-motion (all motion collapses to a static lit state below). */
+/* IGNITE — component chrome for the Witch's rune cipher (§3.4).
+   The interactive board itself is a Phaser canvas (see StreakGame.tsx); this file
+   only styles the canvas host + the win-reveal pulse. Everything else is Tailwind.
+   All motion collapses to a static state under prefers-reduced-motion. */
 
-/* ── The inscription: runes + revealed letters ── */
-.inscription {
-  text-align: center;
+/* Phaser mount: full-width (no horizontal scroll at any breakpoint), portrait-
+   first height, ember-tinted backdrop behind the transparent canvas. */
+.stage {
+  width: 100%;
+  height: clamp(430px, 66vh, 600px);
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--c-line, #3a332c);
+  background: radial-gradient(
+    120% 90% at 50% 12%,
+    rgba(224, 135, 31, 0.1) 0%,
+    var(--c-surface, #1b1712) 60%
+  );
+  touch-action: manipulation; /* no double-tap zoom while tapping runes */
 }
-.inscriptionCell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 1.6rem;
-}
-.inscriptionRune {
-  font-size: 1.75rem;
-  line-height: 1;
-  color: #c9a24a;
-  text-shadow: 0 0 8px rgba(224, 135, 31, 0.35);
-}
-.inscriptionLetter {
-  margin-top: 0.15rem;
-  font-weight: 800;
-  font-size: 0.95rem;
-  letter-spacing: 0.05em;
-  color: var(--c-muted, #8a7f74);
-  font-variant-numeric: tabular-nums;
-}
-.inscriptionLit {
-  color: #e0871f;
-  text-shadow: 0 0 10px rgba(245, 197, 66, 0.6);
+
+/* Win reveal — the deciphered incantation pulses like a fresh ember. */
+.blaze {
+  text-shadow: 0 0 12px rgba(245, 197, 66, 0.55);
   animation: ember-pulse 2.2s ease-in-out infinite;
 }
 
-/* ── Rune tiles ── */
-.glyphTile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  min-height: 5rem;
-  padding: 0.6rem 0.4rem;
-  border-radius: 0.9rem;
-  border: 1px solid var(--c-line, #3a332c);
-  background: var(--c-surface, #1b1712);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
-}
-.glyphTile:hover {
-  border-color: rgba(224, 135, 31, 0.6);
-}
-.glyphRune {
-  font-size: 2rem;
-  line-height: 1;
-  color: #d8b25a;
-}
-.glyphLetter {
-  position: absolute;
-  top: 0.35rem;
-  right: 0.5rem;
-  font-weight: 900;
-  font-size: 1rem;
-  color: #e0871f;
-  font-variant-numeric: tabular-nums;
-}
-.glyphSelected {
-  border-color: #e0871f;
-  box-shadow: 0 0 0 1px #e0871f, 0 0 16px rgba(245, 197, 66, 0.28);
-}
-.glyphLit {
-  border-color: #f5c542;
-  box-shadow: 0 0 18px rgba(245, 197, 66, 0.5);
-  animation: ember-glow 1.4s ease-in-out infinite;
-}
-
-/* ── Letter chips ── */
-.letterChip {
-  min-width: 2.5rem;
-  min-height: 2.5rem;
-  padding: 0 0.6rem;
-  border-radius: 0.7rem;
-  border: 1px solid var(--c-line, #3a332c);
-  background: var(--c-surface, #1b1712);
-  font-weight: 800;
-  font-size: 1.1rem;
-  color: var(--c-ink, #ece3d4);
-  transition: border-color 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
-}
-.letterChip:hover {
-  border-color: rgba(224, 135, 31, 0.7);
-}
-.letterChip:active {
-  transform: scale(0.94);
-}
-.letterPlaced {
-  opacity: 0.4;
-  border-style: dashed;
-  border-color: #e0871f;
-}
-
-/* ── Motion: ember glows + a wrong-answer shake ── */
-@keyframes ember-glow {
-  0%, 100% { box-shadow: 0 0 14px rgba(245, 197, 66, 0.4); }
-  50%      { box-shadow: 0 0 22px rgba(245, 197, 66, 0.65); }
-}
 @keyframes ember-pulse {
-  0%, 100% { opacity: 0.85; }
-  50%      { opacity: 1; }
-}
-@keyframes rune-shake {
-  0%, 100% { transform: translateX(0); }
-  20%      { transform: translateX(-6px); }
-  40%      { transform: translateX(6px); }
-  60%      { transform: translateX(-4px); }
-  80%      { transform: translateX(4px); }
-}
-.shake {
-  animation: rune-shake 0.45s ease;
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* Freeze every ember/shake into a designed static state — no perpetual motion. */
-  .glyphLit,
-  .inscriptionLit,
-  .shake {
-    animation: none !important;
-  }
-  .glyphLit {
-    box-shadow: 0 0 18px rgba(245, 197, 66, 0.55) !important;
+  .blaze {
+    animation: none;
   }
 }

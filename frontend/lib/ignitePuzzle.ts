@@ -152,7 +152,9 @@ const INCANTATIONS: Record<number, string[]> = {
 };
 
 // Distinct-letter count K per weekday (0=Sun..6=Sat): weekends run hotter.
-const WEEKDAY_K = [7, 4, 4, 5, 5, 6, 6];
+// Harder tuning (E4): floor raised from 4→5 so the easy 4-rune boards are gone;
+// every day now maps at least 5 runes, Sun + Fri/Sat run the full 7.
+const WEEKDAY_K = [7, 5, 5, 6, 6, 7, 7];
 
 const distinctSorted = (w: string): string[] =>
   [...new Set(w.split(""))].sort((a, b) => code(a) - code(b));
@@ -209,15 +211,17 @@ function countSolutions(clues: IgniteClue[], letters: string[]): number {
   return count;
 }
 
-// Removal preference: attempt to drop cheap/blunt clues first so the surviving
-// minimal set favours relational reasoning over give-away anchors.
+// Removal preference: attempt to drop the give-away clues first so the surviving
+// minimal set leans on relational deduction. Harder tuning (E4): anchors AND the
+// property marks (vowel/consonant) are now the FIRST removed — the solver must
+// chain before/adjacent/not relations instead of reading letters straight off.
 const REMOVE_ORDER: Record<IgniteClueType, number> = {
   anchor: 0,
-  not: 1,
-  before: 2,
-  adjacent: 3,
-  consonant: 4,
-  vowel: 5,
+  vowel: 1,
+  consonant: 2,
+  not: 3,
+  before: 4,
+  adjacent: 5,
 };
 // Display preference: lead with the firmest clues for readability.
 const DISPLAY_ORDER: Record<IgniteClueType, number> = {

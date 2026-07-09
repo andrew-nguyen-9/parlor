@@ -87,6 +87,20 @@ describe("generateIgnite", () => {
     expect(p.letters.some((l) => !VOWELS.has(l))).toBe(true);
   });
 
+  it("is harder: K floor is 5 and the surviving set is relational, not give-away anchors", () => {
+    // E4 difficulty tune — every day maps >=5 runes (no easy 4-rune boards) and the
+    // minimal set leans on before/adjacent/not deduction (anchors dropped first),
+    // while STILL being uniquely solvable (covered by the sweep test above).
+    for (let i = 0; i < 40; i++) {
+      const date = new Date(Date.UTC(2026, 0, 1 + i)).toISOString().slice(0, 10);
+      const p = generateIgnite(20000 + i, date);
+      expect(p.letters.length, `day ${date} K floor`).toBeGreaterThanOrEqual(5);
+      const anchors = p.clues.filter((c) => c.type === "anchor").length;
+      // give-away anchors are removed first → the survivor is relational-heavy
+      expect(anchors, `day ${date} should lean relational`).toBeLessThanOrEqual(1);
+    }
+  });
+
   it("is minimal: removing any clue breaks uniqueness", () => {
     const p = generateIgnite(777, "2026-07-04"); // Saturday → K=6
     for (let i = 0; i < p.clues.length; i++) {
