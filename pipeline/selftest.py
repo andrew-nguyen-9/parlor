@@ -44,10 +44,18 @@ def synthetic_facts() -> list[dict]:
             year=1900 + i * 10, popularity=12.0 * i, source_url="https://example.com",
         ))
         facts.append(make_fact(
-            source="sleeper", category="sports", subject=f"Player {i}",
+            source="wikipedia", category="sports", subject=f"Player {i}",
             fact_text=f"Player {i} played college football at College {i}.",
             popularity=8.0 * i, source_url="https://example.com",
             meta={"answer_field": "college", "answer": f"College {i}"},
+        ))
+        # E11a: well-known-sports facts (wiki_sports_ingest) → BOARD clues. The
+        # lead-sentence fact never names the subject, so mask_subject keeps it;
+        # high popularity lands it in the easy band (broadly-known target).
+        facts.append(make_fact(
+            source="wikipedia", category="sports", subject=f"Franchise {i}",
+            fact_text=f"A storied club that has won {i + 3} championships in its league.",
+            popularity=90.0, source_url="https://example.com",
         ))
         facts.append(make_fact(
             source="restcountries", category="geography", subject=f"Country {i}",
@@ -119,7 +127,7 @@ def synthetic_facts() -> list[dict]:
         # passes, isolating the down-weight (HL_UNIT_WEIGHT) as the only thing
         # that can shrink the pair count below the un-weighted max of 10 (20 rows).
         facts.append(make_fact(
-            source="sleeper", category="sports", subject=f"Fantasy Player {i}",
+            source="wikipedia", category="sports", subject=f"Fantasy Player {i}",
             fact_text=f"Fantasy Player {i} was added in {(i + 1) * 100_000:,} fantasy leagues in the last 24 hours.",
             numeric_value=float((i + 1) * 100_000), numeric_unit="fantasy adds (24h)",
             popularity=8.0 * i, source_url="https://example.com",
@@ -200,6 +208,12 @@ def main() -> None:
     check("forge produces seance", "seance" in types)
     check("forge produces ladder", "ladder" in types)
     check("forge produces thread", "thread" in types)
+
+    # E11a: Wikipedia well-known-sports facts flow bronze → forge → questions.
+    sports_clues = [q for q in qs if q["qtype"] == "clue" and q["category"] == "sports"]
+    check("forge produces sports clue from wikipedia sports facts (E11a)",
+          any(c["correct"].startswith("Franchise ") for c in sports_clues),
+          f"{len(sports_clues)} sports clues")
 
     mc_corrects = {q["correct"] for q in qs if q["qtype"] == "multiple_choice"}
     check("forge produces music label MC", any(c.startswith("Label ") for c in mc_corrects))
@@ -403,9 +417,9 @@ def main() -> None:
     # 5. name reference tables (§6.7): person answers split into first/last pools;
     # a last-only answer sources distractors from the surname pool.
     _people = [
-        make_fact(source="sleeper", category="sports", subject="Patrick Mahomes",
+        make_fact(source="wikipedia", category="sports", subject="Patrick Mahomes",
                   fact_text="x", source_url="https://e.com"),
-        make_fact(source="sleeper", category="sports", subject="Lionel Messi",
+        make_fact(source="wikipedia", category="sports", subject="Lionel Messi",
                   fact_text="x", source_url="https://e.com"),
         make_fact(source="curated", category="history", subject="Marie Curie",
                   fact_text="x", source_url="https://e.com"),
