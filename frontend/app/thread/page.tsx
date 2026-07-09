@@ -16,7 +16,7 @@ export default async function ThreadPage() {
   ]);
 
   return (
-    <RoomShell label="thread of fate" accent="history" href="/thread">
+    <RoomShell label="thread of fate" title="Thread of Fate" accent="history" href="/thread">
       <ThreadGame threads={threads} clues={clues} />
     </RoomShell>
   );

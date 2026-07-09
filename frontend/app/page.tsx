@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Marquee from "@/components/Marquee";
 import Deck from "@/components/Deck";
+import FluidStage from "@/components/FluidStage";
 import { GAMES } from "@/lib/games";
 import { CATEGORY_HEX } from "@/lib/types";
 import { isDbConfigured } from "@/lib/db";
@@ -64,8 +65,9 @@ export default function Home() {
 
       <Deck games={GAMES} />
 
-      {/* The ledger — every room at a glance, server-rendered from GAMES */}
-      <section className="relative z-10 mx-auto max-w-6xl px-4 pb-20 sm:px-8">
+      {/* The ledger — every room at a glance, server-rendered from GAMES. FluidStage
+          gives it the adaptive clamp gutter + --d-maxw cap (no dead L/R gutters). */}
+      <FluidStage as="section" maxWidth="80rem" className="relative z-10 pb-20">
         <div className="deco-rule mb-8">
           <span className="gilt display text-lg tracking-[0.2em]">The Rooms</span>
         </div>
@@ -101,7 +103,7 @@ export default function Home() {
             </li>
           ))}
         </ul>
-      </section>
+      </FluidStage>
 
       <footer className="relative z-10 border-t border-line px-4 py-10 sm:px-8">
         <div className="mb-3 flex items-center gap-3">
