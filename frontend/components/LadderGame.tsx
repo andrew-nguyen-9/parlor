@@ -8,6 +8,7 @@ import type {
   SkyscrapersRung,
   FutoshikiRung,
   BinairoRung,
+  QueensRung,
 } from "@/lib/ladder";
 import { visible } from "@/lib/ladder";
 import CollapsiblePanel from "./CollapsiblePanel";
@@ -27,6 +28,7 @@ const KIND_LABEL: Record<Rung["kind"], string> = {
   skyscrapers: "Skyline",
   futoshiki: "The Balance",
   binairo: "Twin Sigils",
+  queens: "The Sentinels",
 };
 
 // ── Per-kind live conflict detection (which cell keys glow). Feedback only —
@@ -139,9 +141,37 @@ function binConflicts(grid: number[][], n: number): Set<string> {
   return bad;
 }
 
+function queenConflicts(grid: number[][], n: number): Set<string> {
+  const bad = new Set<string>();
+  const queens: [number, number][] = [];
+  for (let r = 0; r < n; r++)
+    for (let c = 0; c < n; c++) if (grid[r][c] === 1) queens.push([r, c]);
+  for (let i = 0; i < queens.length; i++) {
+    for (let j = i + 1; j < queens.length; j++) {
+      const [r1, c1] = queens[i];
+      const [r2, c2] = queens[j];
+      if (r1 === r2 || c1 === c2 || Math.abs(r1 - r2) === Math.abs(c1 - c2)) {
+        bad.add(key(r1, c1));
+        bad.add(key(r2, c2));
+      }
+    }
+  }
+  for (let r = 0; r < n; r++) {
+    if (grid[r].every((v) => v >= 0) && grid[r].filter((v) => v === 1).length !== 1)
+      grid[r].forEach((_, c) => bad.add(key(r, c)));
+  }
+  for (let c = 0; c < n; c++) {
+    const col = grid.map((row) => row[c]);
+    if (col.every((v) => v >= 0) && col.filter((v) => v === 1).length !== 1)
+      col.forEach((_, r) => bad.add(key(r, c)));
+  }
+  return bad;
+}
+
 function conflictsFor(grid: number[][], rung: Rung): Set<string> {
   if (rung.kind === "skyscrapers") return skyConflicts(grid, rung);
   if (rung.kind === "futoshiki") return futoConflicts(grid, rung);
+  if (rung.kind === "queens") return queenConflicts(grid, rung.n);
   return binConflicts(grid, rung.n);
 }
 
@@ -197,9 +227,13 @@ function Climb({ puzzle, reduce }: { puzzle: LadderPuzzle; reduce: boolean }) {
   const rung = puzzle.rungs[idx];
   const total = elapsed + penalty;
 
-  // init the working grid from givens when the rung changes
+  // init the working grid from givens when the rung changes. Queens' empty cells
+  // are a valid final state, so they start at 0 (not -1) — the generic
+  // complete/solved logic then treats an unplaced cell as "filled empty".
   useEffect(() => {
-    setGrid(rung.givens.map((row) => [...row]));
+    setGrid(
+      rung.givens.map((row) => row.map((v) => (rung.kind === "queens" && v < 0 ? 0 : v))),
+    );
     setSel(null);
   }, [idx, rung]);
 
@@ -233,6 +267,58 @@ function Climb({ puzzle, reduce }: { puzzle: LadderPuzzle; reduce: boolean }) {
     [rung],
   );
 
+  const cycleCell = useCallback(
+    (r: number, c: number) => {
+      const v = grid[r]?.[c];
+      if (v === undefined) return;
+      if (rung.kind === "binairo") setCell(r, c, v === -1 ? 0 : v === 0 ? 1 : -1);
+      else setCell(r, c, v === 1 ? 0 : 1); // queens: empty(0) ↔ queen(1)
+    },
+    [grid, rung, setCell],
+  );
+
+  // Keyboard entry: arrows move the cursor, digits fill Latin-square rungs,
+  // Enter/Space cycles token rungs (binairo/queens), Backspace/Delete/0 erases.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (!grid.length) return;
+      if (!sel) {
+        if (e.key.startsWith("Arrow")) {
+          setSel({ r: 0, c: 0 });
+          e.preventDefault();
+        }
+        return;
+      }
+      const { r, c } = sel;
+      if (e.key.startsWith("Arrow")) {
+        const dr = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
+        const dc = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        setSel({
+          r: Math.min(rung.n - 1, Math.max(0, r + dr)),
+          c: Math.min(rung.n - 1, Math.max(0, c + dc)),
+        });
+        e.preventDefault();
+        return;
+      }
+      if (rung.givens[r][c] >= 0) return; // locked given
+      if (rung.kind === "skyscrapers" || rung.kind === "futoshiki") {
+        const num = Number(e.key);
+        if (e.key >= "1" && e.key <= "9" && num <= rung.n) {
+          setCell(r, c, num);
+          e.preventDefault();
+        } else if (e.key === "Backspace" || e.key === "Delete" || e.key === "0") {
+          setCell(r, c, -1);
+          e.preventDefault();
+        }
+      } else if (e.key === "Enter" || e.key === " ") {
+        cycleCell(r, c);
+        e.preventDefault();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [sel, rung, grid, setCell, cycleCell]);
+
   const collapse = useCallback(() => {
     const nth = collapses + 1;
     setPenalty((p) => p + (nth === 1 ? 90 : 180));
@@ -243,7 +329,9 @@ function Climb({ puzzle, reduce }: { puzzle: LadderPuzzle; reduce: boolean }) {
       setShake(true);
       setTimeout(() => setShake(false), 500);
     }
-    setGrid(rung.givens.map((row) => [...row]));
+    setGrid(
+      rung.givens.map((row) => row.map((v) => (rung.kind === "queens" && v < 0 ? 0 : v))),
+    );
     setSel(null);
   }, [collapses, reduce, rung, idx]);
 
@@ -335,7 +423,24 @@ function Climb({ puzzle, reduce }: { puzzle: LadderPuzzle; reduce: boolean }) {
             <FutoBoard rung={rung} grid={grid} sel={sel} setSel={setSel} conflicts={conflicts} />
           )}
           {rung.kind === "binairo" && (
-            <BinBoard rung={rung} grid={grid} conflicts={conflicts} setCell={setCell} />
+            <BinBoard
+              rung={rung}
+              grid={grid}
+              sel={sel}
+              setSel={setSel}
+              conflicts={conflicts}
+              cycleCell={cycleCell}
+            />
+          )}
+          {rung.kind === "queens" && (
+            <QueensBoard
+              rung={rung}
+              grid={grid}
+              sel={sel}
+              setSel={setSel}
+              conflicts={conflicts}
+              cycleCell={cycleCell}
+            />
           )}
         </div>
 
@@ -403,7 +508,7 @@ function RungHelp({ kind }: { kind: Rung["kind"] }) {
           A digit is a tower of that height. An edge clue counts how many towers are visible from
           that side — taller towers hide shorter ones behind them.
         </li>
-        <li>Tap a cell, then a number below. Conflicting cells glow.</li>
+        <li>Tap a cell, then a number below (or type a digit). Conflicting cells glow.</li>
       </ul>
     );
   if (kind === "futoshiki")
@@ -414,7 +519,15 @@ function RungHelp({ kind }: { kind: Rung["kind"] }) {
           The signs between cells are inequalities — the arrow points at the smaller value. Every
           marked relation must hold.
         </li>
-        <li>Tap a cell, then a number below. Broken relations glow.</li>
+        <li>Tap a cell, then a number below (or type a digit). Broken relations glow.</li>
+      </ul>
+    );
+  if (kind === "queens")
+    return (
+      <ul className="space-y-1 text-sm text-muted">
+        <li>Place exactly one ♛ in every row and every column.</li>
+        <li>No two ♛ may share a diagonal (row/column sharing is also forbidden).</li>
+        <li>Tap a cell to place/remove a ♛ (or select with arrows, Enter to toggle).</li>
       </ul>
     );
   return (
@@ -574,24 +687,24 @@ function FutoBoard({
   );
 }
 
-// ── Binairo: tap-cycle two-token grid. ──
+// ── Binairo: tap-cycle two-token grid (tap = advance, keyboard-selectable). ──
 function BinBoard({
   rung,
   grid,
+  sel,
+  setSel,
   conflicts,
-  setCell,
+  cycleCell,
 }: {
   rung: BinairoRung;
   grid: number[][];
+  sel: { r: number; c: number } | null;
+  setSel: (s: { r: number; c: number } | null) => void;
   conflicts: Set<string>;
-  setCell: (r: number, c: number, v: number) => void;
+  cycleCell: (r: number, c: number) => void;
 }) {
   const { n, givens } = rung;
   if (!grid.length) return null;
-  const cycle = (r: number, c: number) => {
-    const v = grid[r][c];
-    setCell(r, c, v === -1 ? 0 : v === 0 ? 1 : -1);
-  };
   return (
     <div
       className={styles.frame}
@@ -604,16 +717,75 @@ function BinBoard({
           const v = grid[r][c];
           const given = givens[r][c] >= 0;
           const bad = conflicts.has(key(r, c));
+          const selected = sel?.r === r && sel?.c === c;
           return (
             <button
               key={`${r}-${c}`}
-              onClick={() => !given && cycle(r, c)}
+              onClick={() => {
+                if (given) return;
+                setSel({ r, c });
+                cycleCell(r, c);
+              }}
               disabled={given}
               aria-label={`row ${r + 1}, column ${c + 1}, ${v === 1 ? "filled" : v === 0 ? "hollow" : "empty"}${given ? ", locked" : ""}`}
-              className={`${styles.cell} ${styles.bin} ${given ? styles.given : ""} ${bad ? styles.conflict : ""}`}
+              className={`${styles.cell} ${styles.bin} ${given ? styles.given : ""} ${bad ? styles.conflict : ""} ${selected ? styles.sel : ""}`}
               style={{ color: v === 1 ? ACCENT : "#cbb892" }}
             >
               {v === 1 ? "●" : v === 0 ? "○" : ""}
+            </button>
+          );
+        }),
+      )}
+    </div>
+  );
+}
+
+// ── Queens: tap a cell to place/remove a sentinel (♛). One per row & column,
+// none sharing a diagonal. Two-state toggle, keyboard-selectable. ──
+function QueensBoard({
+  rung,
+  grid,
+  sel,
+  setSel,
+  conflicts,
+  cycleCell,
+}: {
+  rung: QueensRung;
+  grid: number[][];
+  sel: { r: number; c: number } | null;
+  setSel: (s: { r: number; c: number } | null) => void;
+  conflicts: Set<string>;
+  cycleCell: (r: number, c: number) => void;
+}) {
+  const { n, givens } = rung;
+  if (!grid.length) return null;
+  return (
+    <div
+      className={styles.frame}
+      style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}
+      role="grid"
+      aria-label="queens grid"
+    >
+      {Array.from({ length: n }, (_, r) =>
+        Array.from({ length: n }, (_, c) => {
+          const v = grid[r][c];
+          const given = givens[r][c] >= 0;
+          const bad = conflicts.has(key(r, c));
+          const selected = sel?.r === r && sel?.c === c;
+          return (
+            <button
+              key={`${r}-${c}`}
+              onClick={() => {
+                if (given) return;
+                setSel({ r, c });
+                cycleCell(r, c);
+              }}
+              disabled={given}
+              aria-label={`row ${r + 1}, column ${c + 1}, ${v === 1 ? "queen" : "empty"}${given ? ", locked" : ""}`}
+              className={`${styles.cell} ${styles.bin} ${given ? styles.given : ""} ${bad ? styles.conflict : ""} ${selected ? styles.sel : ""}`}
+              style={{ color: ACCENT }}
+            >
+              {v === 1 ? "♛" : ""}
             </button>
           );
         }),

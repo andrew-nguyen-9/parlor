@@ -4,11 +4,13 @@ import {
   countSkyscrapers,
   countFutoshiki,
   countBinairo,
+  countQueens,
   visible,
   WEEKDAY,
   type SkyscrapersRung,
   type FutoshikiRung,
   type BinairoRung,
+  type QueensRung,
 } from "./ladder";
 
 function day(dayIndex: number) {
@@ -85,6 +87,21 @@ function assertBinairo(rung: BinairoRung) {
   expect(countBinairo(n, givens)).toBe(1);
 }
 
+function assertQueens(rung: QueensRung) {
+  const { n, solution, givens } = rung;
+  // exactly one queen per row/col, no two share a diagonal
+  for (let r = 0; r < n; r++) expect(solution[r].filter((v) => v === 1).length).toBe(1);
+  for (let c = 0; c < n; c++)
+    expect(solution.map((row) => row[c]).filter((v) => v === 1).length).toBe(1);
+  const cols = solution.map((row) => row.indexOf(1));
+  for (let r1 = 0; r1 < n; r1++)
+    for (let r2 = r1 + 1; r2 < n; r2++)
+      expect(Math.abs(cols[r1] - cols[r2])).not.toBe(r2 - r1);
+  givens.forEach((row, r) => row.forEach((v, c) => v >= 0 && expect(v).toBe(solution[r][c])));
+  // UNIQUE
+  expect(countQueens(n, givens)).toBe(1);
+}
+
 describe("generateLadder", () => {
   it("is deterministic", () => {
     for (const { dayIndex, date } of DAYS.slice(0, 4)) {
@@ -120,10 +137,18 @@ describe("generateLadder", () => {
       for (const rung of p.rungs) {
         if (rung.kind === "skyscrapers") assertSkyscrapers(rung);
         else if (rung.kind === "futoshiki") assertFutoshiki(rung);
+        else if (rung.kind === "queens") assertQueens(rung);
         else assertBinairo(rung);
       }
     }
   }, 60_000);
+
+  it("queens appears in the family rotation and is uniquely solvable", () => {
+    const seenQueens = DAYS.some(({ dayIndex, date }) =>
+      generateLadder(dayIndex, date).kinds.includes("queens"),
+    );
+    expect(seenQueens).toBe(true);
+  });
 });
 
 describe("solvers", () => {
