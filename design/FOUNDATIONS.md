@@ -83,6 +83,28 @@ candle bloom; light = soft UMBER `rgba(58,26,32,…)`, never black). One light
 source: `--gold-sheet` (viewport-fixed) lights every `.gilt`/`.gold-text` from
 one static specular spot — no second light except Streak's diegetic candle glow.
 
+## 3D / Stage (2026-07-09 cycle — Chronos/Atlas/Ignite)
+Shared primitives (F1), never re-derived per room: `ThreeStage` (Three.js canvas
+wrapper — clock, map) and `FluidStage` (full-width fluid container — séance, and
+global chrome). Rules every 3D/animated room inherits:
+- kinematic only, no physics engine: the logic core is deterministic + date-seeded
+  (`lib/rng.ts`); 3D/canvas is presentation on top of an already-solved/solving
+  state, never the source of truth.
+- DPR capped ≤2, one shared `requestAnimationFrame` loop, portrait-first camera
+  framing, full geometry/material/texture/renderer disposal on unmount.
+- one light source still holds in 3D: a single directional/ambient light matching
+  the candle/brass mood — no second scene light.
+- `prefers-reduced-motion` → a designed static frame (not a paused loop): Atlas
+  and Chronos render one still frame; Ignite's Phaser layer skips camera-shake
+  and is static-safe by construction.
+- WebGL-less / renderer-error fallback is a floor (see INDEX §Floors), not
+  optional: an accessible static frame or DOM-HUD control surface, never a
+  full-page crash. Streak's Phaser degrade is the shipped template.
+- `FluidStage`: `w-full`, `overflow-x-clip`, `clamp()` inline padding — no dead
+  L/R gutters, no fixed narrow column, never an x-scroll. Wide/dense boards that
+  must fit portrait (Séance's rotated matrix) measure their own footprint via
+  `ResizeObserver` rather than fighting the container.
+
 ## Breakpoints
 Mobile-first single set: base = phone; `sm:` 640px (tap-target pill floor);
 `lg:` 1024px (the `--d-*` density block — gutter/maxw/gap/track/stack all step up).

@@ -19,6 +19,8 @@ relative to `frontend/`.
 | Toast | live | `components/AchievementToast.tsx` |
 | Theme toggle | live | `components/ThemeToggle.tsx` |
 | Sound toggle | live | `components/SoundToggle.tsx` |
+| ThreeStage (3D canvas primitive) | live | `components/ThreeStage.tsx` |
+| FluidStage (full-width container) | live | `components/FluidStage.tsx` |
 | Deco rule / divider | live | `app/globals.css` (`.deco-rule`) |
 | Marquee | live | `components/Marquee.tsx` |
 | Confetti | live | `components/Confetti.tsx` |
@@ -104,6 +106,22 @@ states: enter (finite ≤600ms, `cubic-bezier(0.22,1,0.36,1)`) / visible / auto-
 a11y: `role="status"` / polite live region; not motion-only; dismiss reachable; contrast per §Floors.
 content: ≤1 short line, in character (VOICE); never blocks play.
 code: `components/AchievementToast.tsx`
+
+### ThreeStage — live
+anatomy: `<canvas>` in a caller-sized container; owns `WebGLRenderer`, the shared RAF loop, `ResizeObserver` aspect sync; caller passes `setup(ctx)=>{scene,camera,radius?,dispose?}` + optional `onFrame(dt,ctx)`.
+variants: static camera (Atlas) · driven camera/geometry (Chronos gears).
+states: mount (setup runs once) / animating (`onFrame`) / reduced-motion (one static frame, no loop) / unmount (full dispose — geometry/material/texture/renderer, leak-free).
+a11y: canvas carries no game state alone — Chronos pairs an accessible HUD, Atlas pairs a numbered DOM chip strip; both fully playable with the canvas absent.
+content: n/a (render layer only; trivia/copy lives in the paired DOM).
+code: `components/ThreeStage.tsx`
+
+### FluidStage — live
+anatomy: `w-full` wrapper, `overflow-x-clip`, `clamp(1rem,4vw,3rem)` inline padding; optional `maxWidth`/`padding` overrides.
+variants: default (global chrome) · room-scoped (`maxWidth` clamp, e.g. Séance `74rem`).
+states: static (Server Component, no client JS).
+a11y: layout-only — no semantics of its own; never introduces horizontal scroll.
+content: n/a.
+code: `components/FluidStage.tsx`
 
 ### Theme toggle — live
 anatomy: icon button toggling `data-theme` on the root; persisted; system-preference default.

@@ -7,6 +7,12 @@ Extracted (codified, not invented) from shipped code: `docs/v2/DESIGN_SYSTEM.md`
 `components/RoomShell.tsx` + `CardFace.tsx`. Tokens are frozen (`frontend/STYLING.md`):
 consume them, do not re-declare.
 
+v1.1 — 2026-07-09: folded the 3D/animation/space cycle (`docs/design/cycle-2026-07-09-3d.md`)
++ E12's QA backlog (`.orchestrator/qa/backlog.md`). New: Chronos gear-train (`/clock`),
+Atlas starfield constellation puzzle (`/map`), Ignite Phaser render layer (`/streak`),
+Séance fluid full-width layout (`/seance`) — shared primitives `ThreeStage`/`FluidStage`
+(FOUNDATIONS §3D/Stage, UI-KIT). See DECISIONS for the backlog items folded in.
+
 ## Brief
 product: a nightly-forged trivia web app — themed game rooms over one Wikipedia/Deezer/TMDB/etc. question bank.
 users: casual + returning trivia players, daily/weekly; mobile-first, pointer-enhanced on desktop.
@@ -20,7 +26,13 @@ ambition: 4   sacred: Q&A legibility over any effect · the zero-JS/seed-bank/re
 
 ## Floors — never regress, any mode, any challenge
 - contrast: body ≥4.5:1, large(≥24px)/bold(≥18.7px) ≥3:1, UI parts ≥3:1 — every text token computed AA both themes (FOUNDATIONS); decorative pairs (goldlite/candle/line-shine, disabled smoke) exempt
-- targets: ≥44×44px touch (deck buttons + `.microlabel` pills are the bar), ≥24×24px pointer
+- targets: ≥44×44px touch (deck buttons + `.microlabel` pills are the bar) — the floor covers
+  EVERY interactive unit, including in-game grid/board cells and chips, not deck chrome only;
+  ≥24×24px pointer
+- 3D / WebGL rooms: renderer creation is guarded (try/catch); no-WebGL, WebGL error, or
+  reduced-motion never white-screens the route — degrade to an accessible static frame or
+  DOM-HUD control surface (Streak's Phaser-degrade is the template)
+- every room renders exactly one page `<h1>` (via `RoomShell`'s title prop) for outline/SEO/SR
 - motion: every named animation has a reduced-motion variant (kill-list in `globals.css`); ≤1 infinite/looping animation per viewport; everything else finite ≤600ms
 - focus: one global `--c-focus` ring, 2px + 2px offset, on every interactive element; components may thicken, never re-color
 - Q&A text ≥1rem, line-height ≥1.5, NEVER inside a gilt/gradient/flame treatment (legibility overrides every effect)
@@ -35,6 +47,7 @@ ambition: 4   sacred: Q&A legibility over any effect · the zero-JS/seed-bank/re
 | UX / flows / a room | INDEX + PATTERNS |
 | copy | INDEX + VOICE |
 | data viz / map / charts | INDEX + FOUNDATIONS |
+| 3D / WebGL room | INDEX + FOUNDATIONS (§3D/Stage) + UI-KIT (ThreeStage/FluidStage) |
 | review / pre-ship | INDEX (+ corpus CHECKLISTS) |
 | challenge | INDEX + DECISIONS |
 
