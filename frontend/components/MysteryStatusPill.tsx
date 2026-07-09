@@ -48,7 +48,10 @@ export default function MysteryStatusPill({
   const mousePointer = useRef(true);
   return (
     <button
-      onClick={() => {
+      onClick={(e) => {
+        // row is now fully clickable (E6) — stop the bubble so a pill tap
+        // doesn't also fire the row's own onClick and double-cycle.
+        e.stopPropagation();
         if (held.current) {
           held.current = false;
           return;
