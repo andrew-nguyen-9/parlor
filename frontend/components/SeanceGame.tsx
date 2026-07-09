@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   emptyBoard,
@@ -21,6 +21,7 @@ import { buildShare, type GameResult, type Tier } from "@/lib/share";
 import { sfxGlassClink, sfxWrong, sfxPianoChord, sfxDoorLatch } from "@/lib/sound";
 import { CATEGORIES, CATEGORY_HEX, CATEGORY_INK, CATEGORY_GLYPH } from "@/lib/types";
 import CollapsiblePanel from "./CollapsiblePanel";
+import FluidStage from "./FluidStage";
 import styles from "./SeanceGame.module.css";
 
 const ACCENT = "#7040a8"; // wildcard / the Medium — the room's signature accent
@@ -98,6 +99,33 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
   const [flagged, setFlagged] = useState<Set<number>>(() => new Set());
   const clueRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const startedAt = useRef(Date.now());
+
+  // E1 mobile invariant: the K·N-wide matrix can't fit a phone unrotated (up to
+  // 28 value columns). Below `lg` (1024px, same breakpoint `.main` already
+  // stacks on) the table is rotated 90° via CSS transform — a rigid repaint, so
+  // every other rule in the stylesheet (borders, the vertical value-header
+  // trick, alignment) stays correct relative to itself; only the WRAPPER's
+  // reserved box needs to know the swapped (now-portrait) footprint. transform
+  // never changes an element's own layout metrics, so measuring the table's
+  // natural scrollWidth/scrollHeight is safe to do on the same (rotated)
+  // element with no feedback loop.
+  const matrixRef = useRef<HTMLTableElement>(null);
+  const [matrixSize, setMatrixSize] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    const el = matrixRef.current;
+    if (!el) return;
+    const measure = () => setMatrixSize({ w: el.scrollWidth, h: el.scrollHeight });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  // ponytail: CSS var, not React state, drives the actual rotation footprint —
+  // no way to swap an unknown intrinsic box in pure CSS, so this is the whole
+  // JS budget for it; falls back to the natural (pre-measure) size for one frame.
+  const matrixVars = matrixSize
+    ? ({ "--rot-w": `${matrixSize.w}px`, "--rot-h": `${matrixSize.h}px` } as CSSProperties)
+    : undefined;
 
   const total = elapsed + strikes * 60;
 
@@ -307,16 +335,20 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
   }
 
   return (
-    <motion.div
-      className={styles.shell}
-      initial={reduce ? false : { opacity: 0, y: 14 }}
-      animate={shake ? { x: [0, -8, 8, -6, 6, 0], opacity: 1, y: 0 } : { x: 0, opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      style={{
-        // edges darken as the séance drags on
-        boxShadow: `inset 0 0 140px ${pressure * 100}px rgba(8,4,14,${pressure})`,
-      }}
-    >
+    // FluidStage (F1): max-width cap + centering + overflow-x-clip, composed
+    // instead of re-derived — padding stays on .shell (inside the card, as
+    // before) so FluidStage contributes width math only, no doubled gutters.
+    <FluidStage maxWidth="74rem" padding="0">
+      <motion.div
+        className={styles.shell}
+        initial={reduce ? false : { opacity: 0, y: 14 }}
+        animate={shake ? { x: [0, -8, 8, -6, 6, 0], opacity: 1, y: 0 } : { x: 0, opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        style={{
+          // edges darken as the séance drags on
+          boxShadow: `inset 0 0 140px ${pressure * 100}px rgba(8,4,14,${pressure})`,
+        }}
+      >
       {/* HUD */}
       <div className={styles.hud}>
         <div>
@@ -392,8 +424,13 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
         </div>
 
         {/* The Scrying Matrix — one unified seat × (category·value) grid. */}
-        <div className={styles.matrixWrap}>
-          <table className={styles.matrix} role="grid" aria-label="the scrying matrix">
+        <div className={styles.matrixWrap} style={matrixVars}>
+          <table
+            ref={matrixRef}
+            className={styles.matrix}
+            role="grid"
+            aria-label="the scrying matrix"
+          >
             <thead>
               <tr>
                 <th className={styles.corner} aria-hidden />
@@ -578,7 +615,8 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
         wrong submission costs +60s
         {puzzle.whisper ? " · whisper mode is a scratchpad" : ""}
       </p>
-    </motion.div>
+      </motion.div>
+    </FluidStage>
   );
 }
 

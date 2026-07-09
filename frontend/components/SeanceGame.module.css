@@ -15,13 +15,13 @@
  */
 
 .shell {
+  /* width/max-width/centering come from the FluidStage wrapper (E1 composes
+     F1's primitive) — this card supplies its own padding only. */
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
   width: 100%;
-  max-width: 74rem;
-  margin: 0 auto;
   min-height: min(62vh, 580px);
   padding: clamp(1rem, 2.6vw, 2rem);
   border-radius: 24px;
@@ -200,6 +200,30 @@
   border-collapse: collapse;
   table-layout: fixed;
   margin: 0 auto;
+}
+
+/* Mobile invariant (E1): below `lg` (same 1024px break `.main` already stacks
+ * on) the K·N-wide matrix (up to 28 value columns) cannot fit a phone/tablet
+ * viewport unrotated — rotate the whole rendered table 90° so its wide axis
+ * runs down the page instead of across it. A rigid transform (not a re-layout)
+ * so every other rule above — borders, the vertical value-header trick,
+ * alignment — stays correct relative to itself; only the wrapper's reserved
+ * box needs to know the swapped footprint, supplied by the `--rot-w`/`--rot-h`
+ * vars the component measures off the table (see SeanceGame.tsx). */
+@media (max-width: 1023px) {
+  .matrixWrap {
+    align-self: center; /* .main is a flex column here — center on the cross axis */
+    width: var(--rot-h, auto);
+    height: var(--rot-w, auto);
+    max-width: 100%;
+    overflow: hidden;
+    padding: 0;
+  }
+  .matrix {
+    margin: 0;
+    transform-origin: top left;
+    transform: rotate(90deg) translateY(-100%);
+  }
 }
 
 /* category band spanning its N value columns — wraps rather than truncates */
