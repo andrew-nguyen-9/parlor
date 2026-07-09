@@ -6,6 +6,16 @@
 
 .boardWrap {
   position: relative;
+  border-radius: 1.25rem;
+  /* Themed ambient wash — accent comes from the day's theme via the --accent
+     CSS var (set inline by BoardGame), so the whole board surface reads as
+     reskinned, not just the header chip. A background paints behind all
+     children automatically (no z-index/stacking concerns). */
+  background: radial-gradient(
+    60% 55% at 50% 0%,
+    color-mix(in srgb, var(--accent, transparent) 14%, transparent),
+    transparent 70%
+  );
 }
 
 .clueOverlay {
@@ -29,4 +39,11 @@
 .tile:focus-visible {
   outline: 2px solid rgb(var(--c-gold));
   outline-offset: 2px;
+}
+
+/* Themed hover — the day's accent (not a fixed category colour), so a tile's
+   hover state shifts with the theme instead of always reading "history gold". */
+.tile:hover:not(:disabled) {
+  border-color: var(--accent, rgb(var(--cat-history)));
+  background: color-mix(in srgb, var(--accent, rgb(var(--cat-history))) 12%, transparent);
 }
