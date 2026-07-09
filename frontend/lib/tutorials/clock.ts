@@ -1,21 +1,21 @@
 import type { Tutorial } from "./types";
 
-// CHRONOS — clockwork logic box (G3). Rules describe the deduction puzzle; the
-// worked example proves it is solvable by reasoning alone, trivia optional.
+// CHRONOS 3D (E2) — a serial gear TRAIN in Three.js: each wheel's tooth count
+// steps a running index around every shaft's notch. Lock opens when all
+// notches land at once. Kinematic logic puzzle, trivia is an optional peek.
 export const tutorial: Tutorial = {
   href: "/clock",
   title: "Chronos",
   accent: "music",
-  tagline: "Assemble the gear-train in the one order the backplate allows.",
-  rules: [
-    "A clockwork train has several wheels; each must sit at a distinct stage — 1 winds the mainspring, the last drives the dial.",
-    "Tap a wheel in the tray, then tap a stage to seat it. Tap a seated wheel to lift it back.",
-    "The engraved rules on the backplate pin down exactly one legal order — a ✓ means a rule is satisfied, a ✕ means the train would jam.",
-    "It is pure logic: reason it out from the rules. The founding-year engravings behind “cheat with history” are only a shortcut, never required.",
+  tagline: "Turn the gear-train until every notch lines up at once.",
+  steps: [
+    { icon: "⚙️", text: "Wheels mesh in a train — turning one turns them all." },
+    { icon: "🔢", text: "Each wheel's tooth count shifts its shaft's marker." },
+    { icon: "📍", text: "Arrange wheels so every shaft's notch lands together." },
+    { icon: "🕰️", text: "Pure logic — the year peek is a shortcut, never required." },
   ],
   example: {
-    prompt: "“The Fusée turns before the Escape Wheel; the Escape Wheel drives the dial.”",
-    walkthrough:
-      "Two rules, two wheels: the Escape Wheel must be last, so the Fusée seats earlier in the train — no dates needed to place them.",
+    prompt: "A 12-tooth wheel sits on a shaft whose notch is 3 steps away.",
+    walkthrough: "Only a wheel that steps the marker by 3 (mod its dial) can seat there — swap wheels until every shaft's notch lines up.",
   },
 };

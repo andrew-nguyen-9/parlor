@@ -11,6 +11,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import type { Tutorial } from "@/lib/tutorials";
 
 const SEEN_PREFIX = "parlor:tutorial-seen:";
@@ -21,6 +22,7 @@ export default function TutorialOverlay({ tutorial }: { tutorial: Tutorial }) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const storageKey = SEEN_PREFIX + tutorial.href;
+  const reduceMotion = useReducedMotion();
 
   const dismiss = useCallback(() => {
     setOpen(false);
@@ -117,19 +119,51 @@ export default function TutorialOverlay({ tutorial }: { tutorial: Tutorial }) {
               <p className="mt-3 text-base leading-relaxed text-muted">{tutorial.tagline}</p>
             )}
 
-            <ol className="mt-5 space-y-3">
-              {tutorial.rules.map((rule, i) => (
-                <li key={i} className="flex gap-3">
-                  <span
-                    aria-hidden
-                    className={`mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full border border-line text-xs ${accentInk}`}
+            {tutorial.steps ? (
+              // Animated icon+phrase steps (E8) — each reveals in turn once the
+              // dialog has entered; `entered` is already SSR/hydration-safe
+              // (only true post-mount), so the stagger never runs on the server.
+              <ol className="mt-5 space-y-3">
+                {tutorial.steps.map((step, i) => (
+                  <motion.li
+                    key={i}
+                    initial={reduceMotion ? false : { opacity: 0, x: -12 }}
+                    animate={
+                      entered
+                        ? { opacity: 1, x: 0 }
+                        : { opacity: reduceMotion ? 1 : 0, x: 0 }
+                    }
+                    transition={{
+                      delay: reduceMotion ? 0 : i * 0.08,
+                      duration: reduceMotion ? 0 : 0.25,
+                    }}
+                    className="flex items-center gap-3"
                   >
-                    {i + 1}
-                  </span>
-                  <span className="text-base leading-relaxed">{rule}</span>
-                </li>
-              ))}
-            </ol>
+                    <span
+                      aria-hidden
+                      className={`flex h-9 w-9 flex-none items-center justify-center rounded-full border border-line text-lg ${accentInk}`}
+                    >
+                      {step.icon}
+                    </span>
+                    <span className="text-base leading-relaxed">{step.text}</span>
+                  </motion.li>
+                ))}
+              </ol>
+            ) : (
+              <ol className="mt-5 space-y-3">
+                {(tutorial.rules ?? []).map((rule, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span
+                      aria-hidden
+                      className={`mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full border border-line text-xs ${accentInk}`}
+                    >
+                      {i + 1}
+                    </span>
+                    <span className="text-base leading-relaxed">{rule}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
 
             <div className="mt-5 rounded-xl border border-line bg-bg/40 p-4">
               <p className="microlabel">Worked example</p>

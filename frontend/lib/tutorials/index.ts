@@ -36,4 +36,4 @@ export function tutorialByHref(href: string): Tutorial | undefined {
   return TUTORIALS[href];
 }
 
-export type { Tutorial } from "./types";
+export type { Tutorial, TutorialStep } from "./types";

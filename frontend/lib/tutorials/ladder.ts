@@ -1,22 +1,22 @@
 import type { Tutorial } from "./types";
 
-// FINAL (G8) — Climb of the Initiate is a stack of genuine deduction grids drawn
-// from a rotating library of logic-puzzle families (skyscrapers, futoshiki,
-// binairo). One worked example keeps the rules literal; the overlay reads this.
+// CLIMB + QUEENS/KEYBOARD (E5) — a stack of deduction grids from a rotating
+// family library (skyscrapers, futoshiki, binairo, and now Queens). Full
+// keyboard entry: arrows move the cursor, digits fill, Enter/Space toggles a
+// queen, Backspace erases. One worked example keeps the rules literal.
 export const tutorial: Tutorial = {
   href: "/ladder",
   title: "Climb of the Initiate",
   accent: "history",
   tagline: "Each rung is a logic grid with ONE solution. Deduce it, lock it, climb.",
-  rules: [
-    "Every rung is a deduction puzzle — no guessing. The family rotates by the day: Skyline (skyscrapers), the Balance (futoshiki), or Twin Sigils (binairo).",
-    "Fill the whole board so no constraint is broken; conflicting cells glow red and the Lock stays sealed until the board is clean.",
-    "A wrong Lock collapses the rung and adds time (+90s, then +180s). Clear every rung to reach the summit.",
-    "Tap the help panel on any rung for that family's exact rules.",
+  steps: [
+    { icon: "🧩", text: "Every rung is a logic grid — no guessing, one solution." },
+    { icon: "⌨️", text: "Arrows move, digits fill, Enter/Space places a queen." },
+    { icon: "👑", text: "Queens rungs: one queen per row, column, and diagonal." },
+    { icon: "🔓", text: "Clean board, then Lock it. A wrong Lock costs time." },
   ],
   example: {
     prompt: "A Skyline rung: a clue of “1” sits on the left of a row.",
-    walkthrough:
-      "A left clue of 1 means only one tower is visible from the left, so the tallest tower (height n) must sit in that row's first cell — nothing can hide behind it. Place it, then deduce the rest of the Latin square.",
+    walkthrough: "Only the tallest tower can be seen alone from that side, so it fills that row's first cell — deduce the rest from there.",
   },
 };
