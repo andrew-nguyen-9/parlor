@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { motion, useReducedMotion } from "framer-motion";
 import { CATEGORY_HEX, type Question } from "@/lib/types";
 import { playMelody, sfx } from "@/lib/sound";
+import { pickBankMelody } from "@/lib/synthBank";
 import { haptic } from "@/lib/haptics";
 import { useProfile, type Achievement } from "@/lib/profile";
 import { mulberry32, pickRotating, shuffled } from "@/lib/rng";

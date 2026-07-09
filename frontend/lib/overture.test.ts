@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 // relative import: vitest does not resolve the @/ alias used in app code.
 import { titleFromSource, trackTitle, titledRows, buildChoices, DECOY_TITLES } from "./overture";
+import { pickBankMelody } from "./synthBank";
 import { mulberry32 } from "./rng";
 import type { Question } from "./types";
 
@@ -67,6 +68,17 @@ describe("titledRows", () => {
       q(null),
     ]);
     expect(rows.map((r) => r.title).sort()).toEqual(["Billie Jean", "Ode to Joy"]);
+  });
+});
+
+describe("pickBankMelody (offline synth fallback)", () => {
+  it("selects a valid, non-empty melody from the committed bank", () => {
+    const m = pickBankMelody(20260709); // a date-seed-shaped input
+    expect(m.melody.length).toBeGreaterThan(0);
+    expect(typeof m.title).toBe("string");
+  });
+  it("is deterministic — same seed picks the same melody every time", () => {
+    expect(pickBankMelody(42)).toEqual(pickBankMelody(42));
   });
 });
 
