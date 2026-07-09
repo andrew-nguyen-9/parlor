@@ -93,9 +93,9 @@ jobs:
         run: python pipeline/music_ingest.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      - name: Ingest Sleeper + ESPN
+      - name: Ingest Wikipedia sports
         continue-on-error: true
-        run: python pipeline/sports_ingest.py
+        run: python pipeline/wiki_sports_ingest.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Ingest restcountries

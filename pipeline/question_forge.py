@@ -786,7 +786,9 @@ def forge_thread(clues: list[dict], rng: random.Random) -> list[dict]:
 def _subject_class(f: dict) -> str:
     return {
         "music": "artist",
-        "sports": "player" if f["source"] == "sleeper" else "team",
+        # sports facts now come from Wikipedia and mix teams + athletes, so a
+        # neutral placeholder reads right for both ("this subject").
+        "sports": "subject",
         "screen": "title",
         "history": "subject",
         "geography": "place",
@@ -902,7 +904,9 @@ def answer_type(answer: str, category: str, field: str | None = None,
     if category == "geography":
         return "country" if source == "restcountries" else "place"
     if category == "sports":
-        return "athlete" if source == "sleeper" else "sports-team"
+        # Wikipedia sports facts mix teams + athletes; one bucket keeps their
+        # distractors together (all sports subjects sit next to each other).
+        return "sports-team"
     return {"music": "artist", "screen": "title",
             "history": "subject", "wildcard": "subject"}.get(category)
 
