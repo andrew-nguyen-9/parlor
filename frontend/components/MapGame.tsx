@@ -1,14 +1,22 @@
 "use client";
 
-// ATLAS (G5) — a constellation LOGIC puzzle over a living star field. Six drawn
-// patterns, a slate of astronomy-free omens, exactly one answer. The GeoGuessr
-// loop is retired; the star catalog is the offline, zero-network local fallback
-// (see lib/atlasPuzzle.ts + public/star-catalog.json). Reduced-motion aware:
-// twinkle/parallax collapse to a still field.
+// ATLAS (G5) — a constellation LOGIC puzzle staged inside a real 3D starfield.
+// Six drawn patterns float in deep space; a slate of astronomy-free omens fits
+// exactly one — name it. The GeoGuessr loop is retired. The deterministic solver
+// lives untouched in lib/atlasPuzzle.ts (over the committed, zero-network star
+// catalog); this file is ONLY the space-game presentation on top of it.
+//
+// The 3D scene renders through F1's <ThreeStage> (one shared WebGL context, DPR
+// cap, dispose + reduced-motion handled there). All game state stays in React and
+// drives both the 3D materials and an always-present DOM control surface (numbered
+// pattern chips + action bar) — so the puzzle is fully playable via the DOM even
+// when WebGL/raycast/reduced-motion suppress the 3D feedback (accessibility).
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import dynamic from "next/dynamic";
+import * as THREE from "three";
+import ThreeStage, { framePortrait, type ThreeStageContext } from "@/components/ThreeStage";
 import {
   type AtlasPuzzle,
   type AtlasCandidate,
@@ -21,78 +29,426 @@ import CollapsiblePanel from "@/components/CollapsiblePanel";
 const Confetti = dynamic(() => import("@/components/Confetti"), { ssr: false });
 
 const ACCENT = "#178b99"; // geography — CATEGORY_HEX (single source, lib/types.ts)
-
-// Bigger dot = brighter star (smaller magnitude). Kept in a tight band so the
-// pattern reads as a figure, and the single brightest star is visibly largest —
-// which is exactly what the "brightest star" omens ask the player to find.
-const magToR = (mag: number) => Math.max(1.1, 3.5 - mag * 0.46);
+const ACCENT_HEX = 0x178b99;
 
 function brightestId(c: AtlasCandidate): string {
   return c.stars.reduce((m, s) => (s.mag < m.mag ? s : m), c.stars[0]).id;
 }
 
-// One faint drifting dust field behind everything — deterministic from the day's
-// seed so server + client render the same specks (no hydration drift).
-function useDust(seed: number, reduce: boolean) {
-  return useMemo(() => {
-    const rand = mulberry32((seed ^ 0x51ed) >>> 0);
-    return Array.from({ length: 90 }, () => ({
-      x: rand() * 100,
-      y: rand() * 100,
-      r: 0.2 + rand() * 0.9,
-      o: 0.15 + rand() * 0.5,
-      d: rand() * 6,
-    }));
-  }, [seed]);
+// ── 3D helpers (browser-only; all called inside ThreeStage.setup) ──
+
+/** Soft round sprite texture; `core` tightens the falloff for a sharp star. */
+function radialTexture(core: number): THREE.CanvasTexture {
+  const s = 64;
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = s;
+  const g = cv.getContext("2d")!;
+  const grd = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  grd.addColorStop(0, "rgba(255,255,255,1)");
+  grd.addColorStop(core, "rgba(255,255,255,0.55)");
+  grd.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = grd;
+  g.fillRect(0, 0, s, s);
+  const t = new THREE.CanvasTexture(cv);
+  t.needsUpdate = true;
+  return t;
 }
 
-function StarFigure({
-  cand,
-  showName,
-  reduce,
-}: {
-  cand: AtlasCandidate;
-  showName: boolean;
-  reduce: boolean;
-}) {
-  const pos = new Map(cand.stars.map((s) => [s.id, s]));
+function numberTexture(n: number): THREE.CanvasTexture {
+  const s = 128;
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = s;
+  const g = cv.getContext("2d")!;
+  g.font = "700 74px ui-sans-serif, system-ui, sans-serif";
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.fillStyle = "rgba(220,232,255,0.92)";
+  g.fillText(String(n), s / 2, s / 2 + 4);
+  const t = new THREE.CanvasTexture(cv);
+  t.needsUpdate = true;
+  return t;
+}
+
+// Magnitude → sprite radius. Brighter (smaller mag) reads bigger; the single
+// brightest star (× the bright factor + halo) is what the "brightest star" omens
+// ask the player to find, so it must stay visibly largest.
+const starSize = (mag: number) => Math.max(0.09, 0.26 - mag * 0.028);
+
+const FIGURE_SCALE = 1.5;
+const GRID = { cols: 2, cell: 2.4 };
+
+function cellCenter(i: number): THREE.Vector3 {
+  const col = i % GRID.cols;
+  const row = Math.floor(i / GRID.cols);
+  return new THREE.Vector3((col - 0.5) * GRID.cell, (1 - row) * GRID.cell, 0);
+}
+
+type VisualMode = "normal" | "selected" | "ruled" | "answer" | "dim";
+
+interface Figure {
+  id: string;
+  group: THREE.Group;
+  baseY: number;
+  phase: number;
+  starMat: THREE.SpriteMaterial; // shared by the figure's ordinary stars
+  brightMat: THREE.SpriteMaterial; // the single brightest star
+  haloMat: THREE.SpriteMaterial;
+  lineMat: THREE.LineBasicMaterial;
+  numMat: THREE.SpriteMaterial;
+  glow: THREE.Sprite; // selection / answer aura
+  hit: THREE.Mesh; // invisible raycast target
+}
+
+function applyMode(f: Figure, mode: VisualMode): void {
+  const norm = 0xdfe7ff;
+  const grey = 0x6a748c;
+  const line = 0x8fb2ff;
+  switch (mode) {
+    case "normal":
+      f.starMat.color.setHex(norm);
+      f.starMat.opacity = 1;
+      f.brightMat.opacity = 1;
+      f.haloMat.opacity = 0.5;
+      f.lineMat.color.setHex(line);
+      f.lineMat.opacity = 0.5;
+      f.numMat.opacity = 0.75;
+      f.glow.visible = false;
+      break;
+    case "selected":
+      f.starMat.color.setHex(0xbfeaff);
+      f.starMat.opacity = 1;
+      f.brightMat.opacity = 1;
+      f.haloMat.opacity = 0.85;
+      f.lineMat.color.setHex(ACCENT_HEX);
+      f.lineMat.opacity = 0.85;
+      f.numMat.opacity = 1;
+      f.glow.material.color.setHex(ACCENT_HEX);
+      f.glow.material.opacity = 0.5;
+      f.glow.visible = true;
+      break;
+    case "answer":
+      f.starMat.color.setHex(0xffffff);
+      f.starMat.opacity = 1;
+      f.brightMat.opacity = 1;
+      f.haloMat.opacity = 1;
+      f.lineMat.color.setHex(ACCENT_HEX);
+      f.lineMat.opacity = 0.95;
+      f.numMat.opacity = 1;
+      f.glow.material.color.setHex(ACCENT_HEX);
+      f.glow.material.opacity = 0.85;
+      f.glow.visible = true;
+      break;
+    case "ruled":
+      f.starMat.color.setHex(grey);
+      f.starMat.opacity = 0.2;
+      f.brightMat.opacity = 0.25;
+      f.haloMat.opacity = 0.05;
+      f.lineMat.color.setHex(grey);
+      f.lineMat.opacity = 0.12;
+      f.numMat.opacity = 0.3;
+      f.glow.visible = false;
+      break;
+    case "dim":
+      f.starMat.color.setHex(norm);
+      f.starMat.opacity = 0.15;
+      f.brightMat.opacity = 0.18;
+      f.haloMat.opacity = 0.05;
+      f.lineMat.color.setHex(line);
+      f.lineMat.opacity = 0.1;
+      f.numMat.opacity = 0.15;
+      f.glow.visible = false;
+      break;
+  }
+}
+
+function modeFor(
+  id: string,
+  solution: string,
+  won: boolean,
+  ruledOut: Set<string>,
+  selected: string | null,
+): VisualMode {
+  if (won) return id === solution ? "answer" : "dim";
+  if (ruledOut.has(id)) return "ruled";
+  if (selected === id) return "selected";
+  return "normal";
+}
+
+/** Build one constellation figure as a Group of glowing sprites + lines. */
+function buildFigure(
+  cand: AtlasCandidate,
+  index: number,
+  seed: number,
+  tex: { core: THREE.CanvasTexture; glow: THREE.CanvasTexture },
+): Figure {
+  const rand = mulberry32((seed ^ (0x9e37 * (index + 1))) >>> 0);
+  const S = FIGURE_SCALE;
   const bId = brightestId(cand);
+  const pos = new Map<string, THREE.Vector3>();
+  for (const s of cand.stars) {
+    pos.set(
+      s.id,
+      new THREE.Vector3((s.x - 0.5) * S, (0.5 - s.y) * S, (rand() - 0.5) * 0.5),
+    );
+  }
+
+  const group = new THREE.Group();
+
+  // Lines first (behind the stars).
+  const lineMat = new THREE.LineBasicMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const verts: number[] = [];
+  for (const [a, b] of cand.lines) {
+    const pa = pos.get(a);
+    const pb = pos.get(b);
+    if (pa && pb) verts.push(pa.x, pa.y, pa.z, pb.x, pb.y, pb.z);
+  }
+  const lineGeo = new THREE.BufferGeometry();
+  lineGeo.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+  group.add(new THREE.LineSegments(lineGeo, lineMat));
+
+  // Stars.
+  const starMat = new THREE.SpriteMaterial({
+    map: tex.core,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const brightMat = new THREE.SpriteMaterial({
+    map: tex.core,
+    color: 0xffffff,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const haloMat = new THREE.SpriteMaterial({
+    map: tex.glow,
+    color: 0x9fe4ff,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  for (const s of cand.stars) {
+    const p = pos.get(s.id)!;
+    const isBright = s.id === bId;
+    if (isBright) {
+      const halo = new THREE.Sprite(haloMat);
+      const hs = starSize(s.mag) * 4.2;
+      halo.scale.set(hs, hs, 1);
+      halo.position.copy(p);
+      group.add(halo);
+    }
+    const sp = new THREE.Sprite(isBright ? brightMat : starMat);
+    const sz = starSize(s.mag) * (isBright ? 1.6 : 1);
+    sp.scale.set(sz, sz, 1);
+    sp.position.copy(p);
+    group.add(sp);
+  }
+
+  // Selection / answer aura (behind the figure).
+  const glowMat = new THREE.SpriteMaterial({
+    map: tex.glow,
+    color: ACCENT_HEX,
+    transparent: true,
+    opacity: 0.5,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const glow = new THREE.Sprite(glowMat);
+  glow.scale.set(2.6, 2.6, 1);
+  glow.position.set(0, 0, -0.35);
+  glow.visible = false;
+  group.add(glow);
+
+  // Number label above the figure.
+  const numMat = new THREE.SpriteMaterial({
+    map: numberTexture(index + 1),
+    transparent: true,
+    depthWrite: false,
+  });
+  const num = new THREE.Sprite(numMat);
+  num.scale.set(0.55, 0.55, 1);
+  num.position.set(0, S * 0.5 + 0.5, 0.2);
+  group.add(num);
+
+  // Invisible tap target covering the figure + its number.
+  const hit = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.9, 2.3),
+    new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }),
+  );
+  hit.position.set(0, 0.25, 0.4);
+  hit.userData.id = cand.id;
+  group.add(hit);
+
+  const center = cellCenter(index);
+  group.position.copy(center);
+
+  return {
+    id: cand.id,
+    group,
+    baseY: center.y,
+    phase: rand() * Math.PI * 2,
+    starMat,
+    brightMat,
+    haloMat,
+    lineMat,
+    numMat,
+    glow,
+    hit,
+  };
+}
+
+interface SceneApi {
+  camera: THREE.PerspectiveCamera;
+  raycaster: THREE.Raycaster;
+  figures: Figure[];
+}
+
+function Starfield({
+  puzzle,
+  selected,
+  ruledOut,
+  won,
+  onPick,
+}: {
+  puzzle: AtlasPuzzle;
+  selected: string | null;
+  ruledOut: Set<string>;
+  won: boolean;
+  onPick: (id: string) => void;
+}) {
+  const apiRef = useRef<SceneApi | null>(null);
+  const timeRef = useRef(0);
+  const bgRef = useRef<THREE.Object3D | null>(null);
+  const stageBoxRef = useRef<HTMLDivElement>(null);
+
+  const setup = useMemo(() => {
+    return (ctx: { renderer: THREE.WebGLRenderer; width: number; height: number }) => {
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(55, ctx.width / ctx.height, 0.5, 200);
+
+      const core = radialTexture(0.25);
+      const glow = radialTexture(0.5);
+
+      // Deep-space backdrop: a shell of drifting stars + a couple of faint nebulae.
+      const bg = new THREE.Group();
+      const rand = mulberry32((puzzle.seed ^ 0x51ed) >>> 0);
+      const N = 1400;
+      const pts = new Float32Array(N * 3);
+      for (let i = 0; i < N; i++) {
+        // Random point on a shell (r 16..30), biased behind the figures.
+        const u = rand() * 2 - 1;
+        const th = rand() * Math.PI * 2;
+        const r = 16 + rand() * 14;
+        const s = Math.sqrt(1 - u * u);
+        pts[i * 3] = r * s * Math.cos(th);
+        pts[i * 3 + 1] = r * s * Math.sin(th);
+        pts[i * 3 + 2] = -Math.abs(r * u) * 0.6 - 4; // push toward the back
+      }
+      const bgGeo = new THREE.BufferGeometry();
+      bgGeo.setAttribute("position", new THREE.BufferAttribute(pts, 3));
+      const bgMat = new THREE.PointsMaterial({
+        map: core,
+        color: 0xaebfff,
+        size: 0.5,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.9,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      bg.add(new THREE.Points(bgGeo, bgMat));
+      for (let i = 0; i < 3; i++) {
+        const neb = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: glow,
+            color: [ACCENT_HEX, 0x6e3ca0, 0x2a4a80][i],
+            transparent: true,
+            opacity: 0.14,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+          }),
+        );
+        const sz = 14 + rand() * 10;
+        neb.scale.set(sz, sz, 1);
+        neb.position.set((rand() - 0.5) * 20, (rand() - 0.5) * 20, -10 - rand() * 6);
+        bg.add(neb);
+      }
+      scene.add(bg);
+      bgRef.current = bg;
+
+      const figures = puzzle.candidates.map((c, i) =>
+        buildFigure(c, i, puzzle.seed, { core, glow }),
+      );
+      for (const f of figures) scene.add(f.group);
+
+      // Initial framing: fit the whole grid in portrait, then widen the far plane
+      // so the deep backdrop is never clipped (framePortrait sets a tight far).
+      framePortrait(camera, 4.4);
+      camera.far = 200;
+      camera.updateProjectionMatrix();
+
+      apiRef.current = { camera, raycaster: new THREE.Raycaster(), figures };
+      timeRef.current = 0;
+
+      return { scene, camera, dispose: () => (apiRef.current = null) };
+    };
+  }, [puzzle]);
+
+  const onFrame = useMemo(() => {
+    return (dt: number, _ctx: ThreeStageContext) => {
+      const api = apiRef.current;
+      if (!api) return;
+      timeRef.current += dt;
+      const t = timeRef.current;
+      if (bgRef.current) {
+        bgRef.current.rotation.y += dt * 0.01;
+        bgRef.current.rotation.x += dt * 0.004;
+      }
+      for (const f of api.figures) {
+        f.group.position.y = f.baseY + Math.sin(t * 0.6 + f.phase) * 0.06;
+        f.group.rotation.z = Math.sin(t * 0.3 + f.phase) * 0.02;
+        if (f.glow.visible) {
+          const p = 2.6 + Math.sin(t * 2) * 0.18;
+          f.glow.scale.set(p, p, 1);
+        }
+      }
+    };
+  }, []);
+
+  // Reflect game state into the 3D materials (shows on the next rendered frame;
+  // under reduced motion the scene is a designed still — the DOM chips carry
+  // the live state). ponytail: no manual re-render, ThreeStage owns the loop.
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api) return;
+    for (const f of api.figures) {
+      applyMode(f, modeFor(f.id, puzzle.solution, won, ruledOut, selected));
+    }
+  }, [puzzle.solution, won, ruledOut, selected]);
+
+  function handlePointer(e: React.PointerEvent<HTMLDivElement>) {
+    const api = apiRef.current;
+    const box = stageBoxRef.current;
+    if (!api || !box || won) return;
+    const rect = box.getBoundingClientRect();
+    const ndc = new THREE.Vector2(
+      ((e.clientX - rect.left) / rect.width) * 2 - 1,
+      -((e.clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    api.raycaster.setFromCamera(ndc, api.camera);
+    const hits = api.raycaster.intersectObjects(api.figures.map((f) => f.hit));
+    const id = hits[0]?.object.userData.id as string | undefined;
+    if (id) onPick(id);
+  }
+
   return (
-    <svg
-      viewBox="0 0 100 100"
-      className={styles.figure}
-      role="img"
-      aria-label={showName ? cand.name : "star pattern"}
-    >
-      {cand.lines.map(([a, b], i) => {
-        const pa = pos.get(a);
-        const pb = pos.get(b);
-        if (!pa || !pb) return null;
-        return (
-          <line
-            key={i}
-            x1={pa.x * 100}
-            y1={pa.y * 100}
-            x2={pb.x * 100}
-            y2={pb.y * 100}
-            className={styles.line}
-          />
-        );
-      })}
-      {cand.stars.map((s, i) => {
-        const isBright = s.id === bId;
-        return (
-          <circle
-            key={s.id}
-            cx={s.x * 100}
-            cy={s.y * 100}
-            r={magToR(s.mag)}
-            className={`${styles.star} ${isBright ? styles.bright : ""} ${reduce ? "" : styles.twinkle}`}
-            style={reduce ? undefined : { animationDelay: `${(i % 7) * 0.4}s` }}
-          />
-        );
-      })}
-    </svg>
+    <div ref={stageBoxRef} className={styles.stage} onPointerDown={handlePointer}>
+      <ThreeStage setup={setup} onFrame={onFrame} className={styles.canvas} />
+    </div>
   );
 }
 
@@ -105,8 +461,6 @@ export default function MapGame({
   puzzle: AtlasPuzzle | null;
   requestedDate?: string | null;
 }) {
-  const reduce = !!useReducedMotion();
-
   // ── Dark state: an archived date that was never generated (DB connected, no
   // row). Zero-env play always gets a puzzle inline — see getAtlasPuzzle. ──
   if (!puzzle) {
@@ -127,42 +481,47 @@ export default function MapGame({
     );
   }
 
-  return <StarAtlas puzzle={puzzle} reduce={reduce} />;
+  return <StarAtlas puzzle={puzzle} />;
 }
 
-function StarAtlas({ puzzle, reduce }: { puzzle: AtlasPuzzle; reduce: boolean }) {
+function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
+  const reduce = !!useReducedMotion();
   const [ruledOut, setRuledOut] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<string | null>(null);
   const [wrong, setWrong] = useState<string[]>([]);
-  const [shake, setShake] = useState<string | null>(null);
+  const [shake, setShake] = useState(false);
   const [phase, setPhase] = useState<Phase>("playing");
   const [copied, setCopied] = useState(false);
 
-  const dust = useDust(puzzle.seed, reduce);
   const solvedCand = puzzle.candidates.find((c) => c.id === puzzle.solution)!;
   const score = Math.max(10, 100 - wrong.length * 25);
+  const selectedRuledOut = selected != null && ruledOut.has(selected);
 
-  function toggleRuleOut(id: string) {
+  function pick(id: string) {
     if (phase !== "playing") return;
+    setSelected((s) => (s === id ? null : id));
+  }
+
+  function toggleRuleOut() {
+    if (phase !== "playing" || !selected) return;
     setRuledOut((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(selected)) next.delete(selected);
+      else next.add(selected);
       return next;
     });
-    setSelected((s) => (s === id ? null : s));
   }
 
   function confirm() {
-    if (phase !== "playing" || !selected) return;
+    if (phase !== "playing" || !selected || ruledOut.has(selected)) return;
     if (selected === puzzle.solution) {
       setPhase("won");
       return;
     }
     setWrong((w) => (w.includes(selected) ? w : [...w, selected]));
     setRuledOut((prev) => new Set(prev).add(selected));
-    setShake(selected);
-    setTimeout(() => setShake(null), 500);
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
     setSelected(null);
   }
 
@@ -182,34 +541,18 @@ function StarAtlas({ puzzle, reduce }: { puzzle: AtlasPuzzle; reduce: boolean })
     }
   }
 
+  const won = phase === "won";
+
   return (
     <div className={`${styles.wrap} ${reduce ? styles.still : ""}`}>
-      {/* Living star field behind the whole room. */}
-      <div className={styles.sky} aria-hidden>
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className={styles.dust}>
-          {dust.map((d, i) => (
-            <circle
-              key={i}
-              cx={d.x}
-              cy={d.y}
-              r={d.r}
-              fill="#dfe7ff"
-              opacity={d.o}
-              className={reduce ? "" : styles.twinkle}
-              style={reduce ? undefined : { animationDelay: `${d.d}s` }}
-            />
-          ))}
-        </svg>
-      </div>
-
       <header className={styles.head}>
         <p className="microlabel" style={{ color: ACCENT }}>
           {puzzle.skyRegion}
         </p>
         <h1 className={styles.title}>Read the omens</h1>
         <p className="text-muted text-sm">
-          Six patterns hang in the dark. Exactly one obeys every omen below — name it. No
-          stargazing needed; just count and reason.
+          Six constellations drift in the dark. Exactly one obeys every omen below — name it.
+          No stargazing needed; just count and reason.
         </p>
       </header>
 
@@ -232,79 +575,83 @@ function StarAtlas({ puzzle, reduce }: { puzzle: AtlasPuzzle; reduce: boolean })
             ))}
           </ol>
           <p className="microlabel mt-3 text-smoke">
-            cross off any pattern an omen rules out — one will survive them all
+            tap a constellation (or its number below) to focus it, rule out the ones an omen
+            forbids — one survives them all
           </p>
         </CollapsiblePanel>
 
-        {/* The six patterns. */}
-        <div className={styles.grid} role="group" aria-label="star patterns">
-          {puzzle.candidates.map((cand, idx) => {
-            const isOut = ruledOut.has(cand.id);
-            const isSel = selected === cand.id;
-            const isWon = phase === "won";
-            const isAnswer = cand.id === puzzle.solution;
-            return (
-              <div
-                key={cand.id}
-                className={[
-                  styles.card,
-                  isOut && !isWon ? styles.struck : "",
-                  isSel ? styles.selected : "",
-                  shake === cand.id ? styles.shake : "",
-                  isWon && isAnswer ? styles.answer : "",
-                  isWon && !isAnswer ? styles.dimmed : "",
-                ].join(" ")}
-                style={isSel || (isWon && isAnswer) ? { borderColor: ACCENT } : undefined}
-              >
+        <div className={styles.stageCol}>
+          <div className={`${styles.stageFrame} ${shake ? styles.shake : ""}`}>
+            <Starfield
+              puzzle={puzzle}
+              selected={selected}
+              ruledOut={ruledOut}
+              won={won}
+              onPick={pick}
+            />
+            {won && (
+              <p className={styles.answerBanner} style={{ color: ACCENT }}>
+                {solvedCand.name}
+              </p>
+            )}
+          </div>
+
+          {/* Numbered pattern chips — the accessible / reduced-motion control
+              surface that always mirrors + drives selection state. */}
+          <div className={styles.chips} role="group" aria-label="constellations">
+            {puzzle.candidates.map((cand, idx) => {
+              const isOut = ruledOut.has(cand.id);
+              const isSel = selected === cand.id;
+              const isAnswer = cand.id === puzzle.solution;
+              return (
                 <button
+                  key={cand.id}
                   type="button"
-                  className={styles.cardBtn}
+                  className={[
+                    styles.chip,
+                    isSel ? styles.chipSel : "",
+                    isOut && !won ? styles.chipOut : "",
+                    won && isAnswer ? styles.chipAnswer : "",
+                    won && !isAnswer ? styles.chipDim : "",
+                  ].join(" ")}
+                  style={isSel || (won && isAnswer) ? { borderColor: ACCENT, color: ACCENT } : undefined}
                   aria-pressed={isSel}
-                  aria-label={`Pattern ${idx + 1}${isWon ? ` — ${cand.name}` : ""}`}
-                  disabled={isWon}
-                  onClick={() => {
-                    if (isOut) return;
-                    setSelected((s) => (s === cand.id ? null : cand.id));
-                  }}
+                  aria-label={`Constellation ${idx + 1}${won && isAnswer ? ` — ${cand.name}` : isOut ? " (ruled out)" : ""}`}
+                  disabled={won}
+                  onClick={() => pick(cand.id)}
                 >
-                  <StarFigure cand={cand} showName={isWon} reduce={reduce} />
-                  <span className={styles.tag}>
-                    {isWon && isAnswer ? cand.name : `pattern ${idx + 1}`}
-                  </span>
+                  {idx + 1}
                 </button>
-                {!isWon && (
-                  <button
-                    type="button"
-                    className={styles.ruleBtn}
-                    onClick={() => toggleRuleOut(cand.id)}
-                    aria-label={
-                      isOut ? `Restore pattern ${idx + 1}` : `Rule out pattern ${idx + 1}`
-                    }
-                  >
-                    {isOut ? "restore" : "rule out"}
-                  </button>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Controls / result */}
       <p className="sr-only" aria-live="polite">
-        {phase === "won" ? `Solved. The pattern was ${solvedCand.name}.` : ""}
+        {won ? `Solved. The pattern was ${solvedCand.name}.` : ""}
       </p>
 
-      {phase === "playing" ? (
+      {!won ? (
         <div className={styles.controls}>
+          {selected && !selectedRuledOut && (
+            <button type="button" className={styles.ruleBtn} onClick={toggleRuleOut}>
+              rule out this one
+            </button>
+          )}
+          {selectedRuledOut && (
+            <button type="button" className={styles.ruleBtn} onClick={toggleRuleOut}>
+              restore this one
+            </button>
+          )}
           <button
             type="button"
             className={styles.confirm}
-            style={{ background: selected ? ACCENT : undefined }}
-            disabled={!selected}
+            style={{ background: selected && !selectedRuledOut ? ACCENT : undefined }}
+            disabled={!selected || selectedRuledOut}
             onClick={confirm}
           >
-            {selected ? "Name this pattern" : "Choose a pattern"}
+            {selected && !selectedRuledOut ? "Name this pattern" : "Choose a pattern"}
           </button>
           {wrong.length > 0 && (
             <span className="microlabel text-smoke">
