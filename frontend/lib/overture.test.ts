@@ -80,6 +80,16 @@ describe("pickBankMelody (offline synth fallback)", () => {
   it("is deterministic — same seed picks the same melody every time", () => {
     expect(pickBankMelody(42)).toEqual(pickBankMelody(42));
   });
+  it("mirrors AudioRoomGame's daySeed+round seeding deterministically with synth-valid notes", () => {
+    const daySeed = 20260709;
+    const forRound = (i: number) => pickBankMelody(daySeed + i); // same scheme play() uses
+    expect(forRound(0)).toEqual(forRound(0));
+    expect(forRound(3)).toEqual(forRound(3));
+    for (const note of forRound(0).melody) {
+      expect(typeof note.n).toBe("string"); // scientific pitch playMelody can voice
+      expect(typeof note.d).toBe("number");
+    }
+  });
 });
 
 describe("DECOY_TITLES", () => {

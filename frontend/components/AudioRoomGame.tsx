@@ -177,6 +177,22 @@ export default function AudioRoomGame({
 
   useEffect(() => clearTimers, [clearTimers]);
 
+  // Offline fallback: when a round has no Deezer preview (or it fails/CORS/autoplay-
+  // blocks) and no curated melody, drop the needle on a committed bank tune through
+  // the same synth engine. Seeded by daySeed+round so it's stable per round and
+  // identical for every player on the daily intro (no Math.random on this path).
+  function playBank(full: boolean) {
+    stopPlayback(); // kill any pending audio element + its cleanup timer
+    setPlaying(true);
+    const melody = pickBankMelody(daySeed + i).melody;
+    const total = melody.length;
+    const n = cfg.reveal && !full ? Math.max(2, Math.ceil((total * reveal) / cfg.tries)) : total;
+    const slice = melody.slice(0, n);
+    stopRef.current = playMelody(slice, BPM);
+    const ms = slice.reduce((s, note) => s + note.d, 0) * (60 / BPM) * 1000;
+    playTimer.current = setTimeout(() => setPlaying(false), ms + 100);
+  }
+
   // How much of the intro to sound: daily reveals a growing slice, set plays it all.
   // `full` = victory/defeat playback — the whole intro once, no clock.
   function play(full = false) {
@@ -189,7 +205,15 @@ export default function AudioRoomGame({
       const el = new Audio(q.q.audio_url);
       el.volume = 0.8;
       audioRef.current = el;
-      void el.play().catch(() => setPlaying(false));
+      // Preview 404 / CORS / autoplay-block → don't go silent, fall back to the bank.
+      let fell = false;
+      const fallback = () => {
+        if (fell) return; // .catch and onerror can both fire — only fall back once
+        fell = true;
+        playBank(full);
+      };
+      void el.play().catch(fallback);
+      el.onerror = fallback;
       el.onended = () => setPlaying(false);
       const secs = cfg.reveal && !full ? Math.min(12, 2 * reveal) : 12;
       playTimer.current = setTimeout(() => stopPlayback(), secs * 1000);
@@ -201,7 +225,8 @@ export default function AudioRoomGame({
       const ms = slice.reduce((s, note) => s + note.d, 0) * (60 / BPM) * 1000;
       playTimer.current = setTimeout(() => setPlaying(false), ms + 100);
     } else {
-      setPlaying(false);
+      // No preview and no curated melody — the bank guarantees the round sounds.
+      playBank(full);
     }
   }
 
