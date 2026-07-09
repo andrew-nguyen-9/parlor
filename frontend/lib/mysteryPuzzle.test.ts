@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   generateMystery,
   clueHolds,
+  clueMatches,
   solutionCount,
   uniqueSolution,
   liveValues,
@@ -99,5 +100,35 @@ describe("generateMystery (G1 engine)", () => {
         expect(solutionCount([c], n)).toBeGreaterThan(1);
       }
     });
+  });
+});
+
+describe("clueMatches (E6 · Case File search/filter)", () => {
+  const p = generateMystery(20000, "2026-07-06");
+
+  it("empty search + 'all' filter passes every clue", () => {
+    expect(p.clues.every((c) => clueMatches(c, "", "all"))).toBe(true);
+  });
+
+  it("search matches clue text case-insensitively", () => {
+    const target = p.clues[0];
+    const needle = target.text.slice(2, 8);
+    expect(clueMatches(target, needle.toUpperCase(), "all")).toBe(true);
+    expect(clueMatches(target, "xyz-not-present-zzz", "all")).toBe(false);
+  });
+
+  it("axis filters only pass clues touching that axis", () => {
+    for (const c of p.clues) {
+      expect(clueMatches(c, "", "suspects")).toBe(c.s !== undefined);
+      expect(clueMatches(c, "", "locations")).toBe(c.r !== undefined);
+      expect(clueMatches(c, "", "times")).toBe(c.h !== undefined);
+    }
+  });
+
+  it("search and filter combine (AND)", () => {
+    const c = p.clues.find((cl) => cl.s !== undefined);
+    if (!c) return;
+    expect(clueMatches(c, c.text, "suspects")).toBe(true);
+    expect(clueMatches(c, "xyz-not-present-zzz", "suspects")).toBe(false);
   });
 });

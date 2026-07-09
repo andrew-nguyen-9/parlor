@@ -201,6 +201,19 @@ export function liveValues(
   return { suspects, locations, times };
 }
 
+// ── clue search/filter (E6 · Case File panel) ───────────────────────────────
+export type ClueFilter = "all" | "suspects" | "locations" | "times";
+
+/** Does this clue pass the Case File's search text + axis filter? Pure so the
+ *  UI logic is unit-testable outside the component. */
+export function clueMatches(clue: MysteryClue, search: string, filter: ClueFilter): boolean {
+  if (filter === "suspects" && clue.s === undefined) return false;
+  if (filter === "locations" && clue.r === undefined) return false;
+  if (filter === "times" && clue.h === undefined) return false;
+  const q = search.trim().toLowerCase();
+  return !q || clue.text.toLowerCase().includes(q);
+}
+
 // ── clue text ────────────────────────────────────────────────────────────────
 function renderClue(
   cl: Omit<MysteryClue, "text">,

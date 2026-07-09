@@ -7,7 +7,7 @@
 // CollapsiblePanel rails; the pills sit in their own aligned column (Mystery.module.css).
 
 import { useEffect, useMemo, useState } from "react";
-import type { MysteryPuzzle } from "@/lib/mysteryPuzzle";
+import { clueMatches, type ClueFilter, type MysteryPuzzle } from "@/lib/mysteryPuzzle";
 import { CATEGORY_HEX } from "@/lib/types";
 import CollapsiblePanel from "./CollapsiblePanel";
 import MysteryStatusPill, { nextTag, prevTag, type SuspectTag } from "./MysteryStatusPill";
@@ -68,6 +68,8 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
   const [accusation, setAccusation] = useState<Accusation | null>(null);
   const [won, setWon] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [search, setSearch] = useState("");
+  const [clueFilter, setClueFilter] = useState<ClueFilter>("all");
 
   // restore prior notes / a locked verdict after mount (client-only, no SSR skew)
   useEffect(() => {
@@ -129,6 +131,16 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
     }
   }
 
+  // Case File search/filter (E6) — keep the original clue number (i+1) so it
+  // still matches the numbering the player has been reasoning from.
+  const filteredClues = useMemo(
+    () =>
+      puzzle.clues
+        .map((c, i) => ({ c, i }))
+        .filter(({ c }) => clueMatches(c, search, clueFilter)),
+    [puzzle.clues, search, clueFilter],
+  );
+
   const axes: { axis: Axis; label: string; values: string[]; truth: number }[] = useMemo(
     () => [
       { axis: "suspects", label: "The Suspects", values: puzzle.suspects, truth: puzzle.solution.suspect },
@@ -147,8 +159,43 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
             The Order convenes over <span className="text-ink">{puzzle.caseName}</span>. A guest lies
             dead. From the evidence below, deduce the culprit, the scene and the hour — then accuse.
           </p>
+
+          <div className="mb-3 flex flex-col gap-2">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="search the clues…"
+              aria-label="search clues"
+              className="w-full rounded-lg border border-line bg-bg px-3 py-1.5 text-sm text-ink outline-none focus:border-gold"
+            />
+            <div className="flex flex-wrap gap-1.5">
+              {(
+                [
+                  ["all", "All"],
+                  ["suspects", "Suspects"],
+                  ["locations", "Scene"],
+                  ["times", "Hour"],
+                ] as [ClueFilter, string][]
+              ).map(([f, label]) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setClueFilter(f)}
+                  className={`microlabel rounded-full border px-2.5 py-1 text-[10px] transition ${
+                    clueFilter === f
+                      ? "border-gold text-gold"
+                      : "border-line text-muted hover:border-gold hover:text-gold"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <ol className="flex list-none flex-col gap-2.5">
-            {puzzle.clues.map((c, i) => (
+            {filteredClues.map(({ c, i }) => (
               <li key={i} className={`${styles.clue} flex gap-2 text-ink`}>
                 <span className="microlabel shrink-0 pt-0.5" style={{ color: HEX }}>
                   {i + 1}
@@ -156,6 +203,9 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
                 <span>{c.text}</span>
               </li>
             ))}
+            {filteredClues.length === 0 && (
+              <li className="text-sm text-muted">No clues match — try a different search or filter.</li>
+            )}
           </ol>
         </CollapsiblePanel>
       </div>
@@ -186,7 +236,10 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
                 return (
                   <li
                     key={i}
-                    className={`${styles.row} border ${
+                    // ponytail: whole row cycles fwd on click (E6); the pill stays the
+                    // keyboard/reverse control (stopPropagation keeps it from double-firing).
+                    onClick={() => cycle(axis, i, "fwd")}
+                    className={`${styles.row} cursor-pointer border ${
                       isTruth
                         ? "border-history bg-history/10"
                         : prime
