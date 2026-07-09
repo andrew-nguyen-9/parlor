@@ -2,51 +2,93 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import * as THREE from "three";
+import ThreeStage from "@/components/ThreeStage";
 import { CATEGORY_HEX } from "@/lib/types";
 import { labelFor } from "@/lib/calendars";
-import type {
-  ChronosPuzzle,
-  ChronosConstraint,
+import {
+  runningMarks,
+  type ChronosPuzzle,
+  type ChronosGear,
 } from "@/lib/chronosPuzzle";
+import styles from "./ClockGame.module.css";
 
 // win-only canvas confetti, code-split (kept out of the room's initial bundle)
 const Confetti = dynamic(() => import("@/components/Confetti"), { ssr: false });
 
 const ACCENT = CATEGORY_HEX.music;
+const BRASS = 0xb08d57;
 
 type Status = "ok" | "bad" | "pending";
 
-// Live-evaluate an engraved rule against the current (possibly partial) assembly.
-// "pending" = not enough wheels placed yet to judge; "bad" = contradicted.
-function evalConstraint(
-  c: ChronosConstraint,
-  assign: Record<string, number | null>,
-  stages: number,
-): Status {
-  const a = assign[c.a];
-  const b = c.b !== undefined ? assign[c.b] : undefined;
-  const needB = c.b !== undefined;
-  if (a == null || (needB && b == null)) return "pending";
-  switch (c.kind) {
-    case "first":
-      return a === 1 ? "ok" : "bad";
-    case "last":
-      return a === stages ? "ok" : "bad";
-    case "fixed":
-      return a === c.k ? "ok" : "bad";
-    case "before":
-      return (b as number) > a ? "ok" : "bad";
-    case "imm-before":
-      return (b as number) === a + 1 ? "ok" : "bad";
-    case "gap":
-      return (b as number) - a === (c.k ?? 0) ? "ok" : "bad";
-    case "adjacent":
-      return Math.abs(a - (b as number)) === 1 ? "ok" : "bad";
-    case "parity":
-      return (c.flag === "even") === (a % 2 === 0) ? "ok" : "bad";
-    default:
-      return "pending";
+// Running index at each shaft for the current (possibly partial) assignment. A shaft
+// is only judgeable once every shaft up to and including it is filled (the train is
+// serial — an upstream gap leaves the index undefined downstream).
+function shaftStatuses(
+  puzzle: ChronosPuzzle,
+  seatedTeeth: (number | null)[],
+): Status[] {
+  const firstGap = seatedTeeth.findIndex((t) => t == null);
+  const filledCount = firstGap === -1 ? seatedTeeth.length : firstGap;
+  const marks = runningMarks(
+    seatedTeeth.slice(0, filledCount).map((t) => t as number),
+    puzzle.drive,
+    puzzle.dialTeeth,
+  );
+  return puzzle.shafts.map((s, i) => {
+    if (i >= filledCount) return "pending";
+    return marks[i] === s.target ? "ok" : "bad";
+  });
+}
+
+// ── 3D: a brass cog from an extruded tooth profile (kinematic backdrop only) ──────
+function cogShape(teeth: number, rTip: number, rRoot: number, rHole: number) {
+  const shape = new THREE.Shape();
+  const pitch = (Math.PI * 2) / teeth;
+  for (let i = 0; i < teeth; i++) {
+    const a = i * pitch;
+    const pts: [number, number][] = [
+      [rRoot, a],
+      [rTip, a + pitch * 0.25],
+      [rTip, a + pitch * 0.5],
+      [rRoot, a + pitch * 0.72],
+    ];
+    for (const [r, ang] of pts) {
+      const x = Math.cos(ang) * r;
+      const y = Math.sin(ang) * r;
+      if (i === 0 && r === rRoot && ang === a) shape.moveTo(x, y);
+      else shape.lineTo(x, y);
+    }
   }
+  shape.closePath();
+  const hole = new THREE.Path();
+  hole.absarc(0, 0, rHole, 0, Math.PI * 2, true);
+  shape.holes.push(hole);
+  return shape;
+}
+
+function makeCog(
+  teeth: number,
+  opts: { color: number; emissive: number; opacity: number },
+) {
+  const geo = new THREE.ExtrudeGeometry(cogShape(teeth, 1.0, 0.82, 0.2), {
+    depth: 0.28,
+    bevelEnabled: true,
+    bevelThickness: 0.05,
+    bevelSize: 0.05,
+    bevelSegments: 1,
+  });
+  geo.center();
+  const mat = new THREE.MeshStandardMaterial({
+    color: opts.color,
+    emissive: opts.emissive,
+    emissiveIntensity: opts.emissive ? 0.5 : 0,
+    metalness: 0.9,
+    roughness: 0.38,
+    transparent: opts.opacity < 1,
+    opacity: opts.opacity,
+  });
+  return new THREE.Mesh(geo, mat);
 }
 
 export default function ClockGame({
@@ -72,44 +114,47 @@ export default function ClockGame({
       </div>
     );
   }
-  return <Box puzzle={puzzle} />;
+  return <Mechanism puzzle={puzzle} />;
 }
 
-function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
-  const { gears, constraints, stages, solution, calendarSkin } = puzzle;
-  const stageList = useMemo(
-    () => Array.from({ length: stages }, (_, i) => i + 1),
-    [stages],
-  );
+function Mechanism({ puzzle }: { puzzle: ChronosPuzzle }) {
+  const { gears, shafts, calendarSkin, dialTeeth } = puzzle;
+  const stages = shafts.length;
 
-  // assignment: gearKey → stage (null = still in the tray)
+  // assignment: gearKey → shaft index 1..S (null = still in the tray)
   const [assign, setAssign] = useState<Record<string, number | null>>(() =>
     Object.fromEntries(gears.map((g) => [g.key, null])),
   );
   const [selected, setSelected] = useState<string | null>(null);
-  const [peek, setPeek] = useState(false); // trivia shortcut flap
+  const [peek, setPeek] = useState(false);
   const [solved, setSolved] = useState(false);
 
-  const stageToGear = useMemo(() => {
-    const m: Record<number, string> = {};
-    for (const g of gears) {
-      const st = assign[g.key];
-      if (st != null) m[st] = g.key;
-    }
-    return m;
-  }, [assign, gears]);
-
   const gearOf = (k: string) => gears.find((g) => g.key === k)!;
-  const placedCount = Object.values(assign).filter((v) => v != null).length;
+
+  // teeth seated at each shaft (index-1), null where empty
+  const seatedTeeth = useMemo(() => {
+    const arr: (number | null)[] = new Array(stages).fill(null);
+    for (const g of gears) {
+      const s = assign[g.key];
+      if (s != null) arr[s - 1] = g.teeth;
+    }
+    return arr;
+  }, [assign, gears, stages]);
+
+  const statuses = useMemo(
+    () => shaftStatuses(puzzle, seatedTeeth),
+    [puzzle, seatedTeeth],
+  );
+
+  const placedCount = seatedTeeth.filter((t) => t != null).length;
   const full = placedCount === stages;
 
-  // check for the win whenever a full assembly is reached
   useEffect(() => {
     if (!full) {
       setSolved(false);
       return;
     }
-    const win = Object.entries(solution).every(([k, st]) => assign[k] === st);
+    const win = statuses.every((s) => s === "ok");
     setSolved(win);
     if (win && typeof window !== "undefined") {
       try {
@@ -118,22 +163,135 @@ function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
         /* private mode — scores are cosmetic, never block play */
       }
     }
-  }, [full, assign, solution, puzzle.date]);
+  }, [full, statuses, puzzle.date]);
 
-  function placeAt(stage: number) {
+  const stageToGear = useMemo(() => {
+    const m: Record<number, string> = {};
+    for (const g of gears) {
+      const s = assign[g.key];
+      if (s != null) m[s] = g.key;
+    }
+    return m;
+  }, [assign, gears]);
+
+  // ── the 3D train ────────────────────────────────────────────────────────────
+  // ThreeStage.setup runs once; we re-run it on every placement by keying the stage
+  // on the arrangement + correctness signature. Human tap cadence makes a renderer
+  // re-init cheap, and it keeps the reduced-motion still frame in sync too.
+  // ponytail: keyed remount, not a live scene diff — swap to a stateRef diff only if
+  // re-init cost ever shows on a device.
+  const stageKey = useMemo(
+    () =>
+      shafts
+        .map((s) => {
+          const occ = stageToGear[s.index];
+          return `${occ ?? "-"}:${statuses[s.index - 1]}`;
+        })
+        .join("|") + (solved ? "!" : ""),
+    [shafts, stageToGear, statuses, solved],
+  );
+
+  const setup = useMemo(() => {
+    const spacing = 2.35;
+    const yOf = (shaftIndex: number) =>
+      (shaftIndex - 1) * spacing - ((stages - 1) * spacing) / 2;
+
+    return () => {
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x161009);
+
+      scene.add(new THREE.AmbientLight(0xffe9c8, 0.55));
+      const key = new THREE.DirectionalLight(0xfff2d8, 1.15);
+      key.position.set(3, 4, 6);
+      scene.add(key);
+      const rim = new THREE.DirectionalLight(0x88aaff, 0.35);
+      rim.position.set(-4, -2, 3);
+      scene.add(rim);
+
+      const accent = new THREE.Color(ACCENT);
+      const spinners: { obj: THREE.Object3D; rate: number }[] = [];
+
+      for (const shaft of shafts) {
+        const occ = gears.find((g) => assign[g.key] === shaft.index);
+        const y = yOf(shaft.index);
+        const x = shaft.index % 2 === 0 ? 0.42 : -0.42; // gentle snake so cogs mesh
+        if (occ) {
+          const st = statuses[shaft.index - 1];
+          const cog = makeCog(occ.teeth, {
+            color: BRASS,
+            emissive:
+              st === "ok" ? accent.getHex() : st === "bad" ? 0x772222 : 0,
+            opacity: 1,
+          });
+          cog.position.set(x, y, 0);
+          scene.add(cog);
+          const dir = shaft.index % 2 === 0 ? 1 : -1;
+          spinners.push({
+            obj: cog,
+            rate: dir * (0.9 + 24 / occ.teeth) * (solved ? 2.2 : 0.35),
+          });
+        } else {
+          const ghost = makeCog(24, { color: 0x4a4038, emissive: 0, opacity: 0.28 });
+          ghost.position.set(x, y, -0.1);
+          scene.add(ghost);
+        }
+      }
+
+      // the dial notch marker on the output shaft (top)
+      const outIdx = stages;
+      const outY = yOf(outIdx);
+      const outX = outIdx % 2 === 0 ? 0.42 : -0.42;
+      const target = shafts[outIdx - 1].target;
+      const notchAng = (target / dialTeeth) * Math.PI * 2 + Math.PI / 2;
+      const notch = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 12, 12),
+        new THREE.MeshStandardMaterial({
+          color: accent,
+          emissive: accent,
+          emissiveIntensity: 0.9,
+        }),
+      );
+      notch.position.set(
+        outX + Math.cos(notchAng) * 1.25,
+        outY + Math.sin(notchAng) * 1.25,
+        0.2,
+      );
+      scene.add(notch);
+
+      scene.userData.spinners = spinners;
+
+      const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+      const radius = ((stages - 1) * spacing) / 2 + 1.7;
+      return { scene, camera, radius, center: new THREE.Vector3(0, 0, 0) };
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stageKey]);
+
+  const onFrame = useMemo(
+    () =>
+      (dt: number, ctx: { scene: THREE.Scene }) => {
+        const spinners = ctx.scene.userData.spinners as
+          | { obj: THREE.Object3D; rate: number }[]
+          | undefined;
+        if (!spinners) return;
+        for (const s of spinners) s.obj.rotation.z += s.rate * dt;
+      },
+    [],
+  );
+
+  // ── interaction ─────────────────────────────────────────────────────────────
+  function seatAt(shaftIndex: number) {
     setSelected((sel) => {
       if (sel == null) {
-        // no wheel in hand — lift the one already at this stage back to the tray
-        const occupant = stageToGear[stage];
+        const occupant = stageToGear[shaftIndex];
         if (occupant) setAssign((a) => ({ ...a, [occupant]: null }));
         return null;
       }
       setAssign((a) => {
         const next = { ...a };
-        // if another wheel sits here, bump it back to the tray
-        const occupant = Object.keys(next).find((k) => next[k] === stage);
+        const occupant = Object.keys(next).find((k) => next[k] === shaftIndex);
         if (occupant) next[occupant] = null;
-        next[sel] = stage;
+        next[sel] = shaftIndex;
         return next;
       });
       return null;
@@ -142,7 +300,7 @@ function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
 
   function toggleTray(k: string) {
     if (assign[k] != null) {
-      setAssign((a) => ({ ...a, [k]: null })); // pull a placed wheel back
+      setAssign((a) => ({ ...a, [k]: null }));
       setSelected(null);
       return;
     }
@@ -155,9 +313,10 @@ function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
   }
 
   const trayGears = gears.filter((g) => assign[g.key] == null);
+  const stageList = shafts.map((s) => s.index);
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto w-full max-w-2xl">
       <Confetti active={solved} />
 
       {/* header plate */}
@@ -167,40 +326,71 @@ function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
         </p>
         <p className="mt-1 text-sm text-muted">{puzzle.provenance}</p>
         <p className="mt-2 text-xs text-muted">
-          Dial skin: {calendarSkin.name} {calendarSkin.glyph} · assemble the train
-          from mainspring to dial.
+          Dial skin: {calendarSkin.name} {calendarSkin.glyph} · seat the wheels so every
+          shaft&apos;s index rests on its engraved notch.
         </p>
       </div>
 
-      {/* THE TRAIN — the stage slots */}
-      <div className="mt-5">
-        <p className="microlabel text-muted">the train · stage 1 winds the mainspring</p>
+      {/* THE 3D GEAR TRAIN */}
+      <div className={styles.stageWrap}>
+        <ThreeStage
+          key={stageKey}
+          setup={setup}
+          onFrame={onFrame}
+          className={styles.stage}
+        />
+        <p className={styles.stageHint} aria-hidden>
+          barrel below · dial hand above
+        </p>
+      </div>
+
+      {/* THE SHAFTS — seat a wheel on each */}
+      <div className="mt-4">
+        <p className="microlabel text-muted">
+          the train · shaft 1 sits nearest the mainspring barrel
+        </p>
         <div className="mt-2 flex flex-wrap items-stretch gap-2">
-          {stageList.map((stage) => {
-            const occ = stageToGear[stage];
+          {stageList.map((shaftIndex) => {
+            const occ = stageToGear[shaftIndex];
             const g = occ ? gearOf(occ) : null;
+            const st = statuses[shaftIndex - 1];
+            const target = shafts[shaftIndex - 1].target;
+            const borderColor =
+              st === "ok"
+                ? ACCENT
+                : st === "bad"
+                  ? "#c0392b"
+                  : g
+                    ? ACCENT
+                    : undefined;
             return (
               <button
-                key={stage}
-                onClick={() => placeAt(stage)}
+                key={shaftIndex}
+                onClick={() => seatAt(shaftIndex)}
                 aria-label={
                   g
-                    ? `Stage ${stage}: ${g.label}. Tap to clear.`
-                    : `Stage ${stage}, empty. Tap to place the selected wheel.`
+                    ? `Shaft ${shaftIndex}: ${g.label}, ${g.teeth} teeth. Notch ${target}. ${st}. Tap to clear.`
+                    : `Shaft ${shaftIndex}, empty. Notch ${target}. Tap to seat the selected wheel.`
                 }
-                className="flex min-h-[88px] min-w-[88px] flex-1 flex-col items-center justify-center rounded-xl border p-2 transition"
+                className="flex min-h-[92px] min-w-[84px] flex-1 flex-col items-center justify-center rounded-xl border p-2 transition"
                 style={{
-                  borderColor: g ? ACCENT : undefined,
-                  background: g ? `${ACCENT}14` : undefined,
+                  borderColor,
+                  background: g ? `${ACCENT}12` : undefined,
                 }}
               >
-                <span className="microlabel text-muted">stage {stage}</span>
+                <span className="microlabel text-muted">shaft {shaftIndex}</span>
+                <span className="microlabel" style={{ color: ACCENT }}>
+                  notch {target}
+                </span>
                 {g ? (
                   <>
-                    <span className="mt-1 text-2xl" aria-hidden>
+                    <span className="mt-0.5 text-2xl" aria-hidden>
                       {g.glyph}
                     </span>
-                    <span className="text-center text-xs">{g.label}</span>
+                    <span className="text-center text-[11px] leading-tight">
+                      {g.label}
+                    </span>
+                    <span className="microlabel text-muted">{g.teeth}t</span>
                   </>
                 ) : (
                   <span className="mt-1 text-2xl text-muted" aria-hidden>
@@ -213,10 +403,10 @@ function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
         </div>
       </div>
 
-      {/* THE TRAY — unplaced wheels */}
+      {/* THE TRAY — unseated wheels */}
       <div className="mt-5">
         <p className="microlabel text-muted">
-          {selected ? "tap a stage to seat this wheel" : "the wheel-tray · tap to pick up"}
+          {selected ? "tap a shaft to seat this wheel" : "the wheel-tray · tap to pick up"}
         </p>
         <div className="mt-2 flex flex-wrap gap-2" aria-live="polite">
           {trayGears.length === 0 && (
@@ -237,22 +427,25 @@ function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
                 {g.glyph}
               </span>
               {g.label}
+              <span className="microlabel text-muted">{g.teeth}t</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* THE BACKPLATE — engraved constraints, live-checked */}
+      {/* THE BACKPLATE — engraved notches, live-checked */}
       <div className="mt-6 rounded-2xl border border-line bg-surface/40 p-4">
-        <p className="microlabel text-muted">the backplate · engraved rules</p>
+        <p className="microlabel text-muted">
+          the backplate · each shaft&apos;s index must land on its notch
+        </p>
         <ul className="mt-2 space-y-1.5">
-          {constraints.map((c, i) => {
-            const st = evalConstraint(c, assign, stages);
+          {shafts.map((s) => {
+            const st = statuses[s.index - 1];
             const mark = st === "ok" ? "✓" : st === "bad" ? "✕" : "·";
             const color =
               st === "ok" ? ACCENT : st === "bad" ? "#c0392b" : undefined;
             return (
-              <li key={i} className="flex items-start gap-2 text-sm">
+              <li key={s.index} className="flex items-start gap-2 text-sm">
                 <span
                   aria-hidden
                   className="mt-0.5 w-4 text-center"
@@ -260,13 +453,18 @@ function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
                 >
                   {mark}
                 </span>
-                <span className={st === "bad" ? "text-muted line-through" : ""}>
-                  {c.text}
+                <span className={st === "bad" ? "text-muted" : ""}>
+                  Shaft {s.index}&apos;s index must rest on notch{" "}
+                  <span style={{ color: ACCENT }}>{s.target}</span> of {dialTeeth}.
                 </span>
               </li>
             );
           })}
         </ul>
+        <p className="mt-2 text-xs text-muted">
+          The barrel starts the index at {puzzle.drive}; each wheel advances it by its
+          tooth count (mod {dialTeeth}).
+        </p>
       </div>
 
       {/* OPTIONAL TRIVIA SHORTCUT — never needed, only faster */}
@@ -282,7 +480,7 @@ function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
           <div className="mt-2 text-sm text-muted">
             <p>{puzzle.triviaHint}</p>
             <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-              {gears.map((g) => (
+              {gears.map((g: ChronosGear) => (
                 <li key={g.key}>
                   <span aria-hidden>{g.glyph}</span> {g.label}:{" "}
                   <span style={{ color: ACCENT }}>
@@ -292,7 +490,7 @@ function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
               ))}
             </ul>
             <p className="mt-2 text-xs">
-              Assembled, the train points its dial to{" "}
+              Assembled oldest-first, the dial hand reads{" "}
               {labelFor(calendarSkin.key, puzzle.dialYear)}.
             </p>
           </div>
@@ -314,7 +512,7 @@ function Box({ puzzle }: { puzzle: ChronosPuzzle }) {
             </span>
           ) : full ? (
             <span className="text-muted">
-              It jams — a wheel is out of order. Re-read the backplate.
+              It jams — an index misses its notch. Re-read the backplate.
             </span>
           ) : (
             <span className="text-muted">

@@ -1,48 +1,42 @@
-/* PARLOR v3 §3.2 — Chronos layout.
+/* PARLOR — Chronos (the gear-train ratio lock) layout.
  *
- * Only LAYOUT lives here (grid + clock sizing). Colors, type and surfaces stay
- * in the global design system (Tailwind + tokens) so this module never forks the
- * palette. Desktop changes are gated behind `min-width` queries — mobile keeps
- * its existing single-column responsive flow untouched.
- *
- * The one-screen mandate (1280×800 and 1920×1080, no scroll-to-play) is met by
- * laying prompt+clues beside the dial+slider+feedback on desktop, and capping the
- * grandfather clock's width so its tall SVG (~1.35:1) stays inside the fold. */
+ * Only LAYOUT lives here; colors/type/surfaces stay in the global design system
+ * (Tailwind + tokens) so this module never forks the palette. The 3D train is a
+ * height-boxed, full-width canvas (ThreeStage needs the container to carry a
+ * height); everything else flows in the component's single mobile-first column. */
 
-.play {
-  display: grid;
-  gap: 1.5rem;
+.stageWrap {
+  position: relative;
+  margin-top: 1.25rem;
+  width: 100%;
+  overflow: hidden; /* belt-and-suspenders: never let the canvas cause x-scroll */
+  border-radius: 1rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  background: #161009;
 }
 
-@media (min-width: 1024px) {
-  .play {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
-    gap: 2rem;
-    align-items: start;
+/* Portrait-first: a tall box on phones, capped on larger viewports so the train
+ * stays in one screen. ThreeStage frames the mechanism to whatever height it gets. */
+.stage {
+  width: 100%;
+  height: min(58vh, 460px);
+}
+
+@media (min-width: 768px) {
+  .stage {
+    height: 440px;
   }
 }
 
-/* The dial column centers the clock, readout, slider and per-round feedback. */
-.dialCol {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Mobile: roomy. Desktop: capped so the ~1.35:1 SVG clears one screen. */
-.clock {
-  width: min(72vw, 300px);
-}
-
-@media (min-width: 1024px) {
-  .clock {
-    width: 208px; /* ~281px tall — leaves room for slider + lock button in-fold */
-  }
-}
-
-/* The 5-square proximity line on the result screen. */
-.proximity {
-  font-size: 2.25rem;
-  letter-spacing: 0.15em;
-  line-height: 1;
+.stageHint {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 240, 214, 0.5);
+  pointer-events: none;
 }

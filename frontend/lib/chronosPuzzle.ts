@@ -1,17 +1,26 @@
-// CHRONOS — the clockwork logic box (G3). A ground-up rebuild of THE CLOCK into
-// a self-contained ordering puzzle: a horological gear TRAIN must be assembled
-// in the one correct order. Each wheel occupies a distinct STAGE (1 = nearest
-// the mainspring … N = the dial). Engraved on the backplate are CONSTRAINTS that
-// pin the train down to exactly one legal assembly — reachable by pure reasoning.
+// CHRONOS — the gear-train ratio lock (G3). A ground-up rebuild of THE CLOCK as a
+// 3D clockwork puzzle (rendered by F1's ThreeStage). The mechanism is a serial
+// gear TRAIN of S shafts: shaft 1 sits nearest the mainspring barrel, shaft S
+// carries the dial hand. Each shaft takes ONE brass wheel from the tray; a wheel's
+// TOOTH COUNT steps the running index forward, and every shaft carries an engraved
+// TARGET NOTCH the running index must land on. The lock opens only when the wheels
+// are arranged so every shaft's index rests on its notch at once.
 //
-// Trivia is a SHORTCUT, never a requirement: each wheel bears a founding year,
-// and the train is assembled oldest-first, so a chronology buff can read the
-// order straight off the engravings. But the constraints alone already force the
-// unique solution — see `solveChronos`, which never looks at the trivia. The
-// test drives that solver on the constraints only and reaches the baked answer.
+// The maths are EXACT integers (no floating point → a trustworthy uniqueness proof).
+// Running index at shaft i = (drive + Σ_{j≤i} teeth(wheel at j)) mod dialTeeth. The
+// generator draws wheels with DISTINCT tooth-residues mod dialTeeth, so each shaft's
+// required step (target_i − target_{i-1}) pins down exactly one wheel → exactly one
+// legal arrangement. `solveChronos` confirms this by brute-forcing every permutation
+// (S ≤ 5 ⇒ ≤120 perms — instant, obviously correct). It reads ONLY tooth counts +
+// notch targets; never the trivia.
 //
-// Deterministic: same (dayIndex,date) ⇒ same box for everyone (SSR/client agree,
-// see lib/rng.ts). Solution baked in; NO solve-time RNG anywhere.
+// Trivia is a SHORTCUT, never a requirement: each wheel is stamped with a founding
+// year and the train assembles oldest-first (nearest the barrel), so a chronology
+// buff reads the order straight off the engravings. The notches alone already force
+// the unique arrangement — the solver never looks at a year.
+//
+// Deterministic: same (dayIndex,date) ⇒ same mechanism for everyone (SSR/client
+// agree, see lib/rng.ts). Solution baked in; NO solve-time RNG anywhere.
 
 import { mulberry32, shuffled } from "./rng";
 import { pickCalendar, type CalendarSystem } from "./calendars";
@@ -19,33 +28,19 @@ import { pickCalendar, type CalendarSystem } from "./calendars";
 // ── shapes ────────────────────────────────────────────────────────────────────
 
 export interface ChronosGear {
-  key: string; // stable id, also the solution/constraint key
+  key: string; // stable id, also the solution key
   label: string; // "The Fusée"
   glyph: string; // decorative brass glyph
-  /** trivia shortcut: the year this wheel was cast. The train assembles
-   *  oldest-first, so ordering these years yields the stage order. Never read by
-   *  the solver — purely an optional accelerant. */
+  teeth: number; // tooth count — steps the running index by (teeth mod dialTeeth)
+  /** trivia shortcut: the year this wheel was cast. The train assembles oldest-first
+   *  (nearest the barrel), so ordering these years yields the shaft order. Never read
+   *  by the solver — purely an optional accelerant. */
   cast: number;
 }
 
-export type ConstraintKind =
-  | "first"
-  | "last"
-  | "fixed"
-  | "before"
-  | "imm-before"
-  | "gap"
-  | "adjacent"
-  | "parity";
-
-export interface ChronosConstraint {
-  kind: ConstraintKind;
-  /** engraved rule, phrased for the player */
-  text: string;
-  a: string; // gear key
-  b?: string; // gear key (relational kinds)
-  k?: number; // stage (fixed) / gap distance
-  flag?: "even" | "odd"; // parity
+export interface ChronosShaft {
+  index: number; // 1..S — 1 is nearest the mainspring barrel, S carries the hand
+  target: number; // engraved notch: the running index (0..dialTeeth-1) this shaft must show
 }
 
 export interface ChronosPuzzle {
@@ -55,12 +50,13 @@ export interface ChronosPuzzle {
   seed: number;
   /** ancient/rotating calendar skin that restyles the dial (reuses calendars.ts). */
   calendarSkin: CalendarSystem;
-  stages: number; // N — length of the train
-  gears: ChronosGear[]; // length N (train order is the puzzle)
-  constraints: ChronosConstraint[]; // minimal, uniquely-solving set
-  /** solution[gearKey] = stage 1..N. Baked so the client validates offline. */
+  dialTeeth: number; // D — divisions on every dial ring (also the tooth modulus)
+  drive: number; // barrel's starting index offset (0..D-1) — fixed part of the mechanism
+  shafts: ChronosShaft[]; // length S, engraved notch per shaft
+  gears: ChronosGear[]; // the tray: exactly S wheels, one per shaft
+  /** solution[gearKey] = shaft index 1..S. Baked so the client validates offline. */
   solution: Record<string, number>;
-  /** trivia flavor only — the dial the assembled train points to. */
+  /** trivia flavor only — the year the assembled dial hand reads. */
   dialYear: number;
   provenance: string;
   /** one-line optional-shortcut prompt shown behind the "cheat with history" flap. */
@@ -69,10 +65,10 @@ export interface ChronosPuzzle {
 
 // ── the solver (TRIVIA-BLIND) ───────────────────────────────────────────────────
 //
-// Pure ordering CSP over a permutation of stages 1..N. Brute force over every
-// permutation — N is tiny (≤6, ≤720 perms) so this is instant and obviously
-// correct, which is exactly what a uniqueness guarantee wants. Reads ONLY the
-// constraints + gear keys; never the `cast` years or any trivia.
+// Brute force over every permutation of wheels → shafts. S is tiny (≤5, ≤120 perms)
+// so this is instant and obviously correct — exactly what a uniqueness guarantee
+// wants. Reads ONLY tooth counts, the notch targets, `drive` and `dialTeeth`; never
+// the `cast` years or any other trivia.
 
 function permutations(n: number): number[][] {
   const out: number[][] = [];
@@ -83,65 +79,56 @@ function permutations(n: number): number[][] {
       out.push(cur.slice());
       return;
     }
-    for (let s = 1; s <= n; s++) {
-      if (used[s - 1]) continue;
-      used[s - 1] = true;
+    for (let s = 0; s < n; s++) {
+      if (used[s]) continue;
+      used[s] = true;
       cur.push(s);
       rec();
       cur.pop();
-      used[s - 1] = false;
+      used[s] = false;
     }
   };
   rec();
   return out;
 }
 
-function satisfies(
-  stageOf: Record<string, number>,
-  c: ChronosConstraint,
-  stages: number,
-): boolean {
-  const a = stageOf[c.a];
-  const b = c.b !== undefined ? stageOf[c.b] : undefined;
-  switch (c.kind) {
-    case "first":
-      return a === 1;
-    case "last":
-      return a === stages;
-    case "fixed":
-      return a === c.k;
-    case "before":
-      return b !== undefined && a < b;
-    case "imm-before":
-      return b !== undefined && b === a + 1;
-    case "gap":
-      return b !== undefined && b - a === (c.k ?? 0);
-    case "adjacent":
-      return b !== undefined && Math.abs(a - b) === 1;
-    case "parity":
-      return c.flag === "even" ? a % 2 === 0 : a % 2 === 1;
-    default:
-      return false;
+/** Running index at each shaft for a given wheel-per-shaft arrangement (shaft order). */
+export function runningMarks(
+  teethByShaft: number[],
+  drive: number,
+  dialTeeth: number,
+): number[] {
+  const marks: number[] = [];
+  let acc = ((drive % dialTeeth) + dialTeeth) % dialTeeth;
+  for (const t of teethByShaft) {
+    acc = (acc + (((t % dialTeeth) + dialTeeth) % dialTeeth)) % dialTeeth;
+    marks.push(acc);
   }
+  return marks;
 }
 
 /**
- * Every assembly consistent with `constraints`, capped at `cap` (default 2 — all
- * we need to prove uniqueness). Each result maps gearKey → stage. TRIVIA-BLIND:
- * reads only the gear keys and the constraints.
+ * Every arrangement consistent with the engraved notches, capped at `cap` (default 2
+ * — all we need to prove uniqueness). Each result maps gearKey → shaft index 1..S.
+ * TRIVIA-BLIND: reads only tooth counts + shaft targets + drive + dialTeeth.
  */
 export function solveChronos(
-  gears: Pick<ChronosGear, "key">[],
-  constraints: ChronosConstraint[],
-  stages: number,
+  gears: Pick<ChronosGear, "key" | "teeth">[],
+  shafts: Pick<ChronosShaft, "index" | "target">[],
+  drive: number,
+  dialTeeth: number,
   cap = 2,
 ): Record<string, number>[] {
-  const keys = gears.map((g) => g.key);
+  const order = [...shafts].sort((a, b) => a.index - b.index);
+  const targets = order.map((s) => s.target);
   const sols: Record<string, number>[] = [];
-  for (const perm of permutations(stages)) {
-    const stageOf: Record<string, number> = {};
-    keys.forEach((k, i) => (stageOf[k] = perm[i]));
-    if (constraints.every((c) => satisfies(stageOf, c, stages))) {
+  for (const perm of permutations(gears.length)) {
+    // perm[position] = index into `gears` for the wheel seated at shaft order[position]
+    const teethByShaft = perm.map((gi) => gears[gi].teeth);
+    const marks = runningMarks(teethByShaft, drive, dialTeeth);
+    if (marks.every((m, i) => m === targets[i])) {
+      const stageOf: Record<string, number> = {};
+      perm.forEach((gi, pos) => (stageOf[gears[gi].key] = order[pos].index));
       sols.push(stageOf);
       if (sols.length >= cap) break;
     }
@@ -151,7 +138,7 @@ export function solveChronos(
 
 // ── content ─────────────────────────────────────────────────────────────────────
 
-// A pool of horological wheels; the day draws N of them into its train.
+// A pool of horological wheels; the day draws S of them into its train.
 const GEAR_POOL: { key: string; label: string; glyph: string }[] = [
   { key: "mainspring", label: "The Mainspring Barrel", glyph: "◉" },
   { key: "fusee", label: "The Fusée", glyph: "◔" },
@@ -175,150 +162,68 @@ const MECHANISMS = [
   "The Grand Complication",
 ];
 
-const ORDINAL = ["", "first", "second", "third", "fourth", "fifth", "sixth"];
-
 // ── generation ──────────────────────────────────────────────────────────────────
+
+const DIAL_TEETH = 12; // clock-face divisions; also the tooth modulus
 
 export function generateChronos(dayIndex: number, date: string): ChronosPuzzle {
   const seed = (dayIndex ^ 0x3c07) >>> 0;
   const rand = mulberry32(seed);
   const weekday = new Date(date + "T00:00:00Z").getUTCDay();
 
-  // weekend days run one stage longer (a touch harder, per the daily-twist mandate)
+  // weekend trains run one shaft longer (a touch harder, per the daily-twist mandate)
   const stages = weekday === 0 || weekday === 5 || weekday === 6 ? 5 : 4;
+  const dialTeeth = DIAL_TEETH;
 
-  const gears = shuffled(GEAR_POOL, rand).slice(0, stages);
-  const keys = gears.map((g) => g.key);
+  const chosen = shuffled(GEAR_POOL, rand).slice(0, stages);
 
-  // baked solution: a random assembly order (permutation of stages)
+  // DISTINCT tooth-residues mod dialTeeth (1..D-1) — this is what forces uniqueness:
+  // each shaft's required step maps to exactly one wheel. Real tooth counts hide the
+  // residue behind a plausible clock-wheel size (residue + a multiple of the modulus,
+  // which leaves the residue — and therefore the maths — unchanged).
+  const residues = shuffled(
+    Array.from({ length: dialTeeth - 1 }, (_, i) => i + 1),
+    rand,
+  ).slice(0, stages);
+  const gearsBase = chosen.map((g, i) => ({
+    ...g,
+    teeth: residues[i] + dialTeeth * (2 + Math.floor(rand() * 3)), // 25..47
+  }));
+
+  // baked arrangement: wheel → shaft (a random permutation of stages)
   const order = shuffled(
     Array.from({ length: stages }, (_, i) => i + 1),
     rand,
   );
   const solution: Record<string, number> = {};
-  keys.forEach((k, i) => (solution[k] = order[i]));
-  const gearAt = (stage: number) => keys.find((k) => solution[k] === stage)!;
-  const label = (k: string) => gears.find((g) => g.key === k)!.label;
+  gearsBase.forEach((g, i) => (solution[g.key] = order[i]));
+  const gearAtShaft = (s: number) => gearsBase.find((g) => solution[g.key] === s)!;
 
-  // Enumerate every constraint TRUE of the baked solution, then subtract down to
-  // a minimal set that still forces a single assembly (same discipline as the
-  // séance engine).
-  const candidates: ChronosConstraint[] = [];
-  const s = solution;
+  const drive = Math.floor(rand() * dialTeeth);
 
-  candidates.push({
-    kind: "first",
-    a: gearAt(1),
-    text: `${label(gearAt(1))} sits nearest the mainspring — the first wheel of the train.`,
-  });
-  candidates.push({
-    kind: "last",
-    a: gearAt(stages),
-    text: `${label(gearAt(stages))} drives the dial — the last wheel of the train.`,
-  });
-
-  for (let st = 2; st < stages; st++) {
-    candidates.push({
-      kind: "fixed",
-      a: gearAt(st),
-      k: st,
-      text: `${label(gearAt(st))} turns at the ${ORDINAL[st]} stage.`,
-    });
+  // engraved notches = the running index the true arrangement produces at each shaft
+  const shafts: ChronosShaft[] = [];
+  let acc = drive;
+  for (let s = 1; s <= stages; s++) {
+    acc = (acc + (gearAtShaft(s).teeth % dialTeeth)) % dialTeeth;
+    shafts.push({ index: s, target: acc });
   }
 
-  for (let i = 0; i < keys.length; i++) {
-    for (let j = 0; j < keys.length; j++) {
-      if (i === j) continue;
-      const ki = keys[i];
-      const kj = keys[j];
-      const si = s[ki];
-      const sj = s[kj];
-      if (si < sj) {
-        candidates.push({
-          kind: "before",
-          a: ki,
-          b: kj,
-          text: `${label(ki)} turns somewhere before ${label(kj)}.`,
-        });
-      }
-      if (sj === si + 1) {
-        candidates.push({
-          kind: "imm-before",
-          a: ki,
-          b: kj,
-          text: `${label(ki)} meshes directly into ${label(kj)}.`,
-        });
-      }
-      if (sj - si >= 2) {
-        candidates.push({
-          kind: "gap",
-          a: ki,
-          b: kj,
-          k: sj - si,
-          text: `${label(kj)} lies ${sj - si} stages down-train from ${label(ki)}.`,
-        });
-      }
-      if (i < j && Math.abs(si - sj) === 1) {
-        candidates.push({
-          kind: "adjacent",
-          a: ki,
-          b: kj,
-          text: `${label(ki)} and ${label(kj)} are neighbours in the train.`,
-        });
-      }
-    }
-  }
-
-  for (const k of keys) {
-    const even = s[k] % 2 === 0;
-    candidates.push({
-      kind: "parity",
-      a: k,
-      flag: even ? "even" : "odd",
-      text: `${label(k)} occupies an ${even ? "even" : "odd"}-numbered stage.`,
-    });
-  }
-
-  // Prune priority: drop the strongest/most-revealing kinds first so the minimal
-  // survivor set leans on deduction rather than one give-away.
-  const PRUNE: Record<ConstraintKind, number> = {
-    fixed: 0,
-    first: 1,
-    last: 1,
-    "imm-before": 2,
-    gap: 3,
-    adjacent: 4,
-    before: 5,
-    parity: 6,
-  };
-
-  let clues = shuffled(candidates, rand).sort(
-    (a, b) => PRUNE[a.kind] - PRUNE[b.kind],
-  );
-  const gearKeys = gears.map((g) => ({ key: g.key }));
-  for (const cand of [...clues]) {
-    const trial = clues.filter((c) => c !== cand);
-    if (solveChronos(gearKeys, trial, stages, 2).length === 1) {
-      clues = trial;
-    }
-  }
-  // present interesting/absolute clues first for readability
-  clues = [...clues].sort((a, b) => PRUNE[b.kind] - PRUNE[a.kind]);
-
-  // trivia layer (SHORTCUT ONLY) — cast years increase with distance from the
-  // mainspring; the dial points to the youngest wheel's year.
+  // trivia layer (SHORTCUT ONLY): cast years increase with distance from the barrel;
+  // the dial hand reads the youngest wheel's year.
   const baseEra = 1650 + Math.floor(rand() * 250); // 1650..1899
   const step = 12 + Math.floor(rand() * 20); // 12..31 years between wheels
-  const gearsWithCast: ChronosGear[] = gears.map((g) => ({
+  const gears: ChronosGear[] = gearsBase.map((g) => ({
     ...g,
     cast: baseEra + (solution[g.key] - 1) * step,
   }));
   const dialYear = baseEra + (stages - 1) * step;
+
   const mechanism = MECHANISMS[Math.floor(rand() * MECHANISMS.length)];
   const calendarSkin = pickCalendar(dayIndex);
   const provenance = `${mechanism}, re-cased through ${stages} generations of the Order's horologists.`;
   const triviaHint =
-    "Each wheel is stamped with the year it was cast — the train assembles oldest-first, nearest the mainspring.";
+    "Each wheel is stamped with the year it was cast — the train assembles oldest-first, nearest the barrel.";
 
   return {
     date,
@@ -326,9 +231,10 @@ export function generateChronos(dayIndex: number, date: string): ChronosPuzzle {
     mechanism,
     seed,
     calendarSkin,
-    stages,
-    gears: gearsWithCast,
-    constraints: clues,
+    dialTeeth,
+    drive,
+    shafts,
+    gears,
     solution,
     dialYear,
     provenance,
