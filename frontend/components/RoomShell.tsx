@@ -5,12 +5,14 @@ import { RankBadge } from "./CardFace";
 import { gameByHref } from "@/lib/games";
 import { tutorialByHref } from "@/lib/tutorials";
 import TutorialOverlay from "./TutorialOverlay";
+import FluidStage from "./FluidStage";
 
 const SUIT = CATEGORY_GLYPH; // single source (a11y non-color channel)
 
 /** Room chrome: brass doorway frame, engraved nameplate, exit back to lobby. */
 export default function RoomShell({
   label,
+  title,
   accent,
   href,
   leftRail,
@@ -18,6 +20,11 @@ export default function RoomShell({
   children,
 }: {
   label: string;
+  /** Page heading. Rooms whose content already renders an <h1> omit this; rooms
+   *  that don't (séance/thread/ladder/clock) pass one so every route has exactly
+   *  one <h1> for the outline/SEO/screen-reader. Rendered `sr-only` (mirrors
+   *  BoardGame's pattern) — it names the page without imposing a visual title. */
+  title?: string;
   accent: Category;
   /** This room's deck href (e.g. "/mystery") — looked up in lib/games.ts for
    *  the top-right rank badge. Omit for non-game rooms (e.g. /profile). */
@@ -44,7 +51,7 @@ export default function RoomShell({
         ? "lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]"
         : "lg:grid-cols-[minmax(0,1fr)_minmax(0,15rem)]";
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 pb-24 pt-6 sm:px-8">
+    <main className="relative min-h-screen overflow-hidden pb-24 pt-6">
       <div className="glow" style={{ background: hex }} aria-hidden />
 
       {/* Brass doorway top rule */}
@@ -54,7 +61,14 @@ export default function RoomShell({
         aria-hidden
       />
 
-      <header className="relative z-10 flex items-center justify-between">
+      {/* FluidStage owns the adaptive L/R gutter (clamp) + the room max-width, so
+          header and content share one column that widens smallest→largest with no
+          dead gutters and never x-overflows. --d-maxw (§3.0 desktop density) = 80rem. */}
+      <FluidStage as="div" maxWidth="80rem" className="relative z-10">
+      {/* One page heading for the outline/SEO/SR; only rooms lacking their own. */}
+      {title && <h1 className="sr-only">{title}</h1>}
+
+      <header className="flex items-center justify-between">
         {/* Logo, top-left — the way back to the lobby */}
         <div className="flex items-center gap-2">
           <Link
@@ -81,19 +95,20 @@ export default function RoomShell({
       </header>
 
       {/* Thin brass accent rule under header */}
-      <div className="relative z-10 mt-3 border-t brass-rule" aria-hidden />
+      <div className="mt-3 border-t brass-rule" aria-hidden />
 
       {hasRails ? (
         <div
-          className={`relative z-10 mx-auto mt-6 grid max-w-6xl grid-cols-1 gap-4 lg:items-start ${railCols}`}
+          className={`mt-6 grid grid-cols-1 gap-4 lg:items-start ${railCols}`}
         >
           {leftRail && <div className="min-w-0 lg:sticky lg:top-6">{leftRail}</div>}
           <div className="min-w-0">{children}</div>
           {rightRail && <div className="min-w-0 lg:sticky lg:top-6">{rightRail}</div>}
         </div>
       ) : (
-        <div className="relative z-10 mx-auto mt-6 max-w-5xl">{children}</div>
+        <div className="mt-6">{children}</div>
       )}
+      </FluidStage>
 
       <Link
         href="/"

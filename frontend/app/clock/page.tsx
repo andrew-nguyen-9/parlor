@@ -19,7 +19,7 @@ export default async function ClockPage({
   const skin = puzzle ? puzzle.calendarSkin.name.toLowerCase() : "wound down";
 
   return (
-    <RoomShell label={`chronos · ${skin}`} accent="music" href="/clock">
+    <RoomShell label={`chronos · ${skin}`} title="Chronos" accent="music" href="/clock">
       <ClockGame puzzle={puzzle} requestedDate={valid ?? null} />
     </RoomShell>
   );

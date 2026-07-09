@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 /**
@@ -99,6 +99,10 @@ function disposeScene(scene: THREE.Scene): void {
 
 export default function ThreeStage({ setup, onFrame, className, style }: ThreeStageProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  // WebGL can be unavailable (GPU blocklist, privacy mode, headless, low-end).
+  // When so, we render a graceful notice instead of white-screening the route —
+  // the 3D rooms (/clock, /map) keep their always-present DOM control surface.
+  const [glUnavailable, setGlUnavailable] = useState(false);
   // Keep the latest callbacks without re-initializing the renderer on every render.
   const setupRef = useRef(setup);
   const onFrameRef = useRef(onFrame);
@@ -112,7 +116,17 @@ export default function ThreeStage({ setup, onFrame, className, style }: ThreeSt
     const width = Math.max(1, container.clientWidth);
     const height = Math.max(1, container.clientHeight);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    // `new WebGLRenderer` throws when getContext returns null (no WebGL). Catch it
+    // so the room degrades to DOM controls rather than crashing the whole route.
+    // ponytail: guards context CREATION (the reported crash); mid-session context
+    // loss is out of scope — add a webglcontextlost listener if it ever surfaces.
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    } catch {
+      setGlUnavailable(true);
+      return;
+    }
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); // ponytail: DPR>2 is invisible on-screen, halves mobile fps
     renderer.setSize(width, height, false);
@@ -171,6 +185,23 @@ export default function ThreeStage({ setup, onFrame, className, style }: ThreeSt
       canvas.remove();
     };
   }, []);
+
+  if (glUnavailable) {
+    return (
+      <div
+        className={className}
+        style={style}
+        role="img"
+        aria-label="3D view unavailable — play with the controls below"
+      >
+        <div className="flex h-full w-full items-center justify-center p-4 text-center">
+          <p className="microlabel text-muted">
+            3D view unavailable here — the room still plays with the controls below.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return <div ref={containerRef} className={className} style={style} />;
 }
