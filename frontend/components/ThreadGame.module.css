@@ -6,10 +6,11 @@
    No phase-swapping full-height cards → chain + input + reveals always share one
    desktop screen (verified 1280×800 / 1920×1080), no scroll.
 
-   The "woven thread" is a single border running down the knot gutter (::before),
-   so there is no SVG and nothing to animate for prefers-reduced-motion. Tier
-   colour lives on the knot only; the spun segment above a solved knot inherits
-   it via --knot so the thread visibly takes the link's colour as it is woven. */
+   The "woven thread" is a real SVG path (ThreadGame.tsx) measured through the
+   knots: a faint warp runs the full length with a sheen shuttling down it, and
+   each stitch weaves in a tier-coloured segment (framer-motion pathLength) as it
+   resolves. Under prefers-reduced-motion the sheen is dropped and coloured
+   segments render fully drawn (no draw-in loop). */
 
 .rail {
   position: relative;
@@ -18,42 +19,38 @@
   gap: 0.5rem;
 }
 
-/* THE WARP — a single glowing gold thread running the whole length of the loom,
-   down the knot gutter behind every knot. It is the "thread" the room is named
-   for: a shimmering sheen travels down it so the whole rail reads as live,
-   spun-gold weaving even before a stitch is worked. Purely decorative (behind
-   the knots), so it never blocks input and vanishes cleanly under reduced motion. */
-.rail::before {
-  content: "";
+/* the woven-thread SVG, laid over the knot gutter behind the knots */
+.thread {
   position: absolute;
-  left: calc(0.875rem - 1px);
-  top: 0.75rem;
-  bottom: 0.75rem;
-  width: 2px;
-  border-radius: 2px;
-  background: linear-gradient(
-    180deg,
-    rgba(199, 154, 58, 0.05),
-    rgba(212, 175, 90, 0.55) 45%,
-    rgba(240, 214, 140, 0.85) 50%,
-    rgba(212, 175, 90, 0.55) 55%,
-    rgba(199, 154, 58, 0.05)
-  );
-  background-size: 100% 260%;
-  box-shadow: 0 0 8px rgba(212, 175, 90, 0.35);
+  inset: 0;
   pointer-events: none;
+  overflow: visible;
   z-index: 0;
-  animation: threadShimmer 3.6s ease-in-out infinite;
 }
 
-/* the sheen sliding down the warp — the "shuttle" pass */
-@keyframes threadShimmer {
-  0%,
-  100% {
-    background-position: 50% 0%;
+/* THE WARP — the faint full-length gold thread the room is named for. */
+.warp {
+  stroke: rgba(199, 154, 58, 0.35);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 3px rgba(212, 175, 90, 0.25));
+}
+
+/* a single bright sheen shuttling down the warp — a short travelling dash */
+.sheen {
+  stroke: rgba(240, 214, 140, 0.9);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 20 320;
+  filter: drop-shadow(0 0 4px rgba(212, 175, 90, 0.55));
+  animation: sheenTravel 3.6s linear infinite;
+}
+
+@keyframes sheenTravel {
+  from {
+    stroke-dashoffset: 340;
   }
-  50% {
-    background-position: 50% 100%;
+  to {
+    stroke-dashoffset: -340;
   }
 }
 
@@ -73,10 +70,9 @@
   animation: knotPulse 1.9s ease-in-out infinite;
 }
 
-/* reduced motion: hold the gold, drop every animation — the thread still reads
-   as spun gold, it just stops shimmering/breathing */
+/* reduced motion: hold the gold, drop every animation */
 @media (prefers-reduced-motion: reduce) {
-  .rail::before,
+  .sheen,
   .knotActive {
     animation: none;
   }
@@ -89,16 +85,6 @@
   align-items: start;
   column-gap: 0.75rem;
   padding: 0.5rem 0;
-}
-
-/* the thread: a vertical seam from this knot up to the previous one */
-.link:not(:first-child)::before {
-  content: "";
-  position: absolute;
-  left: calc(0.875rem - 1px);
-  top: -0.5rem;
-  height: 1rem;
-  border-left: 2px dashed var(--knot, #26263a);
 }
 
 .knot {
@@ -141,12 +127,28 @@
   overflow: hidden;
 }
 
-.hintChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px dashed var(--knot, #8a6d2f);
-  border-radius: 9999px;
-  padding: 0.15rem 0.6rem;
-  letter-spacing: 0.12em;
+/* HINT L2 — the answer's letter scaffold: monospace slots, first + passing
+   letter filled, spaces preserved so word shape reads. */
+.scaffold {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.4rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.slot,
+.slotFilled {
+  min-width: 0.6ch;
+  text-align: center;
+  white-space: pre;
+}
+
+.slot {
+  color: #6b6b80;
+}
+
+.slotFilled {
+  font-weight: 700;
 }

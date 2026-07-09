@@ -1,7 +1,12 @@
 "use client";
 
-import { useMemo, useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useMemo, useState, useRef, useEffect, useLayoutEffect } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useReducedMotion,
+  useAnimationControls,
+} from "framer-motion";
 import { pickRotating } from "@/lib/rng";
 import { CATEGORY_HEX, type Question, type ThreadLink } from "@/lib/types";
 import { buildShare, type Tier } from "@/lib/share";
@@ -80,6 +85,26 @@ function isMatch(guess: string, answer: string): boolean {
   );
 }
 
+// Hint ladder — each press spends the clean-solve tier (hit → near) once and
+// escalates the help. Level 1: the tie (why this answer belongs to the theme).
+// Level 2: the letter scaffold (first + passing letter + word/length shape).
+const MAX_HINT = 2;
+
+/** Answer skeleton: one glyph per character, letters shown as slots. The first
+ *  and last A-Z letters are filled (they're the thread's warp+weft the room is
+ *  built around); every other letter is a blank. Spaces/punctuation pass through
+ *  so word shape reads at a glance. Pure — the letter-scaffold assist. */
+function scaffold(answer: string): { ch: string; filled: boolean }[] {
+  const idx = [...answer].map((c, i) => (/[a-zA-Z]/.test(c) ? i : -1)).filter((i) => i >= 0);
+  const first = idx[0];
+  const last = idx[idx.length - 1];
+  return [...answer].map((c, i) => {
+    if (!/[a-zA-Z]/.test(c)) return { ch: c === " " ? "  " : c, filled: false };
+    if (i === first || i === last) return { ch: c.toUpperCase(), filled: true };
+    return { ch: "_", filled: false };
+  });
+}
+
 export default function ThreadGame({
   threads,
   clues,
@@ -106,15 +131,67 @@ export default function ThreadGame({
   const [input, setInput] = useState("");
   const [attempts, setAttempts] = useState(0); // wrong tries on the active link
   const [retry, setRetry] = useState<string | null>(null);
-  const [hintUsed, setHintUsed] = useState(false);
+  const [hintLevel, setHintLevel] = useState(0); // 0=none, 1=tie, 2=scaffold
   const [phase, setPhase] = useState<"chain" | "final" | "done">("chain");
   const [themeGuess, setThemeGuess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const shake = useAnimationControls(); // wrong-guess wobble on the input row
+
+  // --- THE LOOM: measured SVG woven thread through the knots (see .module.css) --
+  const railRef = useRef<HTMLDivElement>(null);
+  const knotRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [centers, setCenters] = useState<{ x: number; y: number }[]>([]);
+  const [dims, setDims] = useState({ w: 0, h: 0 });
 
   useEffect(() => {
     if (phase === "chain") inputRef.current?.focus();
   }, [active, phase]);
+
+  // Measure each knot's centre relative to the rail so the thread can be woven
+  // exactly through them (knot rows are variable-height — the active one is tall
+  // — so positions must be measured, not assumed even). Re-runs on any layout
+  // shift (state/phase) and on resize.
+  useLayoutEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const measure = () => {
+      const rb = rail.getBoundingClientRect();
+      const cs = knotRefs.current
+        .slice(0, nodes.length)
+        .map((el) => {
+          if (!el) return null;
+          const b = el.getBoundingClientRect();
+          return { x: b.left - rb.left + b.width / 2, y: b.top - rb.top + b.height / 2 };
+        })
+        .filter((c): c is { x: number; y: number } => c !== null);
+      setCenters(cs);
+      setDims({ w: rb.width, h: rb.height });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(rail);
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes, active, phase, hintLevel, retry]);
+
+  // Full faint thread top→bottom through every knot (a lead-in from the top edge
+  // and a tail to the bottom keep the warp continuous). One continuous path.
+  // `bow` is a hoisted function declaration below — must stay a hook, above the
+  // early return, to keep hook order stable.
+  const basePath = useMemo(() => {
+    if (centers.length === 0) return "";
+    const pts = [
+      { x: centers[0].x, y: 0 },
+      ...centers,
+      { x: centers[centers.length - 1].x, y: dims.h },
+    ];
+    return (
+      `M ${pts[0].x} ${pts[0].y} ` +
+      pts.slice(1).map((p, i) => bow(pts[i], p)).join(" ")
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centers, dims.h]);
 
   if (!puzzle || chain.length === 0) {
     return (
@@ -126,12 +203,33 @@ export default function ThreadGame({
     );
   }
 
+  // A gentle S-weave (cubic control points, no leading M) between two points —
+  // the horizontal bow is what makes the thread read as woven rather than a
+  // plain rule. Amplitude stays small so it never leaves the knot gutter (no
+  // x-overflow at any breakpoint).
+  function bow(a: { x: number; y: number }, b: { x: number; y: number }): string {
+    const dy = b.y - a.y;
+    const amp = Math.min(7, Math.abs(dy) / 3);
+    return `C ${a.x - amp} ${a.y + dy * 0.34}, ${b.x + amp} ${a.y + dy * 0.66}, ${b.x} ${b.y}`;
+  }
+
+  // The coloured segment that "weaves in" when a link resolves (or reaches the
+  // active knot): from the previous knot — or the top edge for the first — down
+  // to knot i.
+  function segment(i: number): string {
+    const b = centers[i];
+    if (!b) return "";
+    const a = i === 0 ? { x: b.x, y: 0 } : centers[i - 1];
+    if (!a) return "";
+    return `M ${a.x} ${a.y} ${bow(a, b)}`;
+  }
+
   function resolve(state: Resolved) {
     setNodes((ns) => ns.map((n, i) => (i === active ? { ...n, state } : n)));
     setInput("");
     setAttempts(0);
     setRetry(null);
-    setHintUsed(false);
+    setHintLevel(0);
     if (active + 1 >= chain.length) {
       sfxPianoChord();
       setPhase("final");
@@ -144,6 +242,7 @@ export default function ThreadGame({
     if (nodes[active]?.state !== "pending") return;
     if (!isMatch(input, nodes[active].link.answer)) {
       sfxWrong();
+      if (!reduced) shake.start({ x: [0, -7, 6, -4, 3, 0], transition: { duration: 0.32 } });
       // First miss is forgiven — one wrong guess shouldn't kill the loosest
       // input in the game. The second wrong guess unravels the link.
       if (attempts < 1) {
@@ -156,17 +255,16 @@ export default function ThreadGame({
       return;
     }
     sfxCorrect();
-    resolve(hintUsed ? "near" : "hit"); // a spent hint downgrades hit → near
+    resolve(hintLevel > 0 ? "near" : "hit"); // a spent hint downgrades hit → near
   }
 
-  // The hint costs: it spends the clean-solve tier (hit → near) and shows the
-  // answer's PASSING letter (its final A-Z char — the one the chain actually
-  // needs to keep weaving) rather than its first, which is the more useful
-  // half of the puzzle once a player is stuck.
+  // The hint ladder: each press spends the clean-solve tier (hit → near) and
+  // escalates. L1 reveals the tie (the thematic clue, otherwise hidden until
+  // solved); L2 reveals the letter scaffold + passing letter. Softest → strongest.
   function hint() {
-    if (nodes[active]?.state !== "pending" || hintUsed) return;
+    if (nodes[active]?.state !== "pending" || hintLevel >= MAX_HINT) return;
     sfx.tick();
-    setHintUsed(true);
+    setHintLevel((h) => h + 1);
     inputRef.current?.focus();
   }
 
@@ -244,8 +342,47 @@ export default function ThreadGame({
       </p>
 
       {/* THE RAIL — every link, resolved ones revealed in place, the active one
-          expanded with its input. This single list is the whole game. */}
-      <div className={styles.rail}>
+          expanded with its input. This single list is the whole game. The woven
+          SVG thread is drawn through the knots (measured), weaving in a coloured
+          segment each time a stitch resolves. */}
+      <div ref={railRef} className={styles.rail}>
+        {dims.w > 0 && basePath && (
+          <svg
+            className={styles.thread}
+            width={dims.w}
+            height={dims.h}
+            viewBox={`0 0 ${dims.w} ${dims.h}`}
+            fill="none"
+            aria-hidden="true"
+          >
+            {/* the full warp, faint */}
+            <path d={basePath} className={styles.warp} />
+            {/* a single sheen travelling down the warp — the shuttle pass */}
+            {!reduced && <path d={basePath} className={styles.sheen} />}
+            {/* each resolved (or active) stitch weaves in its coloured segment */}
+            {nodes.map((n, i) => {
+              const done = n.state !== "pending";
+              const isActive = phase === "chain" && i === active;
+              if (!done && !isActive) return null;
+              if (!centers[i]) return null;
+              const color = done ? KNOT[n.state] : KNOT.active;
+              return (
+                <motion.path
+                  key={`seg-${i}-${n.state}`}
+                  d={segment(i)}
+                  stroke={color}
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                  style={{ filter: `drop-shadow(0 0 4px ${color}88)` }}
+                  initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: reduced ? 0 : 0.6, ease: "easeOut" }}
+                />
+              );
+            })}
+          </svg>
+        )}
+
         {nodes.map((n, i) => {
           const isActive = phase === "chain" && i === active;
           const knot =
@@ -255,6 +392,9 @@ export default function ThreadGame({
           return (
             <div key={i} className={styles.link} style={{ ["--knot" as string]: knot }}>
               <span
+                ref={(el) => {
+                  knotRefs.current[i] = el;
+                }}
                 className={`${styles.knot} ${
                   done ? styles.knotDone : isActive ? styles.knotActive : ""
                 }`}
@@ -299,15 +439,47 @@ export default function ThreadGame({
                           begins with &ldquo;{firstLetter(n.link.answer)}&rdquo;
                         </p>
                       )}
+
+                    {/* HINT L1 — the tie: why this answer belongs to the theme. */}
+                    {hintLevel >= 1 && (
+                      <motion.p
+                        initial={reduced ? false : { opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="microlabel mt-2 leading-snug text-smoke"
+                      >
+                        <span style={{ color: THREAD_HEX }}>clue&nbsp;·&nbsp;</span>
+                        {n.link.link}
+                      </motion.p>
+                    )}
+
+                    {/* HINT L2 — the letter scaffold + passing letter. */}
+                    {hintLevel >= 2 && (
+                      <motion.div
+                        initial={reduced ? false : { opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-2"
+                      >
+                        <div className={styles.scaffold}>
+                          {scaffold(n.link.answer).map((s, k) => (
+                            <span
+                              key={k}
+                              className={s.filled ? styles.slotFilled : styles.slot}
+                              style={s.filled ? { color: THREAD_HEX } : undefined}
+                            >
+                              {s.ch}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="microlabel mt-1 text-smoke">
+                          passes the thread on &ldquo;{passingLetter(n.link.answer)}…&rdquo;
+                        </p>
+                      </motion.div>
+                    )}
+
                     {retry && (
                       <p className="microlabel mt-2 text-music">{retry}</p>
                     )}
-                    {hintUsed && (
-                      <p className={`${styles.hintChip} microlabel mt-2`} style={{ color: THREAD_HEX }}>
-                        hint · passes the thread on “{passingLetter(n.link.answer)}…”
-                      </p>
-                    )}
-                    <div className="mt-3 flex gap-2">
+                    <motion.div className="mt-3 flex gap-2" animate={shake}>
                       <input
                         ref={inputRef}
                         value={input}
@@ -324,14 +496,18 @@ export default function ThreadGame({
                       >
                         stitch →
                       </button>
-                    </div>
+                    </motion.div>
                     <div className="mt-2 flex gap-4">
                       <button
                         onClick={hint}
-                        disabled={hintUsed}
+                        disabled={hintLevel >= MAX_HINT}
                         className="microlabel text-smoke transition hover:text-muted disabled:opacity-40"
                       >
-                        {hintUsed ? "hint spent" : "hint (costs a clean stitch)"}
+                        {hintLevel === 0
+                          ? "hint (costs a clean stitch)"
+                          : hintLevel < MAX_HINT
+                            ? "more help →"
+                            : "hint spent"}
                       </button>
                       <button
                         onClick={reveal}
