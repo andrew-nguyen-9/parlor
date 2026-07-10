@@ -12,6 +12,7 @@ import {
   histUndo,
   histRedo,
   histState,
+  withAutoElim,
   type Board,
   type History,
   type Clue,
@@ -174,6 +175,62 @@ describe("deduction engine", () => {
       if (d.mark === 2) expect(pos[d.cat][d.val]).toBe(d.seat);
       else expect(pos[d.cat][d.val]).not.toBe(d.seat);
     }
+  });
+});
+
+describe("withAutoElim (logic-grid assist)", () => {
+  const { dayIndex, date } = day(20003);
+  const p = generateSeance(dayIndex, date);
+  const n = p.n;
+  const blank = (): Board => emptyBoard(p);
+
+  it("a confirm auto-excludes the rest of its seat-row and value-column", () => {
+    const b = blank();
+    b[0][1][2] = 2; // confirm cat0, seat1, val2
+    const v = withAutoElim(b, n);
+    expect(v[0][1][2]).toBe(2); // confirm survives
+    for (let x = 0; x < n; x++) {
+      if (x !== 2) expect(v[0][1][x]).toBe(1); // rest of the row snuffed
+      if (x !== 1) expect(v[0][x][2]).toBe(1); // rest of the column snuffed
+    }
+    // never leaks into another category
+    for (let s = 0; s < n; s++) for (let x = 0; x < n; x++) expect(v[1][s][x]).toBe(0);
+  });
+
+  it("is derived, not persisted: blanking the confirm releases its auto-X", () => {
+    const b = blank();
+    b[0][1][2] = 2;
+    expect(withAutoElim(b, n)[0][0][2]).toBe(1); // forced while confirmed
+    b[0][1][2] = 0; // blank it (input mutated, mirroring the app's manual store)
+    expect(withAutoElim(b, n)[0][0][2]).toBe(0); // released — nothing forces it
+  });
+
+  it("keeps an auto-X still forced by ANOTHER confirm", () => {
+    const b = blank();
+    b[0][0][0] = 2; // forces col0 seat1 -> X
+    b[0][1][1] = 2; // also forces col0 seat1 -> X (its row)
+    expect(withAutoElim(b, n)[0][1][0]).toBe(1);
+    b[0][0][0] = 0; // drop the first confirm
+    expect(withAutoElim(b, n)[0][1][0]).toBe(1); // still forced by the second
+  });
+
+  it("preserves manual marks and never adds a confirm (solve-check safe)", () => {
+    // build the full true solution as a confirm-only board
+    const pos = posOf(p);
+    const b = blank();
+    for (let c = 0; c < p.categories.length; c++)
+      for (let val = 0; val < n; val++) b[c][pos[c][val]][val] = 2;
+    const v = withAutoElim(b, n);
+    // exactly one confirm per (cat, seat), matching truth — validation intact
+    for (let c = 0; c < p.categories.length; c++)
+      for (let seat = 0; seat < n; seat++) {
+        const confirms = v[c][seat].map((m, val) => (m === 2 ? val : -1)).filter((x) => x >= 0);
+        expect(confirms).toEqual([p.solution[c][seat]]);
+      }
+    // a manual X is left untouched, never promoted
+    const b2 = blank();
+    b2[0][0][0] = 1;
+    expect(withAutoElim(b2, n)[0][0][0]).toBe(1);
   });
 });
 

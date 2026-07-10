@@ -500,6 +500,32 @@ export function emptyBoard(p: SeancePuzzle): Board {
   );
 }
 
+/**
+ * Logic-grid assist: return a copy of `board` with auto-eliminations overlaid.
+ * A blank cell (0) that shares its seat (row) or value (column) with a CONFIRM
+ * (2) in the same category is marked excluded (1) — exactly one value per seat
+ * and one seat per value. Manual marks (1/2) are left untouched.
+ *
+ * Auto-X is DERIVED, never persisted: the app stores only the player's manual
+ * marks and calls this for display/interaction. So blanking a confirm upstream
+ * releases precisely the X's it forced — unless another confirm in the same
+ * row/col still forces them (they get re-derived here). Confirms are never
+ * added, so solve-validation (which reads confirms only) is never affected.
+ */
+export function withAutoElim(board: Board, n: number): Board {
+  const out = board.map((cat) => cat.map((row) => row.slice()));
+  for (let c = 0; c < out.length; c++) {
+    for (let seat = 0; seat < n; seat++) {
+      for (let val = 0; val < n; val++) {
+        if (out[c][seat][val] !== 2) continue;
+        for (let v = 0; v < n; v++) if (v !== val && board[c][seat][v] === 0) out[c][seat][v] = 1;
+        for (let s = 0; s < n; s++) if (s !== seat && board[c][s][val] === 0) out[c][s][val] = 1;
+      }
+    }
+  }
+  return out;
+}
+
 /** Encode the player's marks as solver domains. */
 function marksToDomains(board: Board, p: SeancePuzzle): boolean[][] {
   const n = p.n;

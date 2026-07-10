@@ -135,9 +135,11 @@
 }
 .clue {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 2.75rem; /* ≥44px tap target */
   text-align: left;
   border: 1px solid transparent;
   border-radius: 0.5rem;
@@ -162,11 +164,14 @@
   opacity: 0.4;
 }
 .flagBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 2.75rem; /* ≥44px tap target */
+  height: 2.75rem;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   line-height: 1;
   color: rgb(var(--c-smoke));
   cursor: pointer;
@@ -180,14 +185,16 @@
   color: #7040a8;
 }
 
-/* the unified matrix.
- * safety valve: scroll inside the wrapper, never the page. A faint radial
- * séance glow behind the grid reads as scrying-table candlelight (decorative,
- * fixed — no motion, no CPU). */
+/* The TRANSPOSED matrix (E1): seats are the N columns, category values the
+ * K·N rows. Only N (≤7) columns, so table-layout:fixed + width:100% makes it
+ * fit ANY width with the wrapper clipping any sub-pixel overflow — no
+ * horizontal scroll at 320–1920px, no rotation. The long axis scrolls
+ * vertically only. A faint radial glow reads as scrying-table candlelight. */
 .matrixWrap {
-  align-self: start;
+  align-self: stretch;
+  width: 100%;
   max-width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   padding: 0.4rem 0.25rem 0.25rem;
   border-radius: 16px;
   background: radial-gradient(
@@ -199,97 +206,104 @@
 .matrix {
   border-collapse: collapse;
   table-layout: fixed;
+  width: 100%;
+  max-width: 40rem; /* keep seat columns tight on wide desktop, centered */
   margin: 0 auto;
 }
-
-/* Mobile invariant (E1): below `lg` (same 1024px break `.main` already stacks
- * on) the K·N-wide matrix (up to 28 value columns) cannot fit a phone/tablet
- * viewport unrotated — rotate the whole rendered table 90° so its wide axis
- * runs down the page instead of across it. A rigid transform (not a re-layout)
- * so every other rule above — borders, the vertical value-header trick,
- * alignment — stays correct relative to itself; only the wrapper's reserved
- * box needs to know the swapped footprint, supplied by the `--rot-w`/`--rot-h`
- * vars the component measures off the table (see SeanceGame.tsx). */
-@media (max-width: 1023px) {
-  .matrixWrap {
-    align-self: center; /* .main is a flex column here — center on the cross axis */
-    width: var(--rot-h, auto);
-    height: var(--rot-w, auto);
-    max-width: 100%;
-    overflow: hidden;
-    padding: 0;
-  }
-  .matrix {
-    margin: 0;
-    transform-origin: top left;
-    transform: rotate(90deg) translateY(-100%);
-  }
+/* seat columns share the space that's left after the fixed label columns; the
+ * cell button inside caps its own size, so wide viewports never balloon them. */
+.matrix col,
+.seatHead,
+.cellTd {
+  width: auto;
 }
 
-/* category band spanning its N value columns — wraps rather than truncates */
-.catBand {
-  font-size: 0.62rem;
+/* left category axis — a vertical label spanning its N value rows */
+.catAxis {
+  width: 1.75rem;
+  padding: 0.15rem 0.1rem;
+  font-size: 0.7rem;
   font-weight: 400;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.2rem 0.3rem 0.4rem;
+  letter-spacing: 0.06em;
   text-align: center;
+  vertical-align: middle;
+}
+.catAxisInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* horizontal value labels on the left of each row — fully shown, wraps if long */
+.valHead {
+  width: clamp(4.5rem, 22vw, 7rem);
+  padding: 0.2rem 0.5rem 0.2rem 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.15;
+  text-align: right;
+  vertical-align: middle;
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
-/* vertical value headers keep the grid narrow under K·N columns; the label is
- * fully shown (no clamp, no ellipsis) — the header band just grows to fit. */
-.valHead {
-  min-height: 5.75rem;
-  height: auto;
-  vertical-align: bottom;
-  padding: 0.15rem 0 0.3rem;
-  font-size: 0.65rem;
-  font-weight: 400;
-}
-.valHead > span {
-  display: inline-block;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  white-space: nowrap;
-}
-
+/* seat numbers — the column headers, ascending left→right */
 .seatHead {
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 400;
   white-space: nowrap;
-  padding: 0 0.45rem;
-  text-align: right;
+  padding: 0 0.2rem 0.3rem;
+  text-align: center;
+  vertical-align: bottom;
 }
 .corner {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 400;
   text-align: right;
-  padding: 0 0.45rem 0.4rem;
+  padding: 0 0.4rem 0.3rem;
   vertical-align: bottom;
+  color: rgb(var(--c-smoke));
 }
 
-/* separator before each category group (skipped on the first) */
+/* separator above each category group (skipped on the first) */
 .groupStart {
-  border-left: 1px solid rgb(var(--c-line));
+  border-top: 1px solid rgb(var(--c-line));
 }
 
 .cellTd {
-  padding: 0.1rem;
+  padding: 0.12rem;
+  text-align: center;
 }
+/* ≥44px tap target (design floor) where width allows; on the tightest phones
+   (n=7 @ 320px) width shrinks to fit rather than force a horizontal scroll —
+   the no-scroll invariant wins over the 44px floor at that one extreme. */
 .cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(1.75rem, 3vw, 2.5rem);
-  height: clamp(1.75rem, 3vw, 2.5rem);
+  width: 100%;
+  max-width: 2.75rem;
+  min-height: 2.75rem;
+  margin: 0 auto;
+  aspect-ratio: 1;
   border: 1px solid rgb(var(--c-line));
-  border-radius: 0.3rem;
-  font-size: 0.9rem;
+  border-radius: 0.35rem;
+  font-size: 1rem;
   line-height: 1;
   background: color-mix(in srgb, rgb(var(--c-bg)) 40%, transparent);
   transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+/* faint scratch-mark overlay (whisper mode): explicit colour so it stays
+   VISIBLE — the cell button sets color:transparent on blank cells, which the
+   old opacity-only span inherited (the whisper-invisible bug). */
+.wisp {
+  color: rgb(var(--c-smoke));
+  opacity: 0.55;
+  font-style: italic;
 }
 .cell:hover {
   border-color: rgb(var(--c-brass));

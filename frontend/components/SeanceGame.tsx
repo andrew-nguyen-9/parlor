@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   emptyBoard,
   nextHint,
   remainingFromClue,
+  withAutoElim,
   histCommit,
   histUndo,
   histRedo,
@@ -36,6 +37,11 @@ const catHex = (c: number) => CATEGORY_HEX[catKey(c)]; // fills
 const catGlyph = (c: number) => CATEGORY_GLYPH[catKey(c)];
 // Mark: 0 none · 1 exclude (snuffed candle) · 2 confirm (glowing rune).
 // Board = marks[cat][seat][val]. Types + emptyBoard live in lib/seance.
+// Auto-elim is DERIVED via withAutoElim (never stored) — see lib/seance.
+
+// E1.4 — Title-Case grid headers (category labels + value names). Display-only;
+// the underlying flavor data stays lowercase so clue prose reads naturally.
+const titleCase = (s: string) => s.replace(/\b[a-z]/g, (m) => m.toUpperCase());
 
 function fmt(s: number): string {
   const m = Math.floor(s / 60);
@@ -100,32 +106,17 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
   const clueRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const startedAt = useRef(Date.now());
 
-  // E1 mobile invariant: the K·N-wide matrix can't fit a phone unrotated (up to
-  // 28 value columns). Below `lg` (1024px, same breakpoint `.main` already
-  // stacks on) the table is rotated 90° via CSS transform — a rigid repaint, so
-  // every other rule in the stylesheet (borders, the vertical value-header
-  // trick, alignment) stays correct relative to itself; only the WRAPPER's
-  // reserved box needs to know the swapped (now-portrait) footprint. transform
-  // never changes an element's own layout metrics, so measuring the table's
-  // natural scrollWidth/scrollHeight is safe to do on the same (rotated)
-  // element with no feedback loop.
-  const matrixRef = useRef<HTMLTableElement>(null);
-  const [matrixSize, setMatrixSize] = useState<{ w: number; h: number } | null>(null);
-  useEffect(() => {
-    const el = matrixRef.current;
-    if (!el) return;
-    const measure = () => setMatrixSize({ w: el.scrollWidth, h: el.scrollHeight });
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-  // ponytail: CSS var, not React state, drives the actual rotation footprint —
-  // no way to swap an unknown intrinsic box in pure CSS, so this is the whole
-  // JS budget for it; falls back to the natural (pre-measure) size for one frame.
-  const matrixVars = matrixSize
-    ? ({ "--rot-w": `${matrixSize.w}px`, "--rot-h": `${matrixSize.h}px` } as CSSProperties)
-    : undefined;
+  // E1 layout: the matrix is TRANSPOSED — seats are columns (numbered 1..N,
+  // left→right) and each category's values are rows (category axis on the LEFT).
+  // Only N (≤7) columns, so it fits every width with no horizontal scroll and no
+  // rotation hack; the long K·N axis runs down the page (vertical scroll only).
+
+  // Derived display board: manual marks + logic-grid auto-elimination. Auto-X is
+  // never stored, so blanking a confirm releases exactly the X's it forced
+  // unless another confirm still forces them (withAutoElim re-derives). Manual
+  // board (`board`) stays confirm-accurate → solve-check + nextHint read it raw.
+  const view = useMemo(() => withAutoElim(board, puzzle.n), [board, puzzle.n]);
+  const whisperView = useMemo(() => withAutoElim(whisper, puzzle.n), [whisper, puzzle.n]);
 
   const total = elapsed + strikes * 60;
 
@@ -156,36 +147,30 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
     return s;
   }, [activeClue, hint, puzzle.clues]);
 
-  const applyCycle = (prev: Board, c: number, seat: number, val: number): Board => {
+  const setCell = (prev: Board, c: number, seat: number, val: number, nv: Mark): Board => {
     const next = prev.map((cat) => cat.map((row) => row.slice()));
-    const nv: Mark = ((next[c][seat][val] + 1) % 3) as Mark;
     next[c][seat][val] = nv;
-    // auto-propagation on confirm: snuff the rest of the row + column (only empty
-    // cells; manual marks are left intact — clear them by hand).
-    if (nv === 2) {
-      for (let s = 0; s < puzzle.n; s++)
-        if (s !== seat && next[c][s][val] === 0) next[c][s][val] = 1;
-      for (let v = 0; v < puzzle.n; v++)
-        if (v !== val && next[c][seat][v] === 0) next[c][seat][v] = 1;
-    }
     return next;
   };
 
   const cycle = useCallback(
     (c: number, seat: number, val: number) => {
       if (won) return;
-      // glass clink when a fresh cell is bound (the snuff→bind transition).
-      const landsOnBind = (board[c][seat][val] + 1) % 3 === 2;
+      // 3-phase X→O→blank driven off the DISPLAYED mark (which already includes
+      // auto-X), so one tap always visibly advances even on an auto-excluded
+      // cell: blank→X, X→O, O→blank. Auto-X is never written; confirming a cell
+      // re-derives the row/col exclusions, blanking releases them (withAutoElim).
+      const cur = (whisperMode ? whisperView : view)[c][seat][val];
+      const nv: Mark = cur === 0 ? 1 : cur === 1 ? 2 : 0;
       if (whisperMode) {
-        setWhisper((prev) => applyCycle(prev, c, seat, val));
+        setWhisper((prev) => setCell(prev, c, seat, val, nv));
       } else {
-        setHist((h) => histCommit(h, applyCycle(histState(h), c, seat, val)));
+        setHist((h) => histCommit(h, setCell(histState(h), c, seat, val, nv)));
         setHint(null);
-        if (landsOnBind) sfxGlassClink();
+        if (nv === 2) sfxGlassClink(); // glass clink when a cell is bound
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [board, puzzle.n, whisperMode, won],
+    [view, whisperView, whisperMode, won],
   );
 
   const undo = useCallback(() => {
@@ -204,19 +189,23 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
   const clearRowCol = useCallback(
     (c: number, seat: number, val: number) => {
       if (won) return;
-      setHist((h) => {
-        const prev = histState(h);
+      const wipe = (prev: Board): Board => {
         const next = prev.map((cat) => cat.map((row) => row.slice()));
         for (let cc = 0; cc < puzzle.categories.length; cc++)
           for (let v = 0; v < puzzle.n; v++)
             if (next[cc][seat][v] !== 2) next[cc][seat][v] = 0;
         for (let s = 0; s < puzzle.n; s++)
           if (next[c][s][val] !== 2) next[c][s][val] = 0;
-        return histCommit(h, next);
-      });
-      setHint(null);
+        return next;
+      };
+      if (whisperMode) {
+        setWhisper(wipe); // in whisper mode the gesture clears scratch, not the board
+      } else {
+        setHist((h) => histCommit(h, wipe(histState(h))));
+        setHint(null);
+      }
     },
-    [won, puzzle.categories.length, puzzle.n],
+    [won, whisperMode, puzzle.categories.length, puzzle.n],
   );
 
   // Clear button: wipe the whole matrix back to blank. A full commit, so a
@@ -423,100 +412,94 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
           </CollapsiblePanel>
         </div>
 
-        {/* The Scrying Matrix — one unified seat × (category·value) grid. */}
-        <div className={styles.matrixWrap} style={matrixVars}>
-          <table
-            ref={matrixRef}
-            className={styles.matrix}
-            role="grid"
-            aria-label="the scrying matrix"
-          >
+        {/* The Scrying Matrix — TRANSPOSED: seats are columns (1..N, ascending
+            left→right); each category's values are rows, category axis on the
+            LEFT. Only N (≤7) columns, so it fits every width with no horizontal
+            scroll and no rotation; the long K·N axis runs down the page. */}
+        <div className={styles.matrixWrap}>
+          <table className={styles.matrix} role="grid" aria-label="the scrying matrix">
             <thead>
               <tr>
-                <th className={styles.corner} aria-hidden />
-                {puzzle.categories.map((cat, c) => (
-                  <th
-                    key={cat.key}
-                    colSpan={puzzle.n}
-                    scope="colgroup"
-                    className={`${styles.catBand} ${c > 0 ? styles.groupStart : ""}`}
-                    style={{ color: catInk(c) }}
-                  >
-                    <span aria-hidden className="mr-1">
-                      {catGlyph(c)}
-                    </span>
-                    {cat.label}
+                <th className={styles.corner} scope="col" colSpan={2}>
+                  seat →
+                </th>
+                {Array.from({ length: puzzle.n }, (_, seat) => (
+                  <th key={seat} scope="col" className={`${styles.seatHead} text-smoke`}>
+                    {seat + 1}
                   </th>
                 ))}
               </tr>
-              <tr>
-                <th scope="col" className={styles.corner}>seat</th>
-                {puzzle.categories.map((cat, c) =>
-                  cat.values.map((v, val) => {
-                    const hi = hiCols.has(`${c}:${val}`);
-                    return (
+            </thead>
+            <tbody>
+              {puzzle.categories.map((cat, c) =>
+                cat.values.map((v, val) => {
+                  const hi = hiCols.has(`${c}:${val}`);
+                  return (
+                    <tr key={`${cat.key}-${val}`}>
+                      {val === 0 && (
+                        <th
+                          scope="rowgroup"
+                          rowSpan={puzzle.n}
+                          className={`${styles.catAxis} ${c > 0 ? styles.groupStart : ""}`}
+                          style={{ color: catInk(c) }}
+                        >
+                          <span className={styles.catAxisInner}>
+                            <span aria-hidden className="mr-1">
+                              {catGlyph(c)}
+                            </span>
+                            {titleCase(cat.label)}
+                          </span>
+                        </th>
+                      )}
                       <th
-                        key={`${cat.key}-${val}`}
-                        scope="col"
+                        scope="row"
                         className={`${styles.valHead} ${val === 0 && c > 0 ? styles.groupStart : ""} ${hi ? styles.colHiHead : ""}`}
                         style={{ color: catInk(c) }}
                         title={v}
                       >
-                        <span>{v}</span>
+                        {titleCase(v)}
                       </th>
-                    );
-                  }),
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: puzzle.n }, (_, seat) => (
-                <tr key={seat}>
-                  <th scope="row" className={`${styles.seatHead} text-smoke`}>
-                    {seat + 1}
-                  </th>
-                  {puzzle.categories.map((cat, c) =>
-                    cat.values.map((v, val) => {
-                      const m = board[c][seat][val];
-                      const w = whisper[c][seat][val];
-                      const mark = m === 2 ? "◯" : m === 1 ? "✕" : "";
-                      const wisp = w !== 0 && m === 0 ? (w === 2 ? "◯" : "✕") : "";
-                      const hi = hiCols.has(`${c}:${val}`);
-                      return (
-                        <td
-                          key={`${cat.key}-${val}`}
-                          className={`${styles.cellTd} ${val === 0 && c > 0 ? styles.groupStart : ""} ${hi ? styles.colHi : ""}`}
-                        >
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              // triple-click snuffs the whole row + column (confirmed
-                              // cells survive); single/double clicks cycle as before.
-                              if (e.detail >= 3) clearRowCol(c, seat, val);
-                              else cycle(c, seat, val);
-                            }}
-                            aria-label={`seat ${seat + 1}, ${cat.label} ${v}: ${m === 2 ? "bound" : m === 1 ? "snuffed" : "unmarked"}`}
-                            title="triple-click to clear this row + column"
-                            className={styles.cell}
-                            style={{
-                              borderColor: m === 2 ? catHex(c) : undefined,
-                              background: m === 2 ? `${catHex(c)}26` : "transparent",
-                              color: m === 2 ? catInk(c) : m === 1 ? "#7a6e8a" : "transparent",
-                              // a bound spirit glows — a soft spectral halo in the
-                              // cell's category hue (static, no loop)
-                              boxShadow: m === 2 ? `0 0 10px -1px ${catHex(c)}66` : undefined,
-                            }}
+                      {Array.from({ length: puzzle.n }, (_, seat) => {
+                        const m = view[c][seat][val];
+                        const w = whisperView[c][seat][val];
+                        const mark = m === 2 ? "◯" : m === 1 ? "✕" : "";
+                        const wisp = w !== 0 && m === 0 ? (w === 2 ? "◯" : "✕") : "";
+                        return (
+                          <td
+                            key={seat}
+                            className={`${styles.cellTd} ${hi ? styles.colHi : ""}`}
                           >
-                            <span aria-hidden>
-                              {mark || (wisp && <span className="opacity-30">{wisp}</span>) || "·"}
-                            </span>
-                          </button>
-                        </td>
-                      );
-                    }),
-                  )}
-                </tr>
-              ))}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                // triple-click snuffs the whole row + column
+                                // (confirmed cells survive); taps cycle.
+                                if (e.detail >= 3) clearRowCol(c, seat, val);
+                                else cycle(c, seat, val);
+                              }}
+                              aria-label={`seat ${seat + 1}, ${cat.label} ${v}: ${m === 2 ? "bound" : m === 1 ? "snuffed" : "unmarked"}`}
+                              title="triple-click to clear this row + column"
+                              className={styles.cell}
+                              style={{
+                                borderColor: m === 2 ? catHex(c) : undefined,
+                                background: m === 2 ? `${catHex(c)}26` : "transparent",
+                                color: m === 2 ? catInk(c) : m === 1 ? "#7a6e8a" : "transparent",
+                                // a bound spirit glows — a soft spectral halo in
+                                // the cell's category hue (static, no loop)
+                                boxShadow: m === 2 ? `0 0 10px -1px ${catHex(c)}66` : undefined,
+                              }}
+                            >
+                              <span aria-hidden>
+                                {mark || (wisp && <span className={styles.wisp}>{wisp}</span>) || "·"}
+                              </span>
+                            </button>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                }),
+              )}
             </tbody>
           </table>
         </div>
@@ -527,7 +510,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={showHint}
-            className="microlabel rounded-full border px-4 py-2 transition hover:brightness-110"
+            className="microlabel inline-flex items-center justify-center min-h-11 rounded-full border px-4 py-2 transition hover:brightness-110"
             style={{ borderColor: ACCENT, color: ACCENT, background: `${ACCENT}12` }}
             title="reveal the clue that forces the next move"
           >
@@ -538,7 +521,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
             disabled={!canUndo}
             aria-label="undo"
             title="undo (⌘/Ctrl+Z)"
-            className="microlabel rounded-full border px-4 py-2 transition disabled:opacity-30"
+            className="microlabel inline-flex items-center justify-center min-h-11 rounded-full border px-4 py-2 transition disabled:opacity-30"
             style={{ borderColor: "var(--line, #2a2333)" }}
           >
             ↶ undo
@@ -548,7 +531,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
             disabled={!canRedo}
             aria-label="redo"
             title="redo (⇧⌘/Ctrl+Z)"
-            className="microlabel rounded-full border px-4 py-2 transition disabled:opacity-30"
+            className="microlabel inline-flex items-center justify-center min-h-11 rounded-full border px-4 py-2 transition disabled:opacity-30"
             style={{ borderColor: "var(--line, #2a2333)" }}
           >
             ↷ redo
@@ -557,7 +540,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
             onClick={clearBoard}
             aria-label="clear the board"
             title="clear every mark (undoable)"
-            className="microlabel rounded-full border px-4 py-2 transition hover:brightness-110 disabled:opacity-30"
+            className="microlabel inline-flex items-center justify-center min-h-11 rounded-full border px-4 py-2 transition hover:brightness-110 disabled:opacity-30"
             style={{ borderColor: "var(--line, #2a2333)" }}
           >
             ⌫ clear
@@ -570,7 +553,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
                   sfxDoorLatch();
                 }}
                 aria-pressed={whisperMode}
-                className="microlabel rounded-full border px-4 py-2 transition"
+                className="microlabel inline-flex items-center justify-center min-h-11 rounded-full border px-4 py-2 transition"
                 style={{
                   borderColor: whisperMode ? ACCENT : "var(--line, #2a2333)",
                   color: whisperMode ? ACCENT : undefined,
