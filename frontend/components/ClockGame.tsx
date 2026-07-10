@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import * as THREE from "three";
 import ThreeStage from "@/components/ThreeStage";
+import { AmbientGlow, ParticleField } from "@/components/atmosphere";
+import { audio } from "@/lib/sound";
 import { CATEGORY_HEX } from "@/lib/types";
 import { labelFor } from "@/lib/calendars";
 import {
@@ -18,6 +20,9 @@ const Confetti = dynamic(() => import("@/components/Confetti"), { ssr: false });
 
 const ACCENT = CATEGORY_HEX.music;
 const BRASS = 0xb08d57;
+const STEEL = 0xcfd4da; // mirror-polished bridge
+const RUBY = 0x9b1b2e; // synthetic ruby jewel bearings
+const BLUED = 0x24347a; // anodized blue screws
 
 type Status = "ok" | "bad" | "pending";
 
@@ -128,6 +133,14 @@ function Mechanism({ puzzle }: { puzzle: ChronosPuzzle }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [peek, setPeek] = useState(false);
   const [solved, setSolved] = useState(false);
+  const wasSolved = useRef(false);
+
+  // Watch-shop bed while the room is open; teardown silences it. Discrete SFX are
+  // fired at the interaction sites; the F1 manager no-ops under mute/reduced-motion.
+  useEffect(() => {
+    audio.startAmbient("clock");
+    return () => audio.stopAmbient();
+  }, []);
 
   const gearOf = (k: string) => gears.find((g) => g.key === k)!;
 
@@ -152,10 +165,16 @@ function Mechanism({ puzzle }: { puzzle: ChronosPuzzle }) {
   useEffect(() => {
     if (!full) {
       setSolved(false);
+      wasSolved.current = false;
       return;
     }
     const win = statuses.every((s) => s === "ok");
     setSolved(win);
+    // Ceremony fires once on the transition into the solved state — the movement
+    // comes alive (stinger); a full-but-jammed train reads as a mechanical fault.
+    if (win && !wasSolved.current) audio.stinger();
+    else if (!win) audio.sfx("wrong");
+    wasSolved.current = win;
     if (win && typeof window !== "undefined") {
       try {
         localStorage.setItem(`parlor:chronos:${puzzle.date}`, "solved");
@@ -211,6 +230,30 @@ function Mechanism({ puzzle }: { puzzle: ChronosPuzzle }) {
       const accent = new THREE.Color(ACCENT);
       const spinners: { obj: THREE.Object3D; rate: number }[] = [];
 
+      // Mirror-polished steel bridge spanning the train, set behind the wheels,
+      // with anodized-blue screws at either end — the "beautiful engineering" plate.
+      const span = (stages - 1) * spacing;
+      const bridge = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, span + 1.9, 0.16),
+        new THREE.MeshStandardMaterial({ color: STEEL, metalness: 0.96, roughness: 0.16 }),
+      );
+      bridge.position.set(0, 0, -0.65);
+      scene.add(bridge);
+      for (const sy of [-(span / 2 + 0.7), span / 2 + 0.7]) {
+        const screw = new THREE.Mesh(
+          new THREE.SphereGeometry(0.15, 14, 14),
+          new THREE.MeshStandardMaterial({
+            color: BLUED,
+            metalness: 0.85,
+            roughness: 0.28,
+            emissive: 0x0a1440,
+            emissiveIntensity: 0.35,
+          }),
+        );
+        screw.position.set(0, sy, -0.5);
+        scene.add(screw);
+      }
+
       for (const shaft of shafts) {
         const occ = gears.find((g) => assign[g.key] === shaft.index);
         const y = yOf(shaft.index);
@@ -225,6 +268,21 @@ function Mechanism({ puzzle }: { puzzle: ChronosPuzzle }) {
           });
           cog.position.set(x, y, 0);
           scene.add(cog);
+          // synthetic-ruby jewel bearing on the arbor — brighter once it meshes true
+          const jewel = new THREE.Mesh(
+            new THREE.SphereGeometry(0.17, 16, 16),
+            new THREE.MeshStandardMaterial({
+              color: RUBY,
+              emissive: 0xff2d4a,
+              emissiveIntensity: st === "ok" ? 0.95 : 0.25,
+              metalness: 0.1,
+              roughness: 0.14,
+              transparent: true,
+              opacity: 0.88,
+            }),
+          );
+          jewel.position.set(x, y, 0.22);
+          scene.add(jewel);
           const dir = shaft.index % 2 === 0 ? 1 : -1;
           spinners.push({
             obj: cog,
@@ -258,10 +316,28 @@ function Mechanism({ puzzle }: { puzzle: ChronosPuzzle }) {
       );
       scene.add(notch);
 
+      // Completion ceremony: a balance wheel appears by the output shaft and, in
+      // onFrame, oscillates like a beating escapement — "the watch ticks alive".
+      if (solved) {
+        const balance = new THREE.Mesh(
+          new THREE.TorusGeometry(0.85, 0.06, 10, 40),
+          new THREE.MeshStandardMaterial({
+            color: BRASS,
+            emissive: accent,
+            emissiveIntensity: 0.45,
+            metalness: 0.9,
+            roughness: 0.3,
+          }),
+        );
+        balance.position.set(outX, outY, 0.45);
+        scene.add(balance);
+        scene.userData.balance = balance;
+      }
+
       scene.userData.spinners = spinners;
 
       const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-      const radius = ((stages - 1) * spacing) / 2 + 1.7;
+      const radius = ((stages - 1) * spacing) / 2 + 2.0;
       return { scene, camera, radius, center: new THREE.Vector3(0, 0, 0) };
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -270,35 +346,41 @@ function Mechanism({ puzzle }: { puzzle: ChronosPuzzle }) {
   const onFrame = useMemo(
     () =>
       (dt: number, ctx: { scene: THREE.Scene }) => {
-        const spinners = ctx.scene.userData.spinners as
+        const ud = ctx.scene.userData;
+        ud.t = ((ud.t as number) ?? 0) + dt;
+        const spinners = ud.spinners as
           | { obj: THREE.Object3D; rate: number }[]
           | undefined;
-        if (!spinners) return;
-        for (const s of spinners) s.obj.rotation.z += s.rate * dt;
+        if (spinners) for (const s of spinners) s.obj.rotation.z += s.rate * dt;
+        const balance = ud.balance as THREE.Object3D | undefined;
+        if (balance) balance.rotation.z = Math.sin((ud.t as number) * 6) * 0.7;
       },
     [],
   );
 
   // ── interaction ─────────────────────────────────────────────────────────────
   function seatAt(shaftIndex: number) {
-    setSelected((sel) => {
-      if (sel == null) {
-        const occupant = stageToGear[shaftIndex];
-        if (occupant) setAssign((a) => ({ ...a, [occupant]: null }));
-        return null;
+    if (selected == null) {
+      const occupant = stageToGear[shaftIndex];
+      if (occupant) {
+        setAssign((a) => ({ ...a, [occupant]: null }));
+        audio.sfx("hover"); // wheel lifted back off the shaft
       }
-      setAssign((a) => {
-        const next = { ...a };
-        const occupant = Object.keys(next).find((k) => next[k] === shaftIndex);
-        if (occupant) next[occupant] = null;
-        next[sel] = shaftIndex;
-        return next;
-      });
-      return null;
+      return;
+    }
+    setAssign((a) => {
+      const next = { ...a };
+      const occupant = Object.keys(next).find((k) => next[k] === shaftIndex);
+      if (occupant) next[occupant] = null;
+      next[selected] = shaftIndex;
+      return next;
     });
+    setSelected(null);
+    audio.sfx("place"); // steel touches brass — the wheel seats
   }
 
   function toggleTray(k: string) {
+    audio.sfx("hover");
     if (assign[k] != null) {
       setAssign((a) => ({ ...a, [k]: null }));
       setSelected(null);
@@ -338,6 +420,20 @@ function Mechanism({ puzzle }: { puzzle: ChronosPuzzle }) {
           setup={setup}
           onFrame={onFrame}
           className={styles.stage}
+        />
+        {/* Watch-shop atmosphere over the movement. ONE animating loop per viewport:
+            ParticleField (floating brass dust) runs; the glow is a static CSS bloom. */}
+        <AmbientGlow
+          className={styles.atmos}
+          intensity={0.45}
+          color="rgb(var(--c-candle))"
+          position="50% 18%"
+        />
+        <ParticleField
+          className={styles.atmos}
+          kind="dust"
+          density={0.7}
+          opacity={0.6}
         />
         <p className={styles.stageHint} aria-hidden>
           barrel below · dial hand above

@@ -28,6 +28,14 @@
   }
 }
 
+/* Decorative atmosphere layers pinned over the canvas (pointer-events off via the
+ * primitives themselves). Never intercept taps meant for the DOM controls below. */
+.atmos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .stageHint {
   position: absolute;
   bottom: 0.5rem;
