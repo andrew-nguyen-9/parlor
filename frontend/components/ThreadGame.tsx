@@ -10,7 +10,8 @@ import {
 import { pickRotating } from "@/lib/rng";
 import { CATEGORY_HEX, type Question, type ThreadLink } from "@/lib/types";
 import { buildShare, type Tier } from "@/lib/share";
-import { sfxCorrect, sfxWrong, sfxPianoChord, sfx } from "@/lib/sound";
+import { sfxCorrect, sfxWrong, sfxPianoChord, sfx, audio } from "@/lib/sound";
+import { AmbientGlow, Ornament } from "@/components/atmosphere";
 import styles from "./ThreadGame.module.css";
 
 // The Weaver / Seamstress of the Order hosts THE THREAD (character canon — see
@@ -148,6 +149,12 @@ export default function ThreadGame({
     if (phase === "chain") inputRef.current?.focus();
   }, [active, phase]);
 
+  // F1 audio kit: the loom's ambient bed for the room's lifetime (mount → unmount).
+  useEffect(() => {
+    audio.startAmbient("thread");
+    return () => audio.stopAmbient();
+  }, []);
+
   // Measure each knot's centre relative to the rail so the thread can be woven
   // exactly through them (knot rows are variable-height — the active one is tall
   // — so positions must be measured, not assumed even). Re-runs on any layout
@@ -278,6 +285,7 @@ export default function ThreadGame({
     setThemeGuess(choice);
     if (choice === theme) sfxCorrect();
     else sfxWrong();
+    audio.stinger(); // the tapestry is complete — F1 audio completion flourish
     setPhase("done");
   }
 
@@ -315,7 +323,16 @@ export default function ThreadGame({
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="relative mx-auto max-w-2xl">
+      {/* F1 atmosphere: a static golden-thread wash behind the whole loom — no
+          animate (the woven SVG thread above is the room's one motion loop). */}
+      <AmbientGlow
+        className="-z-10"
+        intensity={0.3}
+        color="rgb(var(--c-gold))"
+        position="50% 0%"
+      />
+
       {/* Weaver nameplate */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -340,6 +357,14 @@ export default function ThreadGame({
         Work the loom top to bottom: each answer&rsquo;s last letter is the weft
         that starts the next stitch along the warp.
       </p>
+
+      {/* golden-thread flourish — static gold divider (F1 ornament kit) */}
+      <Ornament
+        variant="flourish"
+        treatment="gold"
+        size={16}
+        className="mx-auto mb-4 block opacity-80"
+      />
 
       {/* THE RAIL — every link, resolved ones revealed in place, the active one
           expanded with its input. This single list is the whole game. The woven
@@ -557,9 +582,23 @@ export default function ThreadGame({
             key="done"
             initial={reduced ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-5 flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-5 text-center"
+            className="relative mt-5 flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-5 text-center"
             style={{ boxShadow: `0 0 50px ${THREAD_HEX}22` }}
           >
+            {/* the tapestry reveal — static gold corners frame the finished weave */}
+            <Ornament
+              variant="corner"
+              treatment="gold"
+              size={28}
+              className="absolute left-2 top-2 opacity-70"
+            />
+            <Ornament
+              variant="corner"
+              treatment="gold"
+              size={28}
+              className="absolute right-2 top-2 opacity-70"
+              style={{ transform: "scaleX(-1)" }}
+            />
             <p className="microlabel tracking-widest text-brass">thread woven</p>
             <p className="display text-3xl" style={{ color: THREAD_HEX }}>
               {theme}
