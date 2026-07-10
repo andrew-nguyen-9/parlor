@@ -32,3 +32,4 @@ transform/.user.yml
 .gstack/
 .orchestrator/
 .serena/
+.orchestrator.stale-*/
