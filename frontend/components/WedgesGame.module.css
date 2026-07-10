@@ -73,3 +73,87 @@
   letter-spacing: 0.25em;
   line-height: 1.2;
 }
+
+/* --- e4-fractures: shattered-antique-mirror atmosphere -----------------
+   Layout/scoring untouched above; everything below is presentation-only
+   garnish layered behind the existing DOM (F1 atmosphere primitives own the
+   actual particle/glow/fog rendering — this file only positions them and
+   adds the CSS-only glass/crack treatment). */
+
+/* Shared room backdrop: fog/glow/dust sit absolute behind the real content. */
+.stage {
+  position: relative;
+}
+.stageLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.stageContent {
+  position: relative;
+  z-index: 1;
+}
+
+/* Chipped-edge panel: three corners chamfered (never the reading corner),
+   smoked-glass surface with a frosted blur so text stays legible while the
+   panel itself reads as cracked crystal. */
+.card {
+  position: relative;
+  clip-path: polygon(
+    0 14px,
+    14px 0,
+    calc(100% - 22px) 0,
+    100% 22px,
+    100% 100%,
+    22px 100%,
+    0 calc(100% - 22px)
+  );
+  backdrop-filter: blur(3px);
+}
+
+/* Hairline fractures + a faint refraction sheen across the panel — static
+   (no animation budget spent here; the room's one loop is the dust field). */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  background:
+    linear-gradient(
+      108deg,
+      transparent 41%,
+      color-mix(in srgb, var(--accent, rgb(var(--c-line))) 35%, transparent) 41.6%,
+      transparent 42.2%
+    ),
+    linear-gradient(
+      18deg,
+      transparent 63%,
+      color-mix(in srgb, rgb(var(--c-line)) 55%, transparent) 63.6%,
+      transparent 64.2%
+    );
+}
+
+/* Frosted-glass ring column: smoked panel + hairline border, atop the
+   existing accent-tinted wash. */
+.aside {
+  border: 1px solid color-mix(in srgb, rgb(var(--c-line)) 70%, transparent);
+  background-color: color-mix(in srgb, rgb(var(--c-surface)) 35%, transparent);
+  backdrop-filter: blur(4px);
+}
+
+/* Corner silver filigree — Ornament instances, purely decorative. */
+.corner {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  opacity: 0.35;
+  pointer-events: none;
+}
+.cornerBr {
+  top: auto;
+  left: auto;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  transform: rotate(180deg);
+}
