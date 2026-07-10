@@ -19,10 +19,13 @@ import {
 } from "@/lib/seance";
 import { recordBanishing, loadGrimoire, spiritsBanished } from "@/lib/grimoire";
 import { buildShare, type GameResult, type Tier } from "@/lib/share";
-import { sfxGlassClink, sfxWrong, sfxPianoChord, sfxDoorLatch } from "@/lib/sound";
+import { sfxGlassClink, sfxWrong, sfxDoorLatch, audio } from "@/lib/sound";
 import { CATEGORIES, CATEGORY_HEX, CATEGORY_INK, CATEGORY_GLYPH } from "@/lib/types";
 import CollapsiblePanel from "./CollapsiblePanel";
 import FluidStage from "./FluidStage";
+import SeanceAtmosphere from "./seance/SeanceAtmosphere";
+import Planchette from "./seance/Planchette";
+import { Ornament } from "@/components/atmosphere";
 import styles from "./SeanceGame.module.css";
 
 const ACCENT = "#7040a8"; // wildcard / the Medium — the room's signature accent
@@ -103,8 +106,18 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
   const [activeClue, setActiveClue] = useState<number | null>(null);
   const [hint, setHint] = useState<Hint | null>(null);
   const [flagged, setFlagged] = useState<Set<number>>(() => new Set());
+  // Each binding bumps `pulse` so the planchette leans toward the freshly bound
+  // spirit — per-deduction feedback (a finite ≤600ms lean, not a loop).
+  const [pulse, setPulse] = useState(0);
   const clueRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const startedAt = useRef(Date.now());
+
+  // Ambient séance bed (f1-audio): starts on mount, stops on unmount. Silent
+  // under mute OR reduced-motion by the manager's own contract — no gate here.
+  useEffect(() => {
+    audio.startAmbient("seance");
+    return () => audio.stopAmbient();
+  }, []);
 
   // E1 layout: the matrix is TRANSPOSED — seats are columns (numbered 1..N,
   // left→right) and each category's values are rows (category axis on the LEFT).
@@ -167,7 +180,10 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
       } else {
         setHist((h) => histCommit(h, setCell(histState(h), c, seat, val, nv)));
         setHint(null);
-        if (nv === 2) sfxGlassClink(); // glass clink when a cell is bound
+        if (nv === 2) {
+          sfxGlassClink(); // glass clink when a cell is bound
+          setPulse((p) => p + 1); // planchette leans toward the binding
+        }
       }
     },
     [view, whisperView, whisperMode, won],
@@ -292,7 +308,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
     }
     if (ok) {
       setWon(true);
-      sfxPianoChord();
+      audio.stinger(); // reverent completion stinger (f1-audio)
       recordBanishing({
         spirit: puzzle.spirit,
         date: puzzle.date,
@@ -319,6 +335,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
         strikes={strikes}
         copied={copied}
         setCopied={setCopied}
+        reduce={reduce}
       />
     );
   }
@@ -338,6 +355,10 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
           boxShadow: `inset 0 0 140px ${pressure * 100}px rgba(8,4,14,${pressure})`,
         }}
       >
+      {/* Premium séance atmosphere: candle/dust/smoke sim + gilt frame + the
+          one living planchette. A background layer (zIndex 0) behind content. */}
+      <SeanceAtmosphere reduce={reduce} pulse={pulse} />
+
       {/* HUD */}
       <div className={styles.hud}>
         <div>
@@ -609,12 +630,14 @@ function Banished({
   strikes,
   copied,
   setCopied,
+  reduce,
 }: {
   puzzle: SeancePuzzle;
   seconds: number;
   strikes: number;
   copied: boolean;
   setCopied: (b: boolean) => void;
+  reduce: boolean;
 }) {
   const collected = useMemo(() => spiritsBanished(loadGrimoire()).length, []);
 
@@ -663,6 +686,11 @@ function Banished({
       animate={{ opacity: 1, y: 0 }}
       className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-5 text-center"
     >
+      {/* the planchette spells the spirit's name into the veil — one finite
+          glide sweep, then it settles (reduced-motion → already still). */}
+      <div aria-hidden style={{ opacity: 0.85 }}>
+        <Planchette reduce={reduce} spelling size={84} />
+      </div>
       <p className="microlabel tracking-widest" style={{ color: ACCENT }}>
         spirit stabilised
       </p>
@@ -675,6 +703,17 @@ function Banished({
           ? "A flawless channelling. The Medium nods."
           : `${strikes} poltergeist strike${strikes > 1 ? "s" : ""} along the way.`}
       </p>
+
+      {/* Spirit Memory — the fact the séance surfaces. A parchment card with
+          fixed dark ink (self-contained, AA in both themes: the legibility
+          floor overrides the gilt treatment). */}
+      <div className={styles.memory}>
+        <Ornament variant="flourish" treatment="gold" size={14} />
+        <p className={styles.memoryLabel}>Spirit Memory · {puzzle.rite}</p>
+        <p className={styles.memoryBody}>{puzzle.backstory}</p>
+        <p className={styles.memoryMeta}>the {puzzle.date} séance</p>
+      </div>
+
       <pre className="whitespace-pre-wrap text-2xl leading-snug">{grid}</pre>
       <button
         onClick={copy}
