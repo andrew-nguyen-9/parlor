@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { IgnitePuzzle, IgniteClue } from "@/lib/ignitePuzzle";
 import CollapsiblePanel from "@/components/CollapsiblePanel";
+import { AmbientGlow, ParticleField } from "@/components/atmosphere";
+import { audio } from "@/lib/sound";
 import styles from "./StreakGame.module.css";
 
 // IGNITE — the Witch's rune cipher. The GAME LOGIC is untouched (lib/ignitePuzzle):
@@ -61,6 +63,17 @@ function RuneBoard({ puzzle, reduce }: { puzzle: IgnitePuzzle; reduce: boolean }
 
   const filled = assign.filter((a) => a !== null).length;
 
+  // ── Living-flame audio: ritual/fire ambient bed while the room is mounted;
+  // ignite SFX on each rune bound; completion stinger when the wick catches.
+  // (F1 audio manager: silent under mute/reduced-motion, self-tearing on unmount.)
+  useEffect(() => {
+    audio.startAmbient("streak");
+    return () => audio.stopAmbient();
+  }, []);
+  useEffect(() => {
+    if (won) audio.stinger();
+  }, [won]);
+
   // glyph indices lit by the active clue (ring highlight on the board)
   const litGlyphs = useMemo(() => {
     const s = new Set<number>();
@@ -94,6 +107,7 @@ function RuneBoard({ puzzle, reduce }: { puzzle: IgnitePuzzle; reduce: boolean }
       return next;
     });
     if (at === -1) {
+      audio.sfx("place"); // rune bound — a small ignite tick
       const nextEmpty = assign.findIndex((a, i) => a === null && i !== selected);
       if (nextEmpty !== -1) setSelected(nextEmpty);
     }
@@ -114,6 +128,7 @@ function RuneBoard({ puzzle, reduce }: { puzzle: IgnitePuzzle; reduce: boolean }
     const correct = assign.every((a, g) => a === puzzle.solution[g]);
     if (correct) setWon(true);
     else {
+      audio.sfx("wrong"); // the runes resist
       setReveals((n) => n + 1);
       setShake((n) => n + 1);
     }
@@ -156,19 +171,27 @@ function RuneBoard({ puzzle, reduce }: { puzzle: IgnitePuzzle; reduce: boolean }
       </header>
 
       {/* The interactive board — candle, inscription, rune grid, letter tray and
-          the "read" action, all rendered + input-handled by Phaser. */}
-      <RunePhaserBoard
-        puzzle={puzzle}
-        assign={assign}
-        selected={selected}
-        litGlyphs={litGlyphs}
-        won={won}
-        reduce={reduce}
-        shake={shake}
-        onGlyph={tapGlyph}
-        onLetter={tapLetter}
-        onRead={readTheRunes}
-      />
+          the "read" action, all rendered + input-handled by Phaser. Living-flame
+          atmosphere (F1 primitives) layers OVER the transparent canvas: a warm
+          bloom that strengthens as runes bind + rising embers that erupt on win.
+          Both are pointer-events:none / aria-hidden (never block taps, never read
+          to AT); the ember field is the room's ONE animating loop and freezes to a
+          still frame under reduced motion. Kept modest so the runes stay legible. */}
+      <div className="relative mt-4">
+        <RunePhaserBoard
+          puzzle={puzzle}
+          assign={assign}
+          selected={selected}
+          litGlyphs={litGlyphs}
+          won={won}
+          reduce={reduce}
+          shake={shake}
+          onGlyph={tapGlyph}
+          onLetter={tapLetter}
+          onRead={readTheRunes}
+        />
+        <FlameAtmosphere progress={won ? 1 : filled / K} won={won} />
+      </div>
 
       {won ? (
         <motion.div
@@ -318,10 +341,42 @@ function RunePhaserBoard(props: {
   return (
     <div
       ref={containerRef}
-      className={`${styles.stage} mt-4`}
+      className={styles.stage}
       role="application"
       aria-label="Rune cipher board — bind each rune to a letter, then read the runes"
     />
+  );
+}
+
+// ── Living-flame atmosphere ─────────────────────────────────────────────────
+// Decorative F1 layers over the transparent Phaser canvas. The bloom brightens
+// and the embers thicken + quicken as more runes bind (`progress` 0→1), then
+// erupt on `won` — the shrine coming alive. Both are pointer-events:none /
+// aria-hidden and sit modest enough that the runes stay legible; the ember field
+// is the room's single animating loop (F1 freezes it to a still frame under
+// reduced motion, satisfying the "flame freezes" legibility rule for free).
+function FlameAtmosphere({ progress, won }: { progress: number; won: boolean }) {
+  const p = Math.max(0, Math.min(1, progress));
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1rem]"
+      aria-hidden
+    >
+      <AmbientGlow
+        intensity={0.22 + 0.45 * p + (won ? 0.15 : 0)}
+        color="rgb(var(--c-ember))"
+        vignette="rgba(23, 8, 14, 0.55)"
+        position="50% 12%"
+        className="absolute inset-0"
+      />
+      <ParticleField
+        kind="ember"
+        className="absolute inset-0"
+        density={0.45 + 0.9 * p + (won ? 0.6 : 0)}
+        driftSpeed={0.8 + 0.5 * p}
+        opacity={0.4 + 0.35 * p}
+      />
+    </div>
   );
 }
 
