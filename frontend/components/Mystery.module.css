@@ -1,10 +1,18 @@
-/* PARLOR §3.9 — Sanctum Mysterii (G1 deduction rebuild). LAYOUT ONLY: every
- * color/surface/type token stays in the global design system (Tailwind tokens +
- * .microlabel), so this module never forks the palette.
- *
- * The one structural job here: the status pills sit in their OWN fixed-width
- * column, right-aligned, so they form a clean vertical band regardless of how
- * long a suspect / room / hour label is (never inline after the name). */
+/* PARLOR §3.9 — Sanctum Mysterii (G1 deduction, E2 premium revamp). LAYOUT +
+ * tactile detail ONLY: every color/surface/type token stays in the global design
+ * system (Tailwind tokens + .microlabel), so this module never forks the palette.
+ * Atmosphere (fog/grain/bloom/dust) is composed from the shared F1 primitives —
+ * never re-implemented here. */
+
+/* Full-bleed candlelit atmosphere, painted behind the play column (pointer-events
+ * off, decorative). z-index:-1 keeps it under the content within RoomShell's
+ * stacking context yet above the page ground; the global toggle bar is unaffected. */
+.atmos {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
 
 .axis {
   display: flex;
@@ -12,13 +20,18 @@
   gap: 0.4rem;
 }
 
+/* Each row IS the tap target (whole row cycles) — floor it at 44px (North Star). */
 .row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 6.6rem; /* name | pill column (fixed) */
   align-items: center;
   gap: 0.75rem;
-  padding: 0.4rem 0.6rem;
+  min-height: 44px;
+  padding: 0.5rem 0.7rem;
   border-radius: 0.6rem;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .name {
@@ -33,9 +46,56 @@
   justify-content: flex-end;
 }
 
-/* clue list — comfortable reading measure, wraps freely at 375px */
+/* ── Evidence board (Case File) — layered clue cards ─────────────────────────
+ * doc-01 "Multi-Layer Evidence / Progressive Information Architecture": the flat
+ * clue list is grouped into evidence layers (timeline · testimony · exclusions),
+ * each clue a pinned index card for tactile, layered reasoning. */
+.layer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.clueCard {
+  position: relative;
+  display: flex;
+  gap: 0.55rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  /* faint parchment lift so cards read as physical evidence, not a bullet list */
+  background: linear-gradient(180deg, rgb(var(--c-surface) / 0.55), rgb(var(--c-surface) / 0.2));
+}
+
+/* the detective's pin — a small numbered wax dot in the left gutter of each card */
+.pin {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 0.1rem;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding-inline: 0.2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+}
+
+/* clue list fallback (kept for the search/filter empty measure) */
 .clue {
   font-size: 0.9rem;
   line-height: 1.45;
   overflow-wrap: anywhere;
+}
+
+/* Verdict ceremony — the sealed conclusion. Gold flourish frames the reveal. */
+.seal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding-block: 0.25rem;
 }

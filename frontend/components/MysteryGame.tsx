@@ -7,8 +7,15 @@
 // CollapsiblePanel rails; the pills sit in their own aligned column (Mystery.module.css).
 
 import { useEffect, useMemo, useState } from "react";
-import { clueMatches, type ClueFilter, type MysteryPuzzle } from "@/lib/mysteryPuzzle";
+import {
+  clueMatches,
+  type ClueFilter,
+  type ClueKind,
+  type MysteryPuzzle,
+} from "@/lib/mysteryPuzzle";
 import { CATEGORY_HEX } from "@/lib/types";
+import { audio } from "@/lib/sound";
+import { AmbientGlow, GrainFog, Ornament, ParticleField } from "@/components/atmosphere";
 import CollapsiblePanel from "./CollapsiblePanel";
 import MysteryStatusPill, { nextTag, prevTag, type SuspectTag } from "./MysteryStatusPill";
 import styles from "./Mystery.module.css";
@@ -16,6 +23,26 @@ import styles from "./Mystery.module.css";
 type Axis = "suspects" | "locations" | "times";
 type Tags = Record<Axis, SuspectTag[]>;
 type Accusation = { suspect: number; location: number; time: number };
+
+// doc-01 "Multi-Layer Evidence": the clue KINDS already carry their evidence
+// class — present them layered (timeline → testimony/movement → cleared) so the
+// case reads as progressive reasoning, not a flat list. Pure presentation; the
+// generated clue set (and its unique solution) is untouched.
+const CLUE_LAYER: Record<ClueKind, 0 | 1 | 2> = {
+  after: 0,
+  before: 0,
+  "clear-time": 0,
+  "room-sealed": 1,
+  arrived: 1,
+  "never-in": 1,
+  "clear-suspect": 2,
+  "clear-room": 2,
+};
+const EVIDENCE_LAYERS: { key: 0 | 1 | 2; title: string; hint: string }[] = [
+  { key: 0, title: "The Timeline", hint: "when the blow could fall" },
+  { key: 1, title: "Movements & Testimony", hint: "who was where, and when" },
+  { key: 2, title: "Alibis Cleared", hint: "the accounts that hold" },
+];
 
 interface Saved {
   tags: Tags;
@@ -82,6 +109,13 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
     }
   }, [puzzle.date]);
 
+  // Candlelit parlor ambience for the room. The manager self-silences under mute
+  // or reduced-motion and tears down on unmount (f1-audio contract).
+  useEffect(() => {
+    audio.startAmbient("mystery");
+    return () => audio.stopAmbient();
+  }, []);
+
   const solved = accusation !== null;
 
   const primeOf = (axis: Axis) => tags[axis].indexOf("prime");
@@ -90,6 +124,7 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
 
   function cycle(axis: Axis, i: number, dir: "fwd" | "back") {
     if (solved) return; // verdict is locked in for the day
+    audio.sfx("place"); // tactile mark — a soft note as a card is tagged
     setTags((prev) => {
       const arr = prev[axis].slice();
       const t = dir === "fwd" ? nextTag(arr[i]) : prevTag(arr[i]);
@@ -116,6 +151,12 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
       acc.time === puzzle.solution.time;
     setAccusation(acc);
     setWon(w);
+    if (w) {
+      audio.sfx("correct");
+      audio.stinger(); // the completion ceremony — case closed
+    } else {
+      audio.sfx("wrong");
+    }
     persist(puzzle.date, { tags, accusation: acc, won: w });
   }
 
@@ -141,6 +182,17 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
     [puzzle.clues, search, clueFilter],
   );
 
+  // Group the (filtered) clues by evidence layer, keeping only non-empty layers
+  // so search/filter still collapses cleanly. Original clue numbers preserved.
+  const evidenceGroups = useMemo(
+    () =>
+      EVIDENCE_LAYERS.map((layer) => ({
+        layer,
+        items: filteredClues.filter(({ c }) => CLUE_LAYER[c.kind] === layer.key),
+      })).filter((g) => g.items.length > 0),
+    [filteredClues],
+  );
+
   const axes: { axis: Axis; label: string; values: string[]; truth: number }[] = useMemo(
     () => [
       { axis: "suspects", label: "The Suspects", values: puzzle.suspects, truth: puzzle.solution.suspect },
@@ -151,7 +203,17 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
   );
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_minmax(0,16rem)] lg:items-start">
+    <>
+      {/* ── Candlelit manor atmosphere (F1 primitives; ≤1 animating loop) ──
+          Only the dust field animates; bloom + grain are designed still frames.
+          Reduced-motion freezes all three via each primitive's own contract. */}
+      <div aria-hidden className={styles.atmos}>
+        <AmbientGlow intensity={0.5} color="rgb(var(--c-candle))" position="50% -8%" />
+        <GrainFog opacity={0.1} />
+        <ParticleField kind="dust" density={0.7} opacity={0.6} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_minmax(0,16rem)] lg:items-start">
       {/* ── LEFT: the Case File (evidence to reason from) ── */}
       <div className="lg:sticky lg:top-4">
         <CollapsiblePanel side="left" title="Case File" accent={HEX} storageKey="parlor:mystery:casefile">
@@ -194,28 +256,48 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
             </div>
           </div>
 
-          <ol className="flex list-none flex-col gap-2.5">
-            {filteredClues.map(({ c, i }) => (
-              <li key={i} className={`${styles.clue} flex gap-2 text-ink`}>
-                <span className="microlabel shrink-0 pt-0.5" style={{ color: HEX }}>
-                  {i + 1}
-                </span>
-                <span>{c.text}</span>
-              </li>
+          <div className="flex flex-col gap-4">
+            {evidenceGroups.map(({ layer, items }) => (
+              <section key={layer.key} className={styles.layer}>
+                <div className="flex items-baseline justify-between gap-2 border-b border-line/70 pb-1">
+                  <span className="microlabel" style={{ color: HEX }}>
+                    {layer.title}
+                  </span>
+                  <span className="text-[0.6rem] uppercase tracking-wide text-muted">
+                    {layer.hint}
+                  </span>
+                </div>
+                <ol className="flex list-none flex-col gap-2">
+                  {items.map(({ c, i }) => (
+                    <li key={i} className={`${styles.clueCard} border border-line/60 text-ink`}>
+                      <span
+                        className={`${styles.pin} microlabel border`}
+                        style={{ color: HEX, borderColor: HEX }}
+                      >
+                        {i + 1}
+                      </span>
+                      <span>{c.text}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
             ))}
-            {filteredClues.length === 0 && (
-              <li className="text-sm text-muted">No clues match — try a different search or filter.</li>
+            {evidenceGroups.length === 0 && (
+              <p className="text-sm text-muted">No clues match — try a different search or filter.</p>
             )}
-          </ol>
+          </div>
         </CollapsiblePanel>
       </div>
 
       {/* ── CENTER: the deduction board (three aligned pill columns) ── */}
       <div className="flex flex-col gap-5">
         <div className="border-b border-line pb-3">
-          <h1 className="display text-xl" style={{ color: HEX }}>
-            {puzzle.caseName}
-          </h1>
+          <div className="flex items-center gap-2">
+            <Ornament variant="moon" treatment="gold" size={22} className="shrink-0" />
+            <h1 className="display text-xl" style={{ color: HEX }}>
+              {puzzle.caseName}
+            </h1>
+          </div>
           <p className="microlabel mt-1">
             tap a pill to mark — potential · prime · cleared
           </p>
@@ -306,6 +388,11 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
+              {won && (
+                <div className={styles.seal}>
+                  <Ornament variant="flourish" treatment="gold" size={120} />
+                </div>
+              )}
               <p className="display text-lg" style={{ color: won ? HEX : undefined }}>
                 {won ? "Case Closed 🔓" : "Cold Case ❄️"}
               </p>
@@ -326,7 +413,8 @@ export default function MysteryGame({ puzzle }: { puzzle: MysteryPuzzle }) {
           )}
         </CollapsiblePanel>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
