@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cinzel } from "next/font/google";
 import SiteFooter from "@/components/SiteFooter";
+import TextSizeControl from "@/components/TextSizeControl";
 import ThemeToggle from "@/components/ThemeToggle";
 import { GAME_ROOMS, SITE_URL } from "@/lib/rooms";
 import "./globals.css";
@@ -91,6 +92,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `try{var t=localStorage.getItem('parlor.theme');if(!t){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}`,
           }}
         />
+        {/* No-flash text size: apply the stored S/M/L multiplier before paint.
+            Map mirrors TEXT_SCALE in lib/useTextSize.ts (can't import here). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var s=localStorage.getItem('parlor.textsize');var m={S:'0.9',M:'1',L:'1.15'};if(s&&m[s])document.documentElement.style.setProperty('--text-scale',m[s]);}catch(e){}`,
+          }}
+        />
       </head>
       <body className="noise min-h-screen">
         <script
@@ -100,6 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <SiteFooter />
         <ThemeToggle />
+        <TextSizeControl />
       </body>
     </html>
   );

@@ -117,6 +117,21 @@
   grid-template-columns: repeat(auto-fill, minmax(var(--d-card-min), 1fr));
 }
 
+/* ── Responsive type scale + app-wide text-size control (F1 · §3.0 follow-up).
+   The whole scale is the root rem: every Tailwind text-* utility (all rem-based)
+   inherits BOTH the viewport clamp (smaller on phones, was oversized) AND the
+   user S/M/L multiplier from this one declaration. `--text-scale` (default 1)
+   is set S=0.9 / M=1 / L=1.15 by the no-flash script in layout.tsx before paint
+   and by lib/useTextSize.ts at runtime. Desktop base stays 16px (1rem) so the
+   tuned desktop layout is pixel-identical; only phones shrink. rem inside a root
+   font-size resolves against the initial 16px, so the clamp is stable. */
+:root {
+  --text-scale: 1;
+}
+html {
+  font-size: calc(clamp(0.9375rem, 0.875rem + 0.3vw, 1rem) * var(--text-scale));
+}
+
 body {
   @apply bg-bg text-ink antialiased;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
