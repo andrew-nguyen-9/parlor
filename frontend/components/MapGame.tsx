@@ -23,6 +23,7 @@ import {
   type AtlasClue,
 } from "@/lib/atlasPuzzle";
 import { mulberry32 } from "@/lib/rng";
+import { audio } from "@/lib/sound";
 import styles from "./MapGame.module.css";
 import CollapsiblePanel from "@/components/CollapsiblePanel";
 
@@ -323,6 +324,7 @@ function Starfield({
   const apiRef = useRef<SceneApi | null>(null);
   const timeRef = useRef(0);
   const bgRef = useRef<THREE.Object3D | null>(null);
+  const bgMatRef = useRef<THREE.PointsMaterial | null>(null);
   const stageBoxRef = useRef<HTMLDivElement>(null);
 
   const setup = useMemo(() => {
@@ -361,6 +363,7 @@ function Starfield({
         blending: THREE.AdditiveBlending,
       });
       bg.add(new THREE.Points(bgGeo, bgMat));
+      bgMatRef.current = bgMat;
       for (let i = 0; i < 3; i++) {
         const neb = new THREE.Sprite(
           new THREE.SpriteMaterial({
@@ -394,7 +397,14 @@ function Starfield({
       apiRef.current = { camera, raycaster: new THREE.Raycaster(), figures };
       timeRef.current = 0;
 
-      return { scene, camera, dispose: () => (apiRef.current = null) };
+      return {
+        scene,
+        camera,
+        dispose: () => {
+          apiRef.current = null;
+          bgMatRef.current = null;
+        },
+      };
     };
   }, [puzzle]);
 
@@ -408,11 +418,17 @@ function Starfield({
         bgRef.current.rotation.y += dt * 0.01;
         bgRef.current.rotation.x += dt * 0.004;
       }
+      // Very subtle whole-sky twinkle (spec §Star Design) — one cheap material
+      // breath, not per-star, so it stays calm and free on mobile.
+      if (bgMatRef.current) {
+        bgMatRef.current.opacity = 0.78 + Math.sin(t * 0.7) * 0.14;
+      }
       for (const f of api.figures) {
         f.group.position.y = f.baseY + Math.sin(t * 0.6 + f.phase) * 0.06;
         f.group.rotation.z = Math.sin(t * 0.3 + f.phase) * 0.02;
         if (f.glow.visible) {
-          const p = 2.6 + Math.sin(t * 2) * 0.18;
+          // Calm breathing aura — settles rather than pulses (premium reveal).
+          const p = 2.6 + Math.sin(t * 1.1) * 0.1;
           f.glow.scale.set(p, p, 1);
         }
       }
@@ -497,13 +513,22 @@ function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
   const score = Math.max(10, 100 - wrong.length * 25);
   const selectedRuledOut = selected != null && ruledOut.has(selected);
 
+  // Deep-space ambient bed (f1-audio) — starts on mount, torn down on unmount.
+  // No-op under mute/reduced-motion/SSR; the manager owns that decision.
+  useEffect(() => {
+    audio.startAmbient("map");
+    return () => audio.stopAmbient();
+  }, []);
+
   function pick(id: string) {
     if (phase !== "playing") return;
+    audio.sfx("place"); // tiny crystalline focus cue
     setSelected((s) => (s === id ? null : id));
   }
 
   function toggleRuleOut() {
     if (phase !== "playing" || !selected) return;
+    audio.sfx("hover");
     setRuledOut((prev) => {
       const next = new Set(prev);
       if (next.has(selected)) next.delete(selected);
@@ -515,9 +540,12 @@ function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
   function confirm() {
     if (phase !== "playing" || !selected || ruledOut.has(selected)) return;
     if (selected === puzzle.solution) {
+      audio.sfx("correct");
+      audio.stinger(); // restrained completion swell — the "it's a swan" moment
       setPhase("won");
       return;
     }
+    audio.sfx("wrong");
     setWrong((w) => (w.includes(selected) ? w : [...w, selected]));
     setRuledOut((prev) => new Set(prev).add(selected));
     setShake(true);
