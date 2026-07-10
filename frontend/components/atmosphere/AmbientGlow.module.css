@@ -1,0 +1,32 @@
+/* AmbientGlow — the soft vignette + single-source bloom overlay.
+   Static by default (one light source, no second animation). The optional
+   `animate` breathe is a slow candle flutter, killed under reduced motion so the
+   still frame stays legible (North Star Floor). */
+
+.layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.breathe {
+  animation: atmo-breathe 6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes atmo-breathe {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breathe {
+    animation: none;
+    opacity: 1;
+  }
+}
