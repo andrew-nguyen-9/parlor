@@ -66,14 +66,14 @@ a11y: logo link `aria-label` + ≥44×44px; suit glyph `aria-hidden`; lobby pill
 content: `label` = room proper noun; category accent from `lib/games.ts`.
 code: `components/RoomShell.tsx`
 
-### Button / CTA pill — live (Tailwind pattern)
-anatomy: `.microlabel` or text label in a `rounded-full border border-line bg-surface/80 px-4 py-2` pill; leading glyph optional.
-variants: primary (accent = `text-brass`/category ink + `hover:border-brass`) · secondary (border-line) · ghost (no border). Destructive uses `ember` + word/icon.
-sizes: default pill; touch ≥44px hit area (≤640px `.microlabel` auto-min-height rule).
+### Button / CTA plate — live (Tailwind pattern)
+anatomy: `.microlabel` or text label on an engraved brass plate — `rounded-[4px] border border-brass bg-surface/80 px-4 py-2` + 1px gilt inset (inner brass shadow); leading glyph optional. NOT `rounded-full` — that radius is reserved for toggles/switches (shape language: round=switch, plate=action; challenge T2).
+variants: primary (accent = `text-brass`/category ink + `hover:border-gold`) · secondary (border-line) · ghost (no border). Destructive uses `ember` + word/icon.
+sizes: default plate; touch ≥44px hit area (≤640px `.microlabel` auto-min-height rule).
 states: default / hover (`hover:border-brass`, garnish only) / active (instant CSS press ≤150ms) / focus (`--c-focus` ring 2px) / disabled (`smoke`, no hover).
 a11y: role button/link; label = verb-first ≤3 words (VOICE); icon-only needs aria-label; contrast per §Floors.
 content: verb-first, ≤3 words, no terminal punctuation.
-code: Tailwind pattern (e.g. RoomShell lobby pill); no shared component yet — planned extraction.
+code: Tailwind pattern (e.g. RoomShell lobby pill); no shared component yet — the planned shared `Button` extraction ships the plate form; toggles keep `rounded-full`.
 
 ### Panel (`.gilt-frame`) — specced
 anatomy: `surface` ground + soft brass box-shadow + hairline; section headers use `.deco-rule`, gilt titles use `.gilt`/`.gold-text` (display-size only).

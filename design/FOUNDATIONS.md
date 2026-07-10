@@ -53,11 +53,12 @@ values are darkened bronzes computed to hold WCAG AA on the parchment ground.
 5. No new hex literals in components. Exemptions (theme-invariant, MUST stay literal): deck card faces (`.deck-front` #fbf6e4/#efe3c0, `.deck-back-art`) + share-card renders + `--gold-sheet`.
 
 ## Type
-faces: **Cinzel** (`--font-display`, art-deco serif, wired via `next/font`) for
-display/nameplates; **system sans stack** (ui-sans-serif → system-ui → …) for body
-and all Q&A. Pairing: engraved period display over a neutral, maximally-legible
-body — the Victorian voice never taxes reading.
-- `.display`: Cinzel 700, UPPERCASE, letter-spacing 0.04em, line-height 0.92 — nameplates/headers only.
+faces: **Fraunces** (`--font-display`, variable old-style serif — opsz + WONK/SOFT
+axes give a hand-cut engraving character, wired via `next/font`) for display/nameplates;
+**system sans stack** (ui-sans-serif → system-ui → …) for body and all Q&A. Pairing:
+engraved period display over a neutral, maximally-legible body — the Victorian voice
+never taxes reading. (Fraunces replaced Cinzel 2026-07-10, challenge T1 — DECISIONS.)
+- `.display`: Fraunces 700 (opsz display, WONK low), UPPERCASE, letter-spacing 0.04em, line-height 0.92 — nameplates/headers only, display-only ≥18px (never body).
 - `.microlabel`: 0.75rem, uppercase, letter-spacing 0.22em, `text-muted` — signage.
 - body / Q&A: system sans, ≥1rem, line-height ≥1.5, measure 45–75ch. Never inside gilt/gradient.
 
@@ -76,12 +77,18 @@ within a block, multiples of 0.25rem. Density: comfortable→dense.
 `.density-grid` = `repeat(auto-fill, minmax(--d-card-min, 1fr))` at `--d-col-gap`. One per room for card collections.
 
 ## Shape & elevation
-radius: cards/panels use the deck frame; pills/toggles rounded-full; focus ring
+radius: cards/panels use the deck frame; **CTAs = engraved plate radius 4** (brass
+hairline + gilt inset); **toggles/switches rounded-full** (physical switch) —
+shape language: round=switch, plate=action (challenge T2 2026-07-10); focus ring
 radius 4px. Depth language (≤3 levels): (1) hairline `line`/`brass` border, (2)
 `.gilt-frame` soft brass box-shadow on `surface`, (3) drop-shadow bloom (dark
 candle bloom; light = soft UMBER `rgba(58,26,32,…)`, never black). One light
 source: `--gold-sheet` (viewport-fixed) lights every `.gilt`/`.gold-text` from
 one static specular spot — no second light except Streak's diegetic candle glow.
+material (TRIAL, challenge T3 2026-07-10): `--tex-grain` — a FROZEN inline-SVG
+`feTurbulence` grain (never per-render random), ≤3% opacity over `bg` ONLY — never
+behind Q&A text or panels; static, zero-network. Kills sterile-vector banding,
+strengthens the parchment anchor. Re-judged next release (DECISIONS).
 
 ## 3D / Stage (2026-07-09 cycle — Chronos/Atlas/Ignite)
 Shared primitives (F1), never re-derived per room: `ThreeStage` (Three.js canvas

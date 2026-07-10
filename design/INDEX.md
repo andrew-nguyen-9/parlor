@@ -54,4 +54,4 @@ ambition: 4   sacred: Q&A legibility over any effect · the zero-JS/seed-bank/re
 Mobile + light-mode rules (feed F4, G7): FOUNDATIONS §Color (light column) + §Breakpoints; PATTERNS §Mobile and §Motion.
 
 ## Cadence
-challenge: each release   last-challenged: 2026-07-06
+challenge: each release   last-challenged: 2026-07-10
