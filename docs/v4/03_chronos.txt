@@ -1,0 +1,684 @@
+# Parlor Design Document
+
+# Chronos
+
+*A daily mechanical logic puzzle where every gear has a purpose, every component obeys real constraints, and only one perfect assembly can bring time back to life.*
+
+---
+
+# Overview
+
+**Chronos** is one of the daily games in the **Parlor** collection (`parlor.an9.dev`).
+
+Each Parlor game explores a different style of logic. Chronos explores **mechanical reasoning**.
+
+Every daily puzzle presents the player with an intricate mechanical watch movement that has been partially disassembled. Gears, bridges, screws, escapements, springs, and precision components have been misplaced, removed, or installed incorrectly.
+
+The player's objective is not simply to rebuild the watch.
+
+The objective is to understand the logic of the mechanism and restore it until the movement comes alive.
+
+Every placement matters.
+
+Every gear changes the entire system.
+
+Every mistake has a visible mechanical consequence.
+
+The experience should feel calm, premium, and deeply tactile. There are no timers counting down, no frantic mechanics, and no arbitrary guessing. Players succeed through observation, deduction, and experimentation until dozens of independent mechanical systems suddenly begin working together.
+
+The defining emotional moment is:
+
+> "Everything finally fits... and suddenly the entire watch begins ticking."
+
+---
+
+# Design Pillars
+
+## Mechanics Are The Puzzle
+
+Nothing is hidden.
+
+Nothing is random.
+
+Every component behaves according to understandable mechanical rules.
+
+Players solve the puzzle by learning how the movement works.
+
+Every placement should feel logical.
+
+---
+
+## Beautiful Engineering
+
+Chronos should celebrate precision craftsmanship.
+
+Every bridge.
+
+Every screw.
+
+Every jewel.
+
+Every polished surface.
+
+Every animation.
+
+Everything should communicate that this is an extraordinary mechanical object.
+
+The puzzle should feel like restoring a masterpiece rather than solving an abstract game.
+
+---
+
+## Daily Ritual
+
+Chronos is designed to be played once each day.
+
+Players open Parlor.
+
+Restore today's watch.
+
+Watch the completed movement come alive.
+
+Share results.
+
+Return tomorrow.
+
+The game should comfortably become part of the player's daily routine alongside every other Parlor title.
+
+---
+
+## Premium Presentation
+
+Every interaction should feel expensive.
+
+Smooth camera movement.
+
+Luxury materials.
+
+Subtle reflections.
+
+Soft audio.
+
+Beautiful mechanical animations.
+
+Nothing should resemble a prototype.
+
+---
+
+# Gameplay
+
+Every daily puzzle consists of:
+
+* One watch movement
+* One collection of mechanical components
+* One logical solution
+* One successful simulation
+
+The player can:
+
+Rotate the movement
+
+Zoom
+
+Inspect components
+
+Move gears
+
+Install bridges
+
+Place screws
+
+Adjust escapements
+
+Wind springs
+
+Run the simulation
+
+If the mechanism is assembled correctly:
+
+Power begins flowing.
+
+The gear train rotates.
+
+The escapement locks and unlocks rhythmically.
+
+The balance wheel oscillates.
+
+The second hand begins ticking.
+
+The puzzle completes.
+
+---
+
+# Weekly Difficulty Progression
+
+Chronos follows Parlor's weekly cadence.
+
+Monday introduces approachable puzzles while Sunday presents the most intricate movement of the week.
+
+## Monday
+
+One primary mechanic.
+
+Few components.
+
+Wide placement tolerance.
+
+Simple gear train.
+
+3 to 5 minute solve.
+
+---
+
+## Tuesday
+
+Additional gears.
+
+Simple bridge placement.
+
+One misleading configuration.
+
+---
+
+## Wednesday
+
+Multiple interconnected systems.
+
+Power flow becomes important.
+
+Players begin reasoning about gear direction.
+
+---
+
+## Thursday
+
+Layered construction.
+
+Multiple bridges.
+
+Vertical relationships.
+
+Timing begins to matter.
+
+---
+
+## Friday
+
+Gear ratios.
+
+Escapement tuning.
+
+Precision alignment.
+
+False mechanical solutions.
+
+---
+
+## Saturday
+
+Complications.
+
+Several subsystems.
+
+Power must reach multiple mechanisms simultaneously.
+
+Numerous convincing dead ends.
+
+---
+
+## Sunday
+
+Masterpiece puzzle.
+
+Full watch movement.
+
+Complex interactions.
+
+Hidden dependencies.
+
+Every mechanic introduced throughout the week appears together.
+
+Designed for experienced players.
+
+15 to 20 minute solve.
+
+---
+
+# Camera System
+
+The camera is one of the most important parts of the experience.
+
+It should never resemble default OrbitControls.
+
+Movement should feel like manipulating a luxury watch beneath a macro photography lens.
+
+Features include:
+
+Velocity smoothing
+
+Spring interpolation
+
+Micro inertia
+
+Natural momentum
+
+Soft stopping
+
+Focus transitions
+
+Inspection zoom
+
+No snapping.
+
+No abrupt acceleration.
+
+Every movement should feel deliberate.
+
+---
+
+# Visual Direction
+
+Chronos should resemble an impossible luxury mechanical watch.
+
+The world exists almost entirely inside the movement itself.
+
+The watch becomes a landscape.
+
+Brass gears.
+
+Blued screws.
+
+Ruby bearings.
+
+Polished steel bridges.
+
+Engraved plates.
+
+Sapphire crystals.
+
+Warm ambient lighting.
+
+Everything should communicate extraordinary craftsmanship.
+
+---
+
+# Materials
+
+Components should use physically based rendering.
+
+Brushed brass.
+
+Mirror-polished steel.
+
+Anodized blue screws.
+
+Synthetic ruby jewels.
+
+Machined aluminum.
+
+Matte black enamel.
+
+Gold engravings.
+
+Subtle fingerprints and microscopic imperfections help communicate realism without distracting from gameplay.
+
+---
+
+# Mechanical Components
+
+The movement is constructed from modular systems including:
+
+Main spring barrel
+
+Center wheel
+
+Third wheel
+
+Fourth wheel
+
+Escape wheel
+
+Pallet fork
+
+Balance wheel
+
+Gear train
+
+Pinions
+
+Ratchets
+
+Clicks
+
+Bridges
+
+Bearings
+
+Jewels
+
+Springs
+
+Screws
+
+Complication modules
+
+Future updates may introduce tourbillons, perpetual calendars, moon phases, chronographs, and astronomical complications.
+
+---
+
+# Simulation
+
+The movement should never fake success.
+
+Every simulation should calculate:
+
+Power transmission
+
+Rotation direction
+
+Gear ratios
+
+Mechanical constraints
+
+Bridge support
+
+Connection integrity
+
+Escapement timing
+
+Component interference
+
+Every gear should visibly respond to every neighboring component.
+
+Players should immediately understand why the mechanism failed.
+
+---
+
+# Puzzle Philosophy
+
+Every puzzle must have:
+
+Exactly one logical solution.
+
+No guessing.
+
+No hidden information.
+
+No trial-and-error dependency.
+
+Every incorrect placement should fail for an understandable mechanical reason.
+
+The game should reward deduction instead of experimentation.
+
+---
+
+# Animation
+
+Idle movement includes:
+
+Floating dust.
+
+Soft lighting changes.
+
+Gentle reflections.
+
+After solving:
+
+Power flows through the movement.
+
+Each gear begins rotating.
+
+The escapement starts ticking.
+
+The balance wheel oscillates naturally.
+
+Hands begin moving.
+
+The camera slowly pulls back to reveal the completed watch.
+
+The reveal should feel elegant rather than explosive.
+
+---
+
+# Audio
+
+Audio remains restrained.
+
+Continuous ambience:
+
+Quiet workshop atmosphere.
+
+Gentle mechanical resonance.
+
+Soft room tone.
+
+Interaction sounds:
+
+Steel touching brass.
+
+Tiny screw clicks.
+
+Gear engagement.
+
+Bridge placement.
+
+Spring winding.
+
+Successful completion introduces the satisfying rhythm of a perfectly regulated mechanical watch before fading naturally into ambient sound.
+
+---
+
+# User Interface
+
+Chronos inherits the visual language of Parlor.
+
+Rounded corners.
+
+Glass panels.
+
+Minimal typography.
+
+Elegant transitions.
+
+Quiet animations.
+
+Primary interface:
+
+Daily Puzzle
+
+Archive
+
+Statistics
+
+Collection
+
+Settings
+
+Everything else remains hidden until needed.
+
+---
+
+# Progression
+
+Players slowly build a permanent collection of restored movements.
+
+Statistics include:
+
+Current streak
+
+Longest streak
+
+Completion time
+
+Simulation attempts
+
+Hints used
+
+Weekly performance
+
+Monthly performance
+
+Lifetime completions
+
+Historical puzzles remain replayable through the archive.
+
+Completing milestones unlocks cosmetic watch styles while preserving identical gameplay.
+
+---
+
+# Hint System
+
+Hints remain intentionally subtle.
+
+After several minutes:
+
+A faint highlight appears around one relevant region of the movement.
+
+Later:
+
+Potential connection points become softly illuminated.
+
+Final hint:
+
+A translucent outline briefly shows the correct position for one component before fading.
+
+Hints never solve multiple steps at once.
+
+---
+
+# Technical Architecture
+
+## Framework
+
+Three.js
+
+React Three Fiber
+
+TypeScript
+
+Vite
+
+React Spring
+
+Zustand
+
+React Postprocessing
+
+GSAP
+
+Howler.js
+
+---
+
+# Rendering
+
+Physically based materials
+
+HDR environment lighting
+
+ACES tone mapping
+
+Screen-space reflections
+
+Ambient occlusion
+
+Selective bloom
+
+Depth of field
+
+Temporal anti-aliasing
+
+GPU instancing
+
+Compressed textures
+
+Aggressive batching
+
+The rendering pipeline should prioritize mechanical clarity while achieving premium visual quality.
+
+---
+
+# Puzzle Data
+
+Each puzzle stores:
+
+* Puzzle ID
+* Date
+* Difficulty
+* Weekly tier
+* Random seed
+* Component definitions
+* Component positions
+* Mechanical graph
+* Gear ratios
+* Constraints
+* Correct assembly
+* Hint metadata
+* Completion metadata
+
+Every puzzle must be deterministic so every player receives the same challenge each day.
+
+---
+
+# Educational Layer
+
+After completion, players unlock a short information card explaining the mechanical concepts featured in today's puzzle.
+
+Examples include:
+
+How escapements regulate time.
+
+Why jewel bearings reduce friction.
+
+How gear ratios affect timing.
+
+The history of marine chronometers.
+
+The invention of the balance spring.
+
+This information remains optional and never interrupts gameplay.
+
+---
+
+# Integration with Parlor
+
+Chronos should immediately feel like part of the Parlor family.
+
+It shares:
+
+Daily puzzle cadence
+
+Elegant visual language
+
+Persistent statistics
+
+Archives
+
+Streak tracking
+
+Responsive design
+
+Fast loading
+
+Shared navigation
+
+Consistent account progression
+
+Its identity comes entirely from its unique mechanic: understanding the logic of a mechanical system through careful reasoning.
+
+Every Parlor game should challenge players to think differently.
+
+Chronos teaches players to think like a watchmaker.
+
+---
+
+# Claude Implementation Priorities
+
+1. Build a deterministic mechanical simulation engine before creating content.
+2. Develop a modular component system where every gear, bridge, screw, spring, and escapement follows reusable physical rules.
+3. Create a robust constraint solver that guarantees every daily puzzle has exactly one logical solution.
+4. Implement premium Three.js rendering with physically based materials, cinematic camera movement, depth of field, selective bloom, and highly polished animations.
+5. Design a procedural daily puzzle generator that scales naturally from Monday's introductory mechanisms to Sunday's full masterwork movements while maintaining fairness.
+6. Integrate seamlessly with the existing Parlor framework for archives, streaks, statistics, collections, and daily puzzle distribution.
+7. Optimize for desktop and tablet, targeting a stable 60 FPS while preserving visual fidelity and mechanical responsiveness.
+
+Chronos should become the flagship craftsmanship experience within Parlor. Players should finish each session remembering one quiet, satisfying moment: the instant an inert collection of brass and steel transforms into a living machine, ticking steadily because every piece is finally in exactly the right place.

@@ -1,0 +1,687 @@
+# Parlor Design Document
+
+# Thread of Fate
+
+*A daily chain of knowledge where every answer is woven into the next. Golden threads reveal hidden connections, ancient looms preserve forgotten destinies, and every correct word strengthens the tapestry of fate. The puzzle has already been written—it is simply waiting to be unraveled.*
+
+---
+
+# Overview
+
+**Thread of Fate** is one of the daily games in the **Parlor** collection (`parlor.an9.dev`).
+
+Thread of Fate is a **trivia chain game**, where **each answer begins with the final letter of the previous answer.** The existing gameplay, puzzle logic, progression, categories, and interface structure should remain exactly as they exist today. This document focuses exclusively on elevating the visual presentation, environmental storytelling, UI design, animations, and overall atmosphere.
+
+Rather than feeling like a sequence of trivia questions, Thread of Fate should feel like uncovering a magical tapestry hidden deep within Parlor's mysterious Victorian estate. Every answer stitches another thread into an ancient weaving that has quietly recorded generations of secrets, conspiracies, murders, hidden passages, and forgotten destinies.
+
+The player isn't simply answering trivia.
+
+They're repairing fate itself.
+
+This should become one of the most elegant and visually sophisticated experiences in the Parlor collection.
+
+The defining emotional moment is:
+
+> *"The final answer is spoken... the last golden thread finds its place... and the complete tapestry reveals the hidden story that fate has been weaving all along."*
+
+---
+
+# Design Pillars
+
+## Every Answer Is Connected
+
+The existing gameplay already creates beautiful logical chains.
+
+The visual presentation should reinforce this relationship.
+
+Nothing should ever feel disconnected.
+
+Every answer should literally become part of an unfolding weave.
+
+The player should always feel the invisible connection between one answer and the next.
+
+---
+
+## Fate Is Woven
+
+Golden thread becomes the defining visual language.
+
+Threads never appear decorative.
+
+They are alive.
+
+They tighten.
+
+Stretch.
+
+Glow.
+
+Branch.
+
+Reconnect.
+
+The tapestry is constantly responding to the player's progress.
+
+---
+
+## Victorian Mystery
+
+Thread of Fate should naturally belong inside the Parlor universe.
+
+Its setting should feel like discovering an old weaving room hidden inside the Victorian manor.
+
+Imagine:
+
+An abandoned textile workshop.
+
+An aristocratic sewing room.
+
+Ancient looms.
+
+Locked cabinets.
+
+Dust-covered journals.
+
+Secret correspondence sewn into fabrics.
+
+Hidden family crests.
+
+Bloodstained embroidery.
+
+Invisible messages stitched into cloth.
+
+Magic and espionage coexist naturally within the room.
+
+---
+
+## Premium Presentation
+
+Everything should feel handcrafted.
+
+Not fantasy.
+
+Not medieval.
+
+Instead:
+
+Luxury textiles.
+
+Fine embroidery.
+
+Carved walnut furniture.
+
+Brass machinery.
+
+Velvet.
+
+Silk.
+
+Gold leaf.
+
+Antique craftsmanship.
+
+Every interaction should resemble touching something centuries old.
+
+---
+
+# Visual Direction
+
+The current layout remains exactly the same.
+
+Every component receives a textile-inspired redesign.
+
+Visual materials include:
+
+Dark walnut
+
+Deep velvet
+
+Black linen
+
+Gold embroidery
+
+Antique brass
+
+Handwoven fabrics
+
+Ivory stitching
+
+Silk reflections
+
+Aged parchment
+
+Soft candlelight
+
+Thread textures
+
+The interface should feel layered like expensive fabric rather than flat panels.
+
+---
+
+# The Loom of Fate
+
+The loom becomes the visual centerpiece of the experience.
+
+Not as gameplay.
+
+As atmosphere.
+
+Behind the interface sits a massive antique loom slowly weaving the player's journey.
+
+Each completed answer extends another golden thread.
+
+The loom constantly moves in the background.
+
+Wood creaks.
+
+Pulleys shift.
+
+Threads tighten.
+
+Nothing feels mechanical.
+
+Everything feels deliberate.
+
+---
+
+# Golden Thread Identity
+
+The golden thread becomes the signature design language.
+
+Applications include:
+
+Connecting consecutive answers.
+
+Tracing progress through the interface.
+
+Animated loading indicators.
+
+Button highlights.
+
+Menu transitions.
+
+Category selection.
+
+Completion ceremonies.
+
+Hover interactions.
+
+Progress indicators.
+
+The thread should never move quickly.
+
+It should feel pulled by unseen hands.
+
+---
+
+# Weaving Animations
+
+The act of weaving becomes the game's primary animation language.
+
+Idle:
+
+Threads sway gently.
+
+Fabric subtly breathes.
+
+Loose fibers drift.
+
+Loom mechanisms shift.
+
+Correct answer:
+
+Golden thread rapidly stitches into place.
+
+Needles briefly pass through cloth.
+
+Embroidery expands.
+
+A new pattern appears.
+
+Incorrect answer:
+
+Thread tangles briefly.
+
+The weave tightens.
+
+Loose fibers separate.
+
+Nothing breaks.
+
+The fabric simply resists.
+
+---
+
+# Textile Patterns
+
+Every screen should feature subtle woven details.
+
+Ideas include:
+
+Jacquard textures.
+
+Damask backgrounds.
+
+Victorian embroidery.
+
+Lace borders.
+
+Decorative stitching.
+
+Hand-sewn dividers.
+
+Gold thread ornamentation.
+
+Layered fabric panels.
+
+Every texture should feel authentic rather than printed.
+
+---
+
+# Environmental Storytelling
+
+Thread of Fate should quietly expand Parlor's larger narrative.
+
+The weaving room contains evidence of previous inhabitants.
+
+Ideas include:
+
+Half-finished tapestries.
+
+Embroidery hoops.
+
+Letters hidden beneath stitched fabric.
+
+Family crests.
+
+Secret maps woven into rugs.
+
+Pinned investigation notes.
+
+Monogrammed handkerchiefs.
+
+Invisible ink appearing beneath candlelight.
+
+Portraits partially covered by cloth.
+
+Locked cabinets of rare textiles.
+
+Nothing explains itself directly.
+
+The environment rewards observation over time.
+
+---
+
+# Mirrors & Reflections
+
+Mirrors continue the visual language established throughout Parlor.
+
+Ideas include:
+
+Gold thread reflected differently inside mirrors.
+
+Hidden stitches visible only in reflections.
+
+Mirror frames wrapped with embroidered vines.
+
+Subtle distortions revealing secret woven symbols.
+
+Mirror surfaces softly shimmer during correct answers.
+
+The mirrors reinforce mystery rather than gameplay.
+
+---
+
+# Espionage Integration
+
+The room hints that weaving has always been used to hide information.
+
+Historical inspiration includes:
+
+Encoded embroidery.
+
+Invisible stitching.
+
+Hidden messages sewn into garments.
+
+Thread colors representing intelligence networks.
+
+Maps disguised as tapestries.
+
+Cipher patterns concealed within textile designs.
+
+The player feels like they're uncovering generations of carefully hidden knowledge.
+
+---
+
+# Enhanced Gameplay Feedback
+
+Without changing gameplay:
+
+Correct answer:
+
+* Golden thread extends.
+* Fabric becomes richer.
+* Embroidery illuminates.
+* Loom advances.
+* Soft golden particles appear.
+* Candlelight brightens.
+
+Incorrect answer:
+
+* Thread briefly knots.
+* Fabric wrinkles.
+* Gold thread loses brightness.
+* Loom pauses.
+* Candle flickers.
+
+Progress feels tangible through the growing tapestry.
+
+---
+
+# UI Design
+
+The existing Parlor design system remains the foundation.
+
+Thread of Fate extends it through textile craftsmanship.
+
+Panels:
+
+Layered fabric.
+
+Embroidered borders.
+
+Gold stitched corners.
+
+Velvet shadows.
+
+Buttons:
+
+Brass sewing buttons.
+
+Thread-wrapped edges.
+
+Stitched hover outlines.
+
+Statistics:
+
+Presented inside an embroidered ledger.
+
+Archives:
+
+Bound textile sample books.
+
+Daily puzzle:
+
+Appears pinned to an antique embroidery frame.
+
+Nothing should resemble modern software.
+
+---
+
+# Microinteractions
+
+Every interaction reinforces craftsmanship.
+
+Hover:
+
+Golden thread follows the cursor.
+
+Selection:
+
+Fabric gently stretches.
+
+Button press:
+
+Cloth compresses naturally.
+
+Correct answer:
+
+Needle completes one stitch.
+
+Menu transitions:
+
+Fabric curtains elegantly part.
+
+Tooltips:
+
+Appear as stitched labels.
+
+Notifications:
+
+Delivered on folded fabric tags tied with thread.
+
+---
+
+# Lighting
+
+Warm candlelight.
+
+Soft golden glow.
+
+Subtle reflections on silk.
+
+Moving shadows cast by loom mechanisms.
+
+Gentle volumetric light through fabric.
+
+The room gradually becomes warmer as the tapestry nears completion.
+
+---
+
+# Color Palette
+
+Primary:
+
+Walnut
+
+Deep Burgundy
+
+Charcoal Linen
+
+Ivory
+
+Antique Gold
+
+Secondary:
+
+Forest Green
+
+Aged Brass
+
+Velvet Black
+
+Dusty Rose
+
+Dark Plum
+
+Accent:
+
+Radiant Gold Thread
+
+Warm Amber
+
+Soft Crimson
+
+Cream Silk
+
+Colors should feel luxurious, historic, and handcrafted.
+
+---
+
+# Typography
+
+Elegant serif headings.
+
+Editorial body typography.
+
+Decorative drop caps.
+
+Embroidered initials.
+
+Gold foil accents.
+
+Wide spacing inspired by antique book printing.
+
+---
+
+# Completion Ceremony
+
+When the final answer is entered:
+
+The loom falls silent.
+
+The final thread is pulled.
+
+Every loose strand tightens.
+
+The tapestry slowly unfolds.
+
+Hidden embroidered imagery becomes visible.
+
+A forgotten family crest appears.
+
+Secret symbols shimmer.
+
+The completed work hangs proudly before gently fading into tomorrow's puzzle.
+
+The ending should feel like revealing something that has existed for centuries.
+
+---
+
+# Design Features That Enhance Gameplay
+
+Without changing gameplay:
+
+* The growing tapestry visually represents progress rather than a conventional progress bar.
+* Each completed answer permanently stitches itself into the evolving textile, reinforcing the chain mechanic.
+* Golden thread subtly previews the connection between consecutive answers without revealing solutions.
+* Category transitions are represented by different embroidery styles and weaving techniques rather than generic icons.
+* Daily streaks gradually restore the weaving room, adding completed tapestries, repaired furniture, and richer textiles over time.
+* Completed games unlock small "Threads of History" cards featuring real historical facts about weaving, embroidery, espionage through textiles, Victorian craftsmanship, secret codes in fabric, or mythological stories surrounding the Fates.
+* Archive entries appear as preserved textile collections stored within antique cabinets.
+
+These enhancements create a stronger sense of progression while preserving the existing trivia mechanics.
+
+---
+
+# Architecture of the Design Enhancements
+
+Rather than building isolated visual effects, Thread of Fate should introduce reusable systems that integrate naturally with the broader Parlor design language.
+
+## Textile Rendering System
+
+A reusable framework for layered fabric materials including velvet, linen, silk, embroidery, woven textures, stitched borders, and cloth deformation.
+
+---
+
+## Golden Thread Engine
+
+A shared animation system responsible for:
+
+* Dynamic thread paths
+* Stitch animations
+* Connection lines
+* Progress weaving
+* Cursor interactions
+* Transition choreography
+* Ambient thread movement
+
+This system becomes the visual backbone of the game.
+
+---
+
+## Loom Simulation Layer
+
+A background environmental system controlling:
+
+* Loom movement
+* Mechanical pulleys
+* Thread tension
+* Fabric advancement
+* Ambient motion
+
+Entirely decorative but continuously reinforcing the game's identity.
+
+---
+
+## Environmental Storytelling Framework
+
+Persistent room details evolve over weeks:
+
+* Additional completed tapestries
+* Restored furniture
+* New investigative clues
+* Hidden letters
+* Mirror discoveries
+* Family insignias
+* Textile collections
+
+The room slowly tells Parlor's larger mystery without interrupting gameplay.
+
+---
+
+## Shared Victorian Design Components
+
+Extend the existing design system with reusable:
+
+* Embroidered panel components
+* Fabric cards
+* Gold stitched dividers
+* Textile buttons
+* Cloth overlays
+* Antique labels
+* Decorative borders
+* Animated thread connectors
+
+These components should be reusable across future Parlor experiences.
+
+---
+
+# CSS & Animation Direction
+
+Premium implementation ideas:
+
+* Layered fabric shaders
+* Cloth texture mapping
+* Dynamic embroidery highlights
+* Golden thread path animations
+* Needle stitching effects
+* Volumetric dust
+* Soft fabric parallax
+* Candlelight lighting
+* Gold foil gradients
+* Responsive cloth deformation
+* GPU-accelerated thread rendering
+
+Everything should move with patience.
+
+Nothing should feel digital.
+
+---
+
+# Technical Goals
+
+Continue leveraging the existing Parlor design system while extending it with:
+
+* Reusable textile UI components
+* Golden thread animation framework
+* Fabric rendering utilities
+* Loom environmental system
+* Victorian decorative library
+* Shared embroidery iconography
+* Performance-first animation architecture
+* Responsive interaction scaling across desktop and mobile
+
+---
+
+# Claude Implementation Priorities
+
+1. Preserve the existing Thread of Fate gameplay, trivia chain mechanics, answer logic, layout, and progression exactly as they exist today.
+2. Transform the visual identity into a premium Victorian weaving room centered around an ancient loom, handcrafted textiles, embroidery, and living golden threads that embody fate itself.
+3. Build reusable architectural systems for cloth rendering, thread animation, loom simulation, embroidered UI components, and environmental storytelling that can extend the broader Parlor design system.
+4. Integrate subtle narrative elements from Parlor's Victorian mansion—including mirrors, espionage, hidden messages, family secrets, and murder mysteries—through environmental details rather than gameplay changes.
+5. Elevate player feedback through elegant weaving animations, stitched progress, evolving tapestries, premium microinteractions, and atmospheric lighting that reinforce the chain between every answer.
+6. Create a cinematic completion ritual where the finished tapestry reveals a hidden truth, making Thread of Fate one of Parlor's visual centerpieces while maintaining exceptional performance across all devices.
+
+Thread of Fate should feel less like answering a sequence of trivia questions and more like uncovering a centuries-old tapestry that has quietly recorded every secret ever hidden within the walls of Parlor Manor. Every answer adds another stitch, every connection strengthens the weave, and by the end of each puzzle, players should feel they have repaired not only a pattern, but a piece of destiny itself.

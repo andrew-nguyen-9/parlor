@@ -1,0 +1,730 @@
+# Parlor Design Document
+
+# Ignite
+
+*A daily alchemical ritual where ancient runes, elemental chemistry, and living flame converge. Every symbol carries meaning. Every reaction follows immutable rules. Only the correct spell can awaken the Eternal Flame.*
+
+---
+
+# Overview
+
+**Ignite** is one of the daily games in the **Parlor** collection (`parlor.an9.dev`).
+
+Each Parlor game explores a different style of logic. Ignite explores **symbolic reasoning, alchemy, elemental interactions, and logical deduction**.
+
+Every day, players are presented with a dormant ritual circle deep within an ancient forest shrine. Candles remain extinguished. Arcane runes lie dormant. Alchemical ingredients wait to be combined. The ritual has been partially prepared, but something is missing.
+
+The objective is not simply to light every candle.
+
+The objective is to understand the ritual itself.
+
+Players must decipher relationships between runes, elemental affinities, chemical compounds, magical constraints, and ritual sequencing until the spell becomes self-sustaining and the Eternal Flame awakens.
+
+Every rune influences another.
+
+Every element changes the behavior of fire.
+
+Every decision has visible magical consequences.
+
+The experience should feel mystical, premium, atmospheric, and deeply satisfying. There are no timers, no random guessing, and no hidden information. Players succeed through observation, deduction, experimentation, and understanding increasingly sophisticated magical systems.
+
+The defining emotional moment is:
+
+> "The final candle ignites... the ritual circle awakens... and the entire shrine comes alive."
+
+---
+
+# Design Pillars
+
+## Magic Has Rules
+
+Magic is never arbitrary.
+
+Every spell obeys understandable laws.
+
+Every rune has consistent behavior.
+
+Every alchemical reaction follows logical constraints.
+
+Players are solving an ancient magical system—not guessing combinations.
+
+---
+
+## Fire Is Alive
+
+Flame should become the game's defining visual identity.
+
+Fire spreads.
+
+Flickers.
+
+Breathes.
+
+Consumes.
+
+Transforms.
+
+Every successful action should visibly strengthen the ritual's living flame.
+
+Fire is both the objective and the primary feedback mechanism.
+
+---
+
+## Ancient Alchemy
+
+Ignite blends fantasy with real-world science.
+
+Rather than inventing fictional chemistry, the game uses authentic chemical compounds, elemental properties, combustion principles, oxidation, catalysts, minerals, salts, metals, and molecular structures as inspiration for puzzles.
+
+Completing a puzzle should feel like performing both science and sorcery simultaneously.
+
+---
+
+## Daily Ritual
+
+Ignite is designed as a daily magical ceremony.
+
+Players open Parlor.
+
+Restore today's ritual.
+
+Light the Eternal Flame.
+
+Learn a fascinating scientific or historical fact.
+
+Return tomorrow.
+
+Like every Parlor game, it should become a comforting daily habit.
+
+---
+
+## Premium Presentation
+
+Ignite should feel handcrafted.
+
+Not "gamey."
+
+Every animation should resemble an expensive fantasy film.
+
+Every interaction should feel tactile.
+
+Every particle should matter.
+
+Nothing should resemble placeholder effects.
+
+---
+
+# Gameplay
+
+Every daily ritual consists of:
+
+* One ritual circle
+* Existing rune set from the current Ignite implementation
+* Candles
+* Alchemical ingredients
+* One deterministic solution
+* One magical simulation
+
+Players can:
+
+Arrange runes
+
+Rotate magical glyphs
+
+Move candles
+
+Mix ingredients
+
+Reveal elemental clues
+
+Observe reactions
+
+Trigger the ritual
+
+Run the simulation
+
+If the ritual is correct:
+
+Candles ignite one by one.
+
+Runes glow.
+
+Magic spreads across engraved channels.
+
+Roots beneath the shrine illuminate.
+
+Ancient spirits briefly awaken.
+
+The Eternal Flame erupts.
+
+The puzzle completes.
+
+---
+
+# Core Puzzle Mechanics
+
+The existing rune system remains the foundation of Ignite and should be expanded rather than replaced.
+
+Possible mechanics include:
+
+- Rune adjacency affects magical resonance.
+- Certain runes amplify or suppress neighboring symbols.
+- Candles only ignite when their required rune conditions are satisfied.
+- Fire propagates according to logical elemental pathways.
+- Alchemical compounds modify ritual behavior.
+- Catalysts unlock otherwise impossible reactions.
+- Certain runes require activation order.
+- Ritual energy follows visible engraved channels.
+- Some magical reactions are reversible while others permanently alter the board.
+
+Every mechanic should remain deterministic and understandable.
+
+---
+
+# Chemistry Integration
+
+One of Ignite's unique identities should be its blend of authentic chemistry and fantasy magic.
+
+Each puzzle can introduce real compounds that naturally relate to fire, combustion, minerals, oxidation, crystals, metals, or botanical chemistry.
+
+Examples include:
+
+Hydrogen
+
+Oxygen
+
+Carbon
+
+Sulfur
+
+Saltpeter (Potassium Nitrate)
+
+Charcoal
+
+Copper
+
+Iron Oxide
+
+Quartz
+
+Obsidian
+
+Mercury (historical alchemy)
+
+Calcite
+
+Phosphorus
+
+Magnesium
+
+Borax
+
+Each compound may introduce logical properties:
+
+- Accelerates ignition
+- Prevents combustion
+- Changes flame color
+- Conducts magical energy
+- Requires neighboring catalysts
+- Stabilizes volatile reactions
+- Redirects ritual flow
+
+After completing each puzzle, players unlock a brief educational card featuring:
+
+- Chemical structure
+- Molecular formula
+- Historical use
+- Wikipedia integration
+- Scientific explanation
+- Historical alchemical symbolism
+
+This transforms Ignite into a subtle educational experience without interrupting gameplay.
+
+---
+
+# Weekly Difficulty Progression
+
+Ignite follows Parlor's weekly cadence.
+
+## Monday
+
+Simple rune placement.
+
+Few candles.
+
+Single elemental interaction.
+
+3–5 minute solve.
+
+---
+
+## Tuesday
+
+Additional runes.
+
+Simple alchemical modifier.
+
+Multiple possible-looking layouts.
+
+---
+
+## Wednesday
+
+Element chains.
+
+Fire propagation logic.
+
+Sequential ignition.
+
+Compound interactions begin.
+
+---
+
+## Thursday
+
+Layered rituals.
+
+Multiple elemental systems.
+
+Rune dependencies.
+
+Order becomes important.
+
+---
+
+## Friday
+
+Catalysts.
+
+Combustion logic.
+
+Several convincing false solutions.
+
+Players combine magical and chemical reasoning.
+
+---
+
+## Saturday
+
+Large ritual circles.
+
+Interlocking magical systems.
+
+Several simultaneous reactions.
+
+Educational layer becomes richer.
+
+---
+
+## Sunday
+
+Master Ritual.
+
+Entire shrine.
+
+Many candles.
+
+Full rune set.
+
+Advanced compound interactions.
+
+Complex propagation.
+
+Every mechanic introduced throughout the week appears together.
+
+15–20 minute solve.
+
+---
+
+# World & Visual Direction
+
+Ignite should become one of the visual centerpieces of Parlor.
+
+Imagine discovering a forgotten shrine hidden deep inside an enchanted forest where witches, druids, and ancient scholars once studied both magic and nature.
+
+The environment should feature:
+
+Living roots
+
+Moss-covered stone
+
+Weathered ritual circles
+
+Floating embers
+
+Ancient trees
+
+Moonlight
+
+Fog
+
+Wildflowers
+
+Mushrooms
+
+Crystal formations
+
+Burning incense
+
+Hanging herbs
+
+Wax-dripped candles
+
+Soft magical particles
+
+Runes carved into worn stone
+
+Everything should feel ancient but alive.
+
+---
+
+# Fire Presentation
+
+Fire is the main character.
+
+Every flame should feel physically simulated.
+
+Features include:
+
+Realistic flickering
+
+Heat distortion
+
+Soft smoke
+
+Bloom
+
+Dynamic shadows
+
+Wax melting
+
+Dripping candles
+
+Spark showers
+
+Ember particles
+
+Glowing coals
+
+Magical fire colors
+
+Candles should illuminate nearby runes naturally.
+
+As the puzzle progresses, the shrine gradually becomes brighter as more flames awaken.
+
+The completed puzzle should culminate in one breathtaking magical blaze rather than an explosive effect.
+
+---
+
+# Animations
+
+Idle animation includes:
+
+Leaves blowing gently.
+
+Floating ash.
+
+Fireflies.
+
+Dripping wax.
+
+Moving mist.
+
+Breathing flame.
+
+Glowing fungi.
+
+After solving:
+
+Candles ignite sequentially.
+
+Runes illuminate.
+
+Magical energy flows through engraved channels.
+
+Roots pulse with light.
+
+The forest briefly responds.
+
+Birds scatter.
+
+Branches sway.
+
+The Eternal Flame erupts.
+
+Camera slowly pulls upward to reveal the completed shrine.
+
+---
+
+# CSS & Web Design
+
+Ignite should feel dramatically more premium than its current version.
+
+Visual language:
+
+Deep charcoal backgrounds
+
+Gold accents
+
+Burnished copper
+
+Weathered parchment
+
+Dark emerald moss
+
+Warm amber firelight
+
+Subtle glass panels
+
+Animated gradients
+
+Volumetric lighting
+
+Soft bloom
+
+Layered shadows
+
+High-quality SVG rune rendering
+
+Responsive layout
+
+Micro-interactions
+
+Rich hover animations
+
+Every button should glow subtly near flame.
+
+Every transition should resemble magical energy flowing through the interface.
+
+---
+
+# User Interface
+
+Ignite inherits the Parlor visual language while developing its own identity.
+
+Primary interface:
+
+Daily Ritual
+
+Archive
+
+Statistics
+
+Compendium
+
+Collection
+
+Settings
+
+The Compendium gradually fills with:
+
+Runes
+
+Compounds
+
+Elements
+
+Plants
+
+Historical rituals
+
+Alchemy concepts
+
+Wikipedia discoveries
+
+This becomes a collectible encyclopedia over time.
+
+---
+
+# Puzzle Philosophy
+
+Every puzzle must have:
+
+Exactly one logical solution.
+
+No guessing.
+
+No hidden information.
+
+Visible reasoning.
+
+Understandable failures.
+
+The puzzle should reward pattern recognition, deduction, and observation rather than brute force.
+
+---
+
+# Educational Layer
+
+Ignite already connects to Wikipedia.
+
+This should become one of its defining strengths.
+
+Every completed puzzle unlocks an elegant information card exploring topics such as:
+
+Chemical compounds
+
+Crystal structures
+
+Medicinal herbs
+
+Combustion science
+
+Ancient metallurgy
+
+Historical witchcraft
+
+Alchemy
+
+Botany
+
+Natural dyes
+
+Mineralogy
+
+Fire chemistry
+
+This information remains optional while rewarding curiosity.
+
+---
+
+# Technical Architecture
+
+## Framework
+
+Three.js
+
+React Three Fiber
+
+TypeScript
+
+Vite
+
+React Spring
+
+Zustand
+
+GSAP
+
+React Postprocessing
+
+Howler.js
+
+---
+
+# Rendering
+
+Physically based rendering
+
+HDR lighting
+
+Selective bloom
+
+Screen-space reflections
+
+Ambient occlusion
+
+Volumetric fog
+
+Animated fire shaders
+
+GPU particle systems
+
+Soft depth of field
+
+Tone mapping
+
+Optimized batching
+
+Stable 60 FPS target
+
+---
+
+# Puzzle Data
+
+Each puzzle stores:
+
+* Puzzle ID
+* Date
+* Weekly tier
+* Difficulty
+* Random seed
+* Rune layout
+* Candle positions
+* Ritual graph
+* Element definitions
+* Compound definitions
+* Reaction rules
+* Propagation rules
+* Correct solution
+* Educational metadata
+* Wikipedia references
+* Hint metadata
+
+Every puzzle must remain deterministic so every player receives the exact same daily ritual.
+
+---
+
+# Hint System
+
+Hints remain subtle.
+
+After several minutes:
+
+One candle softly flickers.
+
+Later:
+
+Relevant rune relationships glow faintly.
+
+Final hint:
+
+A magical outline briefly reveals one correct interaction before fading away.
+
+Hints should guide understanding rather than solve the puzzle.
+
+---
+
+# Integration with Parlor
+
+Ignite should immediately feel like part of the Parlor family.
+
+It shares:
+
+Daily cadence
+
+Archives
+
+Collections
+
+Statistics
+
+Streak tracking
+
+Responsive design
+
+Shared navigation
+
+Fast loading
+
+Persistent progression
+
+Its identity comes entirely from its fusion of ancient magic, scientific chemistry, and living fire.
+
+Every Parlor game teaches players a different way to think.
+
+Ignite teaches players to reason through systems where mythology and science intersect.
+
+---
+
+# Claude Implementation Priorities
+
+1. Preserve and expand the existing rune system rather than replacing it, building every mechanic around those established symbols.
+2. Redesign the visual experience into a flagship-quality ancient forest shrine with premium CSS, cinematic lighting, atmospheric particles, layered animations, and highly polished interactions.
+3. Develop a deterministic ritual engine where runes, candles, elemental affinities, alchemical compounds, and fire propagation obey reusable logical rules that always produce exactly one valid solution.
+4. Deeply integrate real chemistry through compounds, molecular structures, combustion science, and educational Wikipedia content unlocked after each completed puzzle.
+5. Implement a procedural daily puzzle generator that scales naturally from approachable Monday rituals to Sunday's Master Ritual while ensuring fairness, replay consistency, and increasing strategic depth.
+6. Expand the Compendium into a collectible archive of runes, compounds, herbs, minerals, and scientific discoveries that rewards long-term play without affecting puzzle difficulty.
+7. Optimize rendering with modern Three.js techniques, premium shader work, GPU particle systems, realistic flame effects, responsive performance, and seamless integration into the broader Parlor ecosystem.
+
+Ignite should become the visual and emotional flagship of Parlor. Players should finish every session remembering one unforgettable moment: standing before an ancient ritual circle as the final candle catches, the runes blaze with impossible light, and centuries of forgotten magic awaken through a system they understood—not by chance, but through logic.

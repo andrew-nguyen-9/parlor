@@ -1,0 +1,874 @@
+# Parlor Design Document
+
+# Sanctum Mysterii
+
+*A daily investigation where every clue has a purpose, every suspect guards a secret, and every contradiction hides another truth. Wealth, deception, magic, and murder have haunted the halls of Sanctum Manor for generations. Only careful deduction can expose the killer.*
+
+---
+
+# Overview
+
+**Sanctum Mysterii** is the flagship mystery experience in the **Parlor** collection (`parlor.an9.dev`).
+
+Sanctum Mysterii is a **daily deterministic murder mystery** built around logical deduction. Every case presents a new crime with a unique cast of suspects, relationships, motives, locations, evidence, witness statements, and timelines. **The core game should remain grounded in deduction rather than narrative branching or random outcomes.** This document focuses on improving puzzle architecture, balancing difficulty, elevating the visual presentation, refining the user experience, and expanding the technical systems that support a premium detective experience.
+
+Unlike traditional detective games that rely on intuition or hidden information, every mystery in Sanctum Mysterii must be solvable through observation, logic, contradiction, and careful organization of evidence. Players should feel like world-class detectives—not because the game tells them they are, but because every conclusion is earned.
+
+This should become the narrative centerpiece of Parlor, quietly connecting the lore, families, artifacts, and mysteries scattered across the other games without ever requiring players to understand the larger universe.
+
+The defining emotional moment is:
+
+> *"Every suspect has spoken... every contradiction has been resolved... and the final accusation reveals the only version of events that could ever have been true."*
+
+---
+
+# Design Pillars
+
+## Logic Above Everything
+
+Every mystery must have one correct solution.
+
+No guessing.
+
+No random chance.
+
+No hidden information.
+
+Players succeed because they understand relationships, eliminate possibilities, and build a complete picture from seemingly unrelated evidence.
+
+---
+
+## Every Mystery Is Different
+
+While the deduction framework remains consistent, each day should feel entirely unique.
+
+Different tones.
+
+Different crimes.
+
+Different social dynamics.
+
+Different visual themes.
+
+Different investigative tools.
+
+The game should rotate naturally between classic detective stories, occult mysteries, inheritance disputes, political conspiracies, espionage, poisonings, locked-room murders, and supernatural folklore.
+
+---
+
+## The Manor Remembers
+
+Sanctum Manor is more than a setting.
+
+It is a living archive of every mystery within Parlor.
+
+Different rooms reveal different stories.
+
+Recurring families quietly reappear.
+
+Artifacts from other Parlor games can occasionally surface as evidence.
+
+Ancient mirrors.
+
+Occult tomes.
+
+Hidden passages.
+
+Forgotten portraits.
+
+The manor slowly becomes familiar without requiring explicit narrative progression.
+
+---
+
+## Premium Detective Experience
+
+Nothing should resemble a generic crime board.
+
+Every interaction should feel tactile.
+
+Elegant.
+
+Deliberate.
+
+Expensive.
+
+Imagine combining:
+
+Knives Out
+
+Clue
+
+Victorian estates
+
+Private libraries
+
+Occult archives
+
+Secret societies
+
+Old money
+
+Dark academia
+
+Subtle magic
+
+---
+
+# Improving Puzzle Logic
+
+The existing mysteries sometimes fluctuate between being immediately obvious and becoming frustratingly difficult.
+
+Rather than increasing complexity, puzzles should improve through **layered reasoning.**
+
+---
+
+## Multi-Layer Evidence
+
+Every case should gradually build toward certainty.
+
+Instead of presenting isolated clues, evidence should naturally reinforce previous discoveries.
+
+Example layers:
+
+Witness Statement
+
+↓
+
+Physical Evidence
+
+↓
+
+Relationship
+
+↓
+
+Timeline
+
+↓
+
+Motive
+
+↓
+
+Contradiction
+
+↓
+
+Final Conclusion
+
+Every deduction should unlock confidence rather than confusion.
+
+---
+
+## Progressive Information Architecture
+
+Rather than overwhelming players immediately:
+
+Early clues establish facts.
+
+Middle clues introduce contradictions.
+
+Late clues resolve ambiguity.
+
+Difficulty comes from combining information rather than remembering large amounts of text.
+
+---
+
+## Evidence Categories
+
+Daily mysteries should rotate combinations of:
+
+Witness testimony
+
+Letters
+
+Diary entries
+
+Police reports
+
+Financial records
+
+Maps
+
+Medical reports
+
+Autopsy notes
+
+Magical artifacts
+
+Photographs
+
+Newspaper articles
+
+Family records
+
+Estate inventories
+
+Travel logs
+
+Servant journals
+
+Occult manuscripts
+
+No mystery needs every category.
+
+Each case should feel curated.
+
+---
+
+## Truth & Deception System
+
+Witnesses may:
+
+Tell the truth.
+
+Misremember events.
+
+Lie intentionally.
+
+Withhold information.
+
+The important distinction:
+
+The game always provides enough evidence for players to identify unreliable testimony.
+
+Examples:
+
+"This witness has lied previously."
+
+"The butler never lies."
+
+"The twins always protect one another."
+
+"The medium cannot distinguish dreams from reality."
+
+Players are solving credibility as much as the crime itself.
+
+---
+
+## Relationship Web
+
+Rather than relying primarily on written clues, mysteries should expose relationships visually.
+
+Examples:
+
+Family ties
+
+Business partners
+
+Romantic affairs
+
+Rivalries
+
+Inheritance
+
+Secret societies
+
+Blackmail
+
+Occult affiliations
+
+Political alliances
+
+This reduces reading while improving deduction.
+
+---
+
+## Dynamic Investigation Types
+
+The detective interface adapts depending on the mystery.
+
+Some days emphasize:
+
+Relationship Web
+
+Other days:
+
+Timeline
+
+Other days:
+
+Estate Map
+
+Other days:
+
+Case Notebook
+
+Other days:
+
+Evidence Board
+
+Other days:
+
+Family Tree
+
+Players continue using the same deduction skills while enjoying fresh visual experiences.
+
+---
+
+# Weekly Progression
+
+Monday:
+
+Small cast.
+
+Simple relationships.
+
+Single contradiction.
+
+5–8 minute solve.
+
+---
+
+Tuesday:
+
+Additional suspect.
+
+Timeline introduced.
+
+---
+
+Wednesday:
+
+Relationship web.
+
+Hidden motive.
+
+---
+
+Thursday:
+
+Evidence begins contradicting testimony.
+
+---
+
+Friday:
+
+Multiple believable suspects.
+
+Interlocking motives.
+
+---
+
+Saturday:
+
+Estate-wide investigation.
+
+Several simultaneous deductions.
+
+---
+
+Sunday:
+
+Knives Out-style flagship mystery.
+
+Large household.
+
+Layered motives.
+
+Rich environmental storytelling.
+
+Multiple investigative surfaces.
+
+One elegant solution.
+
+---
+
+# Visual Direction
+
+Sanctum Mysterii should become the most premium interface in Parlor.
+
+Visual inspiration:
+
+Private libraries.
+
+Luxury detective offices.
+
+Victorian mansions.
+
+Secret archives.
+
+Magic hidden beneath wealth.
+
+Dark polished walnut.
+
+Marble fireplaces.
+
+Brass instruments.
+
+Wax seals.
+
+Leather journals.
+
+Crystal decanters.
+
+Portrait galleries.
+
+Everything should feel handcrafted.
+
+---
+
+# Detective Headquarters
+
+The interface should resemble a private investigator's study inside Sanctum Manor.
+
+Not a police station.
+
+A wealthy investigator's office.
+
+Objects include:
+
+Investigation desk.
+
+Magnifying glass.
+
+Evidence folders.
+
+Brass lamp.
+
+Pinned correspondence.
+
+Hidden compartments.
+
+Old keys.
+
+Wax seals.
+
+Ink bottles.
+
+Crime scene photographs.
+
+The room evolves as investigations progress.
+
+---
+
+# Premium UI Design
+
+The current layout should be refined rather than redesigned.
+
+Primary goals:
+
+Higher readability.
+
+Clear visual hierarchy.
+
+Less scrolling.
+
+Better spacing.
+
+Improved grouping.
+
+Elegant typography.
+
+Comfortable information density.
+
+Every clue should be effortless to locate.
+
+Every interaction should reduce cognitive load.
+
+---
+
+## Information Panels
+
+Replace generic cards with premium investigative components.
+
+Evidence folders.
+
+Leather journals.
+
+Pinned documents.
+
+Official reports.
+
+Handwritten correspondence.
+
+Newspaper clippings.
+
+Nothing should resemble flat modern UI.
+
+---
+
+## Investigation Workspace
+
+Desktop:
+
+Adaptive multi-column workspace.
+
+Resizable investigation panels.
+
+Persistent suspect sidebar.
+
+Pinned evidence.
+
+Floating notebook.
+
+Mobile:
+
+Single investigation flow.
+
+Swipe between evidence types.
+
+Sticky suspect summaries.
+
+Collapsible relationships.
+
+Bottom-sheet interactions.
+
+Everything should remain touch-friendly.
+
+---
+
+# Detective Tools
+
+Depending on the daily mystery:
+
+Relationship Board
+
+Evidence Board
+
+Timeline
+
+Estate Map
+
+Family Tree
+
+Case Notebook
+
+Each appears only when appropriate.
+
+The interface never overwhelms players with unused tools.
+
+---
+
+# Environmental Storytelling
+
+Every room quietly tells another story.
+
+Portraits subtly change.
+
+Candles burn lower.
+
+Rain hits stained glass.
+
+Fire crackles.
+
+Dust settles.
+
+Occult artifacts occasionally pulse.
+
+Locked cabinets remain unexplained.
+
+Returning players slowly notice recurring details.
+
+---
+
+# Microinteractions
+
+Hover:
+
+Paper lifts naturally.
+
+Selection:
+
+Wax seal breaks.
+
+Pinned evidence shifts.
+
+Correct deduction:
+
+Ink spreads elegantly.
+
+Relationship string tightens.
+
+Timeline aligns.
+
+Incorrect deduction:
+
+Loose papers shuffle.
+
+Candles flicker.
+
+Ink briefly smudges.
+
+Everything should remain subtle.
+
+---
+
+# Completion Ceremony
+
+The detective closes the final folder.
+
+Evidence reorganizes itself.
+
+Strings tighten across the investigation board.
+
+Portraits illuminate.
+
+The culprit's file slides forward.
+
+A newspaper headline is stamped.
+
+"Case Closed."
+
+The room returns to silence.
+
+---
+
+# Design Architecture
+
+Rather than building isolated UI components, Sanctum Mysterii should introduce reusable investigative systems that can evolve with future mysteries.
+
+---
+
+## Investigation Layout Engine
+
+A responsive workspace manager that intelligently rearranges investigative surfaces depending on the case type.
+
+Supports:
+
+Relationship boards
+
+Maps
+
+Evidence walls
+
+Timelines
+
+Family trees
+
+Case journals
+
+Desktop and mobile each receive optimized layouts while sharing the same underlying data model.
+
+---
+
+## Evidence Graph Engine
+
+Every clue becomes a node within an investigation graph.
+
+Nodes connect through:
+
+People
+
+Objects
+
+Locations
+
+Time
+
+Motives
+
+Magic
+
+Financial records
+
+Contradictions
+
+This allows evidence to be filtered, grouped, highlighted, and visualized dynamically without rebuilding the interface for every mystery.
+
+---
+
+## Detective UI Component Library
+
+Extend the existing Parlor design system with reusable investigative components:
+
+Case folders
+
+Pinned documents
+
+Wax seals
+
+Evidence tags
+
+Victorian tabs
+
+Notebook pages
+
+Brass dividers
+
+Relationship connectors
+
+Timeline cards
+
+These components become shared assets for future detective content.
+
+---
+
+## Environmental State System
+
+The detective's office reacts to investigation progress.
+
+As certainty increases:
+
+Lighting warms.
+
+Evidence becomes organized.
+
+Fire burns brighter.
+
+Rain slows.
+
+Music shifts.
+
+The room visually reflects the player's growing understanding.
+
+---
+
+## Narrative Layer
+
+Recurring families.
+
+Historical artifacts.
+
+Secret organizations.
+
+Occult references.
+
+Old newspaper headlines.
+
+Estate history.
+
+These elements subtly connect Sanctum Mysterii to the wider Parlor universe without ever affecting puzzle logic.
+
+---
+
+# Rendering & Performance Architecture
+
+The experience should remain visually rich while targeting smooth performance across a wide range of devices.
+
+## Layered Rendering Strategy
+
+Separate rendering into independent visual layers:
+
+Background environment
+
+Ambient lighting
+
+Environmental particles
+
+Interactive UI
+
+Investigation overlays
+
+Animated effects
+
+Only changed layers should re-render.
+
+---
+
+## JavaScript Optimization
+
+Implement:
+
+RequestAnimationFrame scheduling
+
+Animation batching
+
+Intersection Observer
+
+Virtualized evidence lists
+
+Memoized relationship graphs
+
+Lazy-loaded investigation modules
+
+Object pooling for particles
+
+GPU-friendly transforms
+
+Minimal layout recalculations
+
+Progressive enhancement based on device capability
+
+Maintain smooth interaction even on complex Sunday mysteries.
+
+---
+
+## Adaptive Quality System
+
+Automatically scale:
+
+Particle density
+
+Shadow quality
+
+Blur intensity
+
+Reflection layers
+
+Lighting effects
+
+Animation frequency
+
+Environmental simulations
+
+High-end devices receive cinematic presentation.
+
+Older devices retain identical functionality with simplified effects.
+
+---
+
+## Motion Architecture
+
+Use lightweight CSS transitions for interface interactions.
+
+Reserve GSAP or React Spring for:
+
+Evidence organization
+
+Relationship animations
+
+Timeline movement
+
+Case completion
+
+Camera transitions
+
+Avoid unnecessary JavaScript animations for static UI.
+
+---
+
+# CSS & Visual Direction
+
+Premium implementation ideas:
+
+Layered parchment textures
+
+Leather materials
+
+Dynamic candlelight
+
+Subtle paper grain
+
+Animated ink
+
+Soft bloom
+
+Glass reflections
+
+Wax shader effects
+
+Volumetric dust
+
+Responsive typography
+
+SVG investigation assets
+
+GPU-accelerated transitions
+
+Everything should feel deliberate.
+
+Never flashy.
+
+---
+
+# Claude Implementation Priorities
+
+1. Preserve the deterministic murder mystery structure while improving difficulty through layered deduction, progressive clue ordering, richer evidence types, and stronger logical reinforcement instead of increasing raw complexity.
+2. Transform Sanctum Mysterii into Parlor's flagship detective experience with a luxurious Victorian aesthetic inspired by *Knives Out*, *Clue*, historic manor houses, occult mysteries, and private investigative studies.
+3. Build a modular investigation architecture capable of dynamically presenting relationship boards, timelines, estate maps, evidence walls, family trees, and detective notebooks depending on each day's mystery without overwhelming the player.
+4. Extend the existing Parlor design system with reusable detective components, premium typography, leather and parchment materials, wax seals, brass accents, and elegant interaction patterns that maximize readability and reduce cognitive load across desktop and mobile.
+5. Implement a high-performance rendering pipeline using layered UI rendering, adaptive quality scaling, memoized graph structures, GPU-accelerated animations, virtualized data views, and progressive enhancement to maintain fluid performance on every device.
+6. Quietly position Sanctum Mysterii as the narrative heart of the Parlor universe by weaving recurring families, hidden organizations, magical artifacts, manor history, and environmental storytelling into daily investigations while ensuring every mystery remains self-contained, logically fair, and deeply satisfying to solve.
+
+Sanctum Mysterii should become the game players think of when they imagine Parlor. Not because it tells the biggest story, but because every day they step into the same magnificent manor, uncover another impossible crime, and realize that beneath every solved case lies another secret waiting patiently within the walls.

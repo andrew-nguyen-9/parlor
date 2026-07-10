@@ -1,0 +1,535 @@
+# Parlor Design Document
+
+# Fractures
+
+*A daily test of knowledge where fractured reflections reveal hidden truths. Every answer restores clarity. Every shard tells part of the story. Only by piecing together knowledge can the mirror become whole again.*
+
+---
+
+# Overview
+
+**Fractures** is one of the daily games in the **Parlor** collection (`parlor.an9.dev`).
+
+Fractures is a **category-based trivia game**, inspired by the approachable format of Trivia Crack. **The existing gameplay, question flow, categories, scoring, and layout should remain exactly as they are today.** This document focuses exclusively on elevating the visual identity, UI, atmosphere, animations, and overall presentation.
+
+Rather than feeling like a generic trivia app, Fractures should feel like interacting with an ancient mirror that has been shattered into countless pieces. Every correct answer slowly restores order while every incorrect answer leaves new cracks spreading across the surface. The interface should constantly remind players that knowledge repairs what has been broken.
+
+This should become one of the most visually striking games in the Parlor collection.
+
+The defining emotional moment is:
+
+> *"The final question is answered... the fractured mirror finally reforms... and one perfect reflection stares back."*
+
+---
+
+# Design Pillars
+
+## Knowledge Restores Reality
+
+The trivia experience should remain unchanged.
+
+Questions.
+
+Categories.
+
+Scoring.
+
+Progression.
+
+Everything stays exactly as it exists today.
+
+The visual presentation should reinforce the idea that every answer repairs a broken world.
+
+---
+
+## Fractures Tell The Story
+
+Broken glass should become the defining visual language.
+
+Nothing feels perfectly aligned.
+
+Panels have chipped edges.
+
+Light refracts.
+
+Reflections shift.
+
+Cracks spread naturally across the interface.
+
+Everything feels intentionally imperfect.
+
+---
+
+## Elegant, Not Destructive
+
+Avoid making the game feel violent or chaotic.
+
+The inspiration is antique mirrors, fractured crystal, and old glass—not explosions or broken windows.
+
+Think:
+
+Luxury hotel mirror.
+
+Victorian mansion.
+
+Abandoned ballroom.
+
+Moonlight reflecting across cracked glass.
+
+The mood should feel mysterious and premium.
+
+---
+
+## Premium Presentation
+
+Every interaction should feel polished.
+
+Glass bends light.
+
+Smoke moves naturally.
+
+Lighting changes with progress.
+
+Nothing should resemble a standard mobile trivia interface.
+
+---
+
+# Visual Direction
+
+The current layout remains exactly the same.
+
+Instead, every surface becomes layered with fractured glass aesthetics.
+
+Visual materials include:
+
+Smoked glass
+
+Cracked mirrors
+
+Frosted crystal
+
+Dark obsidian
+
+Polished chrome
+
+Moonlit reflections
+
+Soft smoke
+
+Floating dust
+
+Silver leaf
+
+Deep charcoal
+
+Subtle blue highlights
+
+The interface should constantly feel reflective without becoming distracting.
+
+---
+
+# Broken Mirror Identity
+
+Fractures should immediately establish its visual identity through glass.
+
+Ideas include:
+
+Hairline fractures running across backgrounds.
+
+Reflective glass cards.
+
+Distorted reflections behind menus.
+
+Cracked borders surrounding important panels.
+
+Shattered category icons.
+
+Subtle refraction effects.
+
+Layered transparent panels.
+
+Mirror shards framing content.
+
+Every component should reinforce the illusion of viewing the interface through broken glass.
+
+---
+
+# Glass Shard Animations
+
+Glass becomes the primary animated element.
+
+Idle:
+
+Tiny shards slowly rotate.
+
+Reflections shimmer.
+
+Light refracts across surfaces.
+
+Dust settles.
+
+Correct answer:
+
+Nearby fractures gently repair.
+
+Hairline cracks fade.
+
+Glass catches light.
+
+A small shard glides back into place.
+
+Incorrect answer:
+
+A faint crack expands outward.
+
+Tiny particles drift away.
+
+Mirror reflections distort briefly.
+
+Nothing should feel aggressive.
+
+The effect should remain elegant.
+
+---
+
+# Smoke & Atmosphere
+
+Smoke becomes one of the game's strongest atmospheric layers.
+
+Soft mist drifts behind UI panels.
+
+Smoke rolls between shards of glass.
+
+Cold fog appears around the mirror frame.
+
+Light rays become visible through haze.
+
+Every menu should feel surrounded by subtle atmosphere.
+
+The smoke should never interfere with readability.
+
+---
+
+# Environmental Animation
+
+The mirror itself should always feel alive.
+
+Idle effects:
+
+Light slowly shifts.
+
+Reflections change.
+
+Tiny floating particles.
+
+Smoke curls upward.
+
+Glass subtly catches different angles.
+
+Occasional sparkle across polished edges.
+
+Very faint creaking sounds from the mirror frame.
+
+Nothing should repeat too obviously.
+
+---
+
+# Enhanced Gameplay Feedback
+
+Gameplay remains identical.
+
+Presentation becomes dramatically richer.
+
+Correct answer:
+
+* Nearby crack seals itself.
+* Glass glows softly.
+* Silver veins spread through repaired fractures.
+* Reflection becomes slightly clearer.
+* Gentle crystalline sound.
+* Small burst of floating dust.
+
+Incorrect answer:
+
+* New fracture appears.
+* Reflection briefly distorts.
+* Smoke thickens momentarily.
+* Cold shimmer crosses the screen.
+* Soft glass resonance.
+
+Final question completed:
+
+* Every shard floats upward.
+* Pieces rotate together.
+* Mirror reforms.
+* Reflection becomes perfectly clear.
+* Bright moonlight fills the interface.
+* Final crystalline resonance.
+
+---
+
+# Category Presentation
+
+Categories should feel engraved into pieces of glass.
+
+Science.
+
+History.
+
+Entertainment.
+
+Sports.
+
+Art.
+
+Geography.
+
+Each category receives:
+
+Unique etched iconography.
+
+Distinct reflective highlights.
+
+Subtle accent colors.
+
+Animated glass textures.
+
+Hover states where light moves naturally across the surface.
+
+---
+
+# UI Design
+
+The existing Parlor design system should remain the foundation.
+
+Fractures extends it with premium materials.
+
+Panels:
+
+Layered smoked glass.
+
+Soft reflections.
+
+Silver trim.
+
+Subtle cracks.
+
+Buttons:
+
+Crystal appearance.
+
+Frosted finish.
+
+Animated reflections.
+
+Statistics:
+
+Presented as etched mirror engravings.
+
+Archives:
+
+Displayed inside antique mirror cabinets.
+
+Daily challenge:
+
+Appears suspended beneath fractured glass.
+
+Nothing should feel flat.
+
+---
+
+# Microinteractions
+
+Every interaction should reinforce the glass theme.
+
+Hover:
+
+Moving reflection.
+
+Selection:
+
+Light refracts outward.
+
+Button press:
+
+Glass compresses slightly.
+
+Correct answer:
+
+Tiny shard reconnects.
+
+Menu transitions:
+
+Panels slide behind reflective layers.
+
+Tooltips:
+
+Appear through fogged glass.
+
+Notifications:
+
+Fade in through drifting smoke.
+
+---
+
+# Lighting
+
+Lighting should constantly evolve.
+
+Soft moonlight.
+
+Silver highlights.
+
+Dynamic reflections.
+
+Gentle bloom.
+
+Subtle caustic lighting.
+
+Ambient fog illumination.
+
+Correct answers gradually brighten the interface.
+
+Incorrect answers introduce temporary darkness before recovering.
+
+---
+
+# Color Palette
+
+Primary:
+
+Obsidian
+
+Charcoal
+
+Mirror Silver
+
+Frost White
+
+Smoked Glass Gray
+
+Secondary:
+
+Ice Blue
+
+Steel
+
+Moonlight Cyan
+
+Graphite
+
+Deep Indigo
+
+Accent:
+
+Crystal White
+
+Electric Silver
+
+Soft Violet
+
+Avoid saturated colors.
+
+Everything should feel elegant and restrained.
+
+---
+
+# Typography
+
+Elegant modern serif headings.
+
+Clean readable body text.
+
+Thin engraved dividers.
+
+Glass-inspired iconography.
+
+Wide spacing.
+
+Luxury editorial feel.
+
+---
+
+# Completion Ceremony
+
+When the final question is answered:
+
+Every fracture pauses.
+
+Smoke clears.
+
+Glass shards begin lifting.
+
+The mirror slowly rebuilds itself.
+
+Cracks disappear.
+
+Reflections stabilize.
+
+The completed mirror reveals a pristine surface before fading into tomorrow's challenge.
+
+The moment should feel restorative rather than celebratory.
+
+---
+
+# Design Features That Enhance Gameplay
+
+Without changing gameplay itself:
+
+* Mirror becomes progressively clearer as players answer correctly.
+* Completed categories restore larger portions of the reflection.
+* Daily streaks subtly repair permanent decorative elements surrounding the mirror frame.
+* Archive entries appear inside a gallery of restored mirrors.
+* Category selection gently illuminates matching fracture paths.
+* The current score is reflected naturally inside the mirror rather than appearing as a disconnected HUD element.
+* End-of-game statistics animate across repaired glass surfaces rather than standard cards.
+
+These features strengthen visual progression while preserving the existing trivia mechanics.
+
+---
+
+# CSS & Animation Direction
+
+Premium implementation ideas:
+
+* Multi-layer glassmorphism
+* Dynamic reflection shaders
+* Frosted glass blur
+* Animated crack masks
+* Volumetric smoke
+* Floating particle systems
+* Refraction effects
+* SVG fracture overlays
+* Responsive reflective gradients
+* GPU-accelerated lighting
+* High-performance animation architecture
+
+All movement should remain slow, refined, and cinematic.
+
+---
+
+# Technical Goals
+
+Continue leveraging the existing Parlor design system while extending it with:
+
+* Reusable fractured glass UI components
+* Shared reflection engine
+* Animated crack system
+* Smoke particle framework
+* Dynamic lighting components
+* Crystal-inspired iconography
+* Performance-first rendering
+* Responsive animation scaling across devices
+
+---
+
+# Claude Implementation Priorities
+
+1. Preserve the existing Fractures gameplay, trivia flow, categories, question system, layout, and scoring exactly as they exist today.
+2. Redesign the visual identity around antique broken mirrors, fractured glass, smoked crystal, elegant reflections, and premium atmospheric lighting.
+3. Introduce layered environmental effects including drifting smoke, floating glass particles, dynamic reflections, subtle refraction, and evolving fracture animations that reinforce progress without distracting from gameplay.
+4. Extend the existing Parlor design system with premium glass-inspired UI components, silver detailing, refined typography, cinematic transitions, and luxurious materials instead of generic trivia interfaces.
+5. Elevate gameplay feedback through elegant glass restoration animations, progressive mirror reconstruction, refined audio cues, and satisfying microinteractions that visually reward correct answers while maintaining the existing mechanics.
+6. Build reusable systems for reflections, fracture masks, smoke, lighting, and glass materials so Fractures becomes one of Parlor's flagship visual experiences while remaining performant across desktop and mobile.
+
+Fractures should become a trivia experience unlike any other. Players shouldn't remember answering questions inside a standard interface—they should remember slowly restoring an impossibly beautiful shattered mirror, watching every piece return to its rightful place through knowledge alone.

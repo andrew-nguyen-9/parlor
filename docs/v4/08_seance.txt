@@ -1,0 +1,578 @@
+# Parlor Design Document
+
+# Séance
+
+*A daily ritual of deduction where whispers from beyond, flickering candlelight, and restless spirits reveal hidden truths. Every clue is communicated through supernatural signs. Every revelation follows pure logic. Only by conducting the séance correctly can the spirits finally speak.*
+
+---
+
+# Overview
+
+**Séance** is one of the daily games in the **Parlor** collection (`parlor.an9.dev`).
+
+Séance is a classic **logic grid puzzle**, and **the gameplay should remain exactly as it exists today.** This document focuses exclusively on elevating the visual presentation, atmosphere, UI polish, animations, and immersive interactions.
+
+Rather than feeling like a spreadsheet wrapped in a spooky theme, Séance should feel like participating in an authentic Victorian séance inside an old haunted parlor. The player is seated around an antique Ouija board, candles burn low, unseen spirits react to every deduction, and the room itself becomes more alive as the puzzle progresses.
+
+This should become one of Parlor's flagship visual experiences—premium, elegant, mysterious, and deeply atmospheric.
+
+The defining emotional moment is:
+
+> *"The final deduction is made... the room falls silent... the planchette glides on its own... and the spirits finally reveal themselves."*
+
+---
+
+# Design Pillars
+
+## Logic Never Changes
+
+The existing puzzle mechanics are excellent.
+
+Nothing about the puzzle flow, grid layout, clue system, or solving experience should change.
+
+Everything proposed here enhances presentation—not gameplay.
+
+---
+
+## The Spirits Are Always Watching
+
+The room should constantly feel inhabited.
+
+Ghosts aren't rewards.
+
+They're companions.
+
+They watch.
+
+React.
+
+Observe.
+
+Disappear.
+
+Return.
+
+Every correct deduction subtly strengthens their presence.
+
+---
+
+## Authentic Séance Atmosphere
+
+Avoid stereotypical Halloween visuals.
+
+Instead, lean into authentic séance imagery:
+
+Victorian spiritualism.
+
+Antique Ouija boards.
+
+Mahogany furniture.
+
+Brass candle holders.
+
+Faded velvet.
+
+Old parchment.
+
+Dust.
+
+Smoke.
+
+Moonlight.
+
+Soft whispers.
+
+The room should feel elegant rather than campy.
+
+---
+
+## Premium Presentation
+
+Nothing should feel like standard UI.
+
+Panels should resemble carved wood.
+
+Buttons feel engraved.
+
+Hover states shimmer with ghostly light.
+
+Transitions are slow, deliberate, and cinematic.
+
+Every interaction should reinforce immersion.
+
+---
+
+# Visual Direction
+
+The existing layout remains unchanged.
+
+Instead, every component receives a premium haunted redesign.
+
+The experience should resemble an antique séance table viewed from above.
+
+Visual materials include:
+
+Dark walnut wood
+
+Worn brass
+
+Black velvet
+
+Ivory parchment
+
+Faded gold foil
+
+Scratched glass
+
+Wax drips
+
+Aged paper
+
+Subtle smoke
+
+Moonlight gradients
+
+Soft bloom
+
+Everything should feel handcrafted and expensive.
+
+---
+
+# Ouija Board Identity
+
+The game should embrace the visual language of an antique Ouija board.
+
+Not literally replacing the existing interface—but borrowing its design language.
+
+Ideas include:
+
+* Decorative alphabet engravings around panel borders
+* Crescent moon corner ornaments
+* Sun and moon motifs
+* Delicate Victorian flourishes
+* Gold engraved dividers
+* Spirit symbols subtly etched into backgrounds
+* Ornamental compass roses
+* Antique serif typography
+* Wooden inlays throughout the interface
+
+The player should immediately recognize the inspiration without sacrificing usability.
+
+---
+
+# Ghost Interactions
+
+Ghosts should become the primary source of delight throughout the experience.
+
+They never interrupt gameplay.
+
+They simply make the world feel alive.
+
+Examples include:
+
+A transparent child briefly peeks around the edge of the screen.
+
+A spirit crosses behind the puzzle.
+
+A ghostly hand appears inside a mirror before fading away.
+
+Shadow figures drift behind candles.
+
+Faces emerge briefly in smoke.
+
+Small glowing orbs float across the room.
+
+Ghost silhouettes watch from distant corners.
+
+A chair subtly rocks on its own.
+
+Curtains move despite no wind.
+
+Every few minutes, something supernatural happens somewhere in the room.
+
+Nothing is loud.
+
+Nothing jumpscares.
+
+Everything rewards observation.
+
+---
+
+# The Planchette
+
+The planchette becomes the game's signature animated element.
+
+Ideas include:
+
+Idle:
+
+Very subtle movement.
+
+Tiny rotations.
+
+Barely perceptible drifting.
+
+Correct deduction:
+
+The planchette glides slightly toward a hidden letter.
+
+Puzzle completion:
+
+The planchette moves confidently across the board, spelling a short confirmation before settling into the center.
+
+Hints:
+
+Instead of highlighting UI directly, the planchette softly leans toward an area that deserves attention.
+
+---
+
+# Environmental Animation
+
+The room itself should continuously breathe.
+
+Idle effects:
+
+Candles flicker.
+
+Wax slowly melts.
+
+Smoke curls upward.
+
+Dust floats through moonlight.
+
+Wood gently creaks.
+
+Curtains sway.
+
+Glass reflects moving candlelight.
+
+The chandelier shifts slightly.
+
+Clock pendulum swings.
+
+Books settle on shelves.
+
+Every animation should be subtle enough that players notice something new after weeks of play.
+
+---
+
+# Enhanced Gameplay Feedback
+
+Without changing gameplay, visual feedback can become dramatically richer.
+
+Correct deduction:
+
+* Nearby candle burns brighter
+* Spirit orb appears briefly
+* Soft pulse across affected row/column
+* Brass engravings shimmer
+* Whisper sound
+* Tiny burst of spectral dust
+
+Incorrect deduction:
+
+* Candle briefly flickers
+* Room slightly darkens
+* Cold mist rolls across table
+* Ghost sigh
+* Planchette hesitates
+
+Puzzle completion:
+
+* Every candle ignites
+* Spirit energy circles the room
+* Ghosts fully materialize
+* Chandeliers glow
+* The Ouija board illuminates
+* Ethereal voices whisper congratulations
+* Final spirit peacefully fades into light
+
+---
+
+# UI Design
+
+The UI should lean heavily into the existing Parlor design system while pushing it toward a flagship-quality presentation.
+
+Panels:
+
+Carved dark wood.
+
+Soft inner shadows.
+
+Gold trim.
+
+Glass overlays.
+
+Buttons:
+
+Brass.
+
+Subtle engraved icons.
+
+Ghostly hover glow.
+
+Inputs:
+
+Parchment textures.
+
+Rounded carved edges.
+
+Statistics:
+
+Presented inside an antique journal.
+
+Archives:
+
+Old filing cabinet aesthetic.
+
+Daily puzzle:
+
+Appears like a fresh séance invitation.
+
+Nothing should resemble modern flat UI.
+
+---
+
+# Microinteractions
+
+Every interaction deserves polish.
+
+Examples:
+
+Hover:
+
+Tiny spectral particles.
+
+Button press:
+
+Wood depresses slightly.
+
+Grid selection:
+
+Soft magical ripple.
+
+Completed row:
+
+Spirit light travels across it.
+
+Opening menus:
+
+Dust particles separate.
+
+Closing menus:
+
+Smoke gently dissipates.
+
+Tooltips:
+
+Appear like handwritten notes.
+
+Notifications:
+
+Delivered as messages from beyond.
+
+---
+
+# Sound Design
+
+Ambient layer:
+
+Fireplace.
+
+Floor creaks.
+
+Soft wind.
+
+Clock ticking.
+
+Occasional whispers.
+
+Distant thunder.
+
+Interaction sounds:
+
+Wood taps.
+
+Glass resonance.
+
+Ghost chimes.
+
+Soft bells.
+
+Page turns.
+
+Planchette sliding across polished wood.
+
+Puzzle completion:
+
+Choir-like resonance.
+
+Whispered voices.
+
+Spirit release.
+
+Warm orchestral swell.
+
+---
+
+# Color Palette
+
+Primary:
+
+Ebony
+
+Walnut
+
+Aged Gold
+
+Ivory
+
+Charcoal
+
+Secondary:
+
+Ghost Blue
+
+Moon Silver
+
+Deep Emerald
+
+Oxidized Brass
+
+Muted Burgundy
+
+Accent:
+
+Spectral Cyan
+
+Soft Violet
+
+Warm Candlelight Amber
+
+Avoid bright Halloween oranges and cartoon greens.
+
+---
+
+# Lighting
+
+Lighting should drive atmosphere.
+
+Warm candlelight illuminates the interface.
+
+Corners fade naturally into darkness.
+
+Ghosts emit cool blue light.
+
+Completed puzzles gradually brighten the room.
+
+Bloom should remain restrained and elegant.
+
+---
+
+# Typography
+
+Elegant serif headings.
+
+Readable body copy.
+
+Victorian inspiration.
+
+Decorative initials.
+
+Subtle engraved effects.
+
+Letter spacing should evoke antique printed books.
+
+---
+
+# Completion Ceremony
+
+When the final deduction is entered:
+
+The room falls silent.
+
+Candles stabilize.
+
+The planchette begins moving by itself.
+
+Ghosts slowly gather.
+
+The board glows.
+
+A hidden spirit appears.
+
+The completed puzzle gently fades into the archive while the apparition dissolves into mist.
+
+No explosions.
+
+No excessive celebration.
+
+The moment should feel reverent.
+
+---
+
+# Design Features That Enhance Gameplay
+
+Without changing the puzzle itself:
+
+* Candles brighten as certainty increases.
+* The room subtly becomes less haunted as the player approaches the solution.
+* Ghosts react more frequently when players make correct deductions.
+* Solved relationships receive elegant engraved embellishments rather than simple highlights.
+* Daily completion unlocks a "Spirit Memory" card featuring a historical séance fact, Victorian spiritualism anecdote, folklore, or supernatural mythology.
+* Archive entries appear as pages inside an old medium's journal.
+* Streak milestones subtly restore additional decorations to the séance room over time.
+
+These additions create a stronger sense of progression while preserving the existing puzzle structure.
+
+---
+
+# CSS & Animation Direction
+
+Premium implementation ideas:
+
+* Layered glassmorphism with antique textures
+* Animated candle shaders
+* Volumetric fog
+* Soft bloom
+* Grain overlay
+* Floating dust particles
+* CSS lighting gradients
+* SVG engraved ornaments
+* Animated border highlights
+* Subtle parallax backgrounds
+* Responsive motion tuned for accessibility
+* GPU-accelerated particle effects
+* Smooth easing throughout every interaction
+
+Nothing should animate quickly.
+
+Everything should feel deliberate.
+
+---
+
+# Technical Goals
+
+Continue leveraging the existing Parlor design system while extending it with:
+
+* Reusable haunted UI components
+* Animated candle system
+* Ghost particle engine
+* Ambient room simulation
+* Shared spectral lighting components
+* Premium iconography
+* Performance-first animation architecture
+* Responsive desktop and mobile polish
+
+---
+
+# Claude Implementation Priorities
+
+1. Preserve the existing Séance gameplay, logic grid mechanics, layout, and puzzle structure exactly as they are today.
+2. Transform the visual identity into a premium Victorian séance experience inspired by authentic Ouija boards, antique spiritualism, and haunted parlors.
+3. Introduce rich ambient animations including candlelight, smoke, drifting dust, ghost interactions, moving shadows, and subtle environmental storytelling that never distracts from solving.
+4. Redesign every interface element using the existing Parlor design system, adding carved wood, brass, parchment, engraved details, elegant typography, and cinematic lighting instead of generic game UI.
+5. Elevate player feedback through atmospheric microinteractions, a living planchette, spirit reactions, and a memorable end-of-puzzle ritual that celebrates completion without altering gameplay.
+6. Build reusable visual systems for spectral effects, ambient lighting, particles, and haunted room animations so Séance stands alongside Parlor's flagship experiences while remaining performant across devices.
+
+Séance should become one of the defining visual experiences in Parlor. Players shouldn't remember flashy effects—they should remember the feeling of sitting alone in a candlelit room, making one final deduction, and watching the spirits answer because their logic was flawless.

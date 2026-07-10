@@ -1,0 +1,540 @@
+# Parlor Design Document
+
+# Atlas Obscura
+
+*A daily perspective puzzle where constellations only exist from one impossible point of view.*
+
+---
+
+# Overview
+
+**Atlas Obscura** is one of the daily games in the **Parlor** collection (`parlor.an9.dev`).
+
+Each Parlor game explores a different style of logic. Atlas Obscura explores **spatial reasoning**.
+
+Every puzzle consists of a three-dimensional field of stars suspended in space. None of the stars are connected. From nearly every angle they appear to be random. Only from one precise viewpoint do they align into a recognizable constellation.
+
+The player's task is not to identify the constellation.
+
+The task is to discover the one perspective where the constellation exists.
+
+The experience should feel calm, premium, and tactile. There are no timers, scores flying across the screen, or arcade mechanics. Success comes from careful observation and experimentation until the entire sky suddenly "clicks" into place.
+
+The defining emotional moment is:
+
+> "I've been looking at chaos for five minutes... and suddenly it's a swan."
+
+---
+
+# Design Pillars
+
+## Perspective Is The Puzzle
+
+Nothing is hidden.
+
+Nothing rotates.
+
+Nothing changes.
+
+Only the player's viewpoint changes.
+
+The puzzle exists entirely because of perspective.
+
+---
+
+## Elegant Simplicity
+
+The interface disappears.
+
+No flashing UI.
+
+No intrusive hints.
+
+No unnecessary decoration.
+
+The stars are the puzzle.
+
+Everything else exists to support them.
+
+---
+
+## Daily Ritual
+
+Atlas Obscura is intended to be played once per day.
+
+Players open Parlor.
+
+Solve today's constellation.
+
+Share results.
+
+Return tomorrow.
+
+The experience should comfortably fit alongside the other Parlor games as part of a daily routine.
+
+---
+
+## Premium Presentation
+
+Everything should feel expensive.
+
+Smooth camera movement.
+
+High-end lighting.
+
+Subtle sound.
+
+Beautiful transitions.
+
+Nothing should resemble a prototype.
+
+---
+
+# Gameplay
+
+Every daily puzzle consists of:
+
+* One constellation
+* One cloud of stars
+* One valid viewing position
+* One solution
+
+The player can:
+
+Rotate around the cluster
+
+Zoom
+
+Pan
+
+Inspect from every angle
+
+When the correct viewpoint is reached:
+
+Stars begin glowing
+
+Constellation lines animate
+
+The camera settles naturally
+
+The puzzle completes
+
+---
+
+# Difficulty Progression
+
+Atlas Obscura follows Parlor's weekly cadence.
+
+Monday introduces approachable puzzles while Sunday presents the most demanding challenge.
+
+## Monday
+
+Large constellation
+
+Few stars
+
+Little depth
+
+Wide solution tolerance
+
+2-3 minute solve
+
+---
+
+## Tuesday
+
+Slightly more overlap
+
+Moderate depth
+
+One misleading alignment
+
+---
+
+## Wednesday
+
+Additional stars
+
+Multiple layers
+
+Perspective becomes important
+
+---
+
+## Thursday
+
+Dense clusters
+
+Foreground and background overlap
+
+Tighter camera precision
+
+---
+
+## Friday
+
+Several convincing false alignments
+
+Players must examine depth carefully
+
+---
+
+## Saturday
+
+Complex constellation
+
+Many decoy stars
+
+Narrow viewing window
+
+---
+
+## Sunday
+
+Master puzzle
+
+Dense stellar field
+
+Multiple fake constellations
+
+Very small camera tolerance
+
+Designed for experienced players
+
+10-20 minute solve
+
+---
+
+# Camera System
+
+The camera is the primary game mechanic.
+
+It should never feel like OrbitControls.
+
+Movement should resemble a stabilized cinematic camera.
+
+Features include:
+
+Velocity smoothing
+
+Spring interpolation
+
+Micro inertia
+
+Momentum
+
+Soft stopping
+
+No sudden acceleration
+
+No snapping
+
+Every movement should feel physical.
+
+---
+
+# Visual Direction
+
+The player floats in deep interstellar space.
+
+Not science fiction.
+
+Not fantasy.
+
+More like standing inside a planetarium built by a luxury design studio.
+
+The world should feel enormous without distracting from the puzzle.
+
+---
+
+# Background
+
+Procedural sky.
+
+Layered depth.
+
+Extremely subtle movement.
+
+Components include:
+
+Far galaxies
+
+Nebula clouds
+
+Dust fields
+
+Distant stars
+
+Occasional meteors
+
+Slow volumetric gas
+
+The background should remain understated so the playable stars always command attention.
+
+---
+
+# Star Design
+
+Stars are rendered as emissive spheres with physically inspired coloration based on stellar temperature.
+
+Each star contains:
+
+Bright core
+
+Soft halo
+
+Gentle bloom
+
+Very subtle twinkle
+
+Unique brightness variation
+
+Instanced rendering should support hundreds of stars efficiently while maintaining smooth performance.
+
+---
+
+# Constellation Reveal
+
+Before solving:
+
+No visible connections.
+
+No clues.
+
+Only stars.
+
+Upon reaching the solution:
+
+The camera gently settles.
+
+Nearby stars brighten.
+
+Energy traces animate between connected stars.
+
+The completed constellation glows for several seconds before remaining visible as the completion state.
+
+The reveal should feel earned rather than explosive.
+
+---
+
+# Audio
+
+Audio should remain minimal.
+
+Continuous ambience:
+
+Deep atmospheric drones
+
+Soft synthetic textures
+
+Occasional distant resonances
+
+Interaction sounds:
+
+Tiny crystalline movement
+
+Delicate camera motion
+
+Constellation completion introduces a restrained harmonic swell before fading back into silence.
+
+---
+
+# User Interface
+
+Atlas Obscura inherits the visual language of Parlor.
+
+Rounded corners
+
+Glass surfaces
+
+Minimal typography
+
+Quiet animations
+
+No unnecessary information
+
+Primary interface:
+
+Daily Puzzle
+
+Archive
+
+Statistics
+
+Settings
+
+Everything else remains hidden until needed.
+
+---
+
+# Progression
+
+Players build a permanent collection of solved constellations.
+
+Statistics include:
+
+Current streak
+
+Longest streak
+
+Completion time
+
+Hints used
+
+Weekly performance
+
+Monthly performance
+
+Lifetime constellation collection
+
+Historical puzzles remain replayable through the archive.
+
+---
+
+# Hint System
+
+Hints are intentionally restrained.
+
+After several minutes:
+
+A faint shimmer appears within the correct viewing region.
+
+Later:
+
+The acceptable viewing volume becomes subtly more apparent.
+
+Final hint:
+
+A translucent camera silhouette briefly marks the solution before fading.
+
+Hints never reveal the constellation itself.
+
+---
+
+# Technical Architecture
+
+## Framework
+
+Three.js
+
+React Three Fiber
+
+TypeScript
+
+Vite
+
+React Spring
+
+Zustand
+
+React Postprocessing
+
+GSAP
+
+Howler.js
+
+---
+
+# Rendering
+
+GPU instancing
+
+HDR environment
+
+ACES tone mapping
+
+Selective bloom
+
+Screen-space ambient occlusion
+
+Temporal anti-aliasing
+
+Compressed textures
+
+Mesh optimization
+
+Aggressive batching
+
+The rendering pipeline should prioritize smooth interaction over excessive visual complexity.
+
+---
+
+# Puzzle Data
+
+Each puzzle stores:
+
+* Puzzle ID
+* Date
+* Difficulty
+* Random seed
+* Star positions
+* Constellation graph
+* Decoy stars
+* Solution camera position
+* Solution camera orientation
+* Camera tolerance
+* Metadata
+* Optional educational information
+
+Every puzzle must be deterministic so all players receive the same challenge each day.
+
+---
+
+# Educational Layer
+
+After completion, players unlock a brief exploration card featuring:
+
+The constellation's traditional name
+
+Its brightest stars
+
+Historical and cultural interpretations from multiple civilizations
+
+Astronomical context
+
+Interesting observations
+
+This information is optional and never interrupts gameplay.
+
+---
+
+# Integration with Parlor
+
+Atlas Obscura should immediately feel like part of the Parlor family.
+
+It shares:
+
+Daily puzzle cadence
+
+Minimal interface
+
+Elegant visual polish
+
+Persistent statistics
+
+Archives
+
+Streak tracking
+
+Responsive design
+
+Fast loading
+
+Consistent navigation
+
+Its identity comes entirely from its unique mechanic: discovering meaning through perspective.
+
+Every Parlor game should ask players to think differently. Atlas Obscura teaches them to see differently.
+
+---
+
+# Claude Implementation Priorities
+
+1. Build the perspective alignment mechanic and deterministic puzzle format first.
+2. Create a robust camera system whose movement feels cinematic rather than mechanical.
+3. Validate every daily puzzle so there is exactly one satisfying solution and no accidental alternatives.
+4. Layer in premium rendering with instanced stars, physically inspired shaders, bloom, and atmospheric depth.
+5. Integrate seamlessly with the existing Parlor framework for archives, streaks, statistics, and daily puzzle distribution.
+6. Optimize for desktop and mobile, targeting fluid frame rates while maintaining visual quality.
+
+Atlas Obscura should become the most visually striking experience in Parlor, but never at the expense of clarity. Players should leave each session remembering a single magical instant: the moment a meaningless cloud of stars transformed into a constellation simply because they found the right place to stand.
