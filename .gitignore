@@ -33,3 +33,6 @@ transform/.user.yml
 .orchestrator/
 .serena/
 .orchestrator.stale-*/
+
+# graphify code-graph tool output (generated)
+graphify-out/
