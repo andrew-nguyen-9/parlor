@@ -31,8 +31,10 @@
      for free (parchment surface + brass line). This is what makes the empty
      space read as an intentional table, not a void. */
   border: 1px solid rgb(var(--c-line));
+  /* E8 polish: a calmer table — the violet bloom is a whisper, not a wash
+     (design-intake seance.md: "calmer / less-distracting background"). */
   background:
-    radial-gradient(130% 100% at 50% -10%, rgba(112, 64, 168, 0.1), transparent 55%),
+    radial-gradient(130% 100% at 50% -10%, rgba(112, 64, 168, 0.06), transparent 55%),
     linear-gradient(
       180deg,
       color-mix(in srgb, rgb(var(--c-surface)) 92%, transparent),
@@ -77,6 +79,10 @@
  * fills the remaining two-thirds so even the widest day (28 value columns) uses
  * the space with no wasted gutter. Below `lg` the rail stacks above the board
  * (the CollapsiblePanel collapses it out of the way on a phone). */
+/* E8 polish acceptance: mobile/thin = VERTICAL (rail stacks above the grid,
+ * scrolls down the page); desktop = HORIZONTAL (rail sits beside the grid,
+ * side by side). Width-based (`min-width`), so a narrow desktop window gets
+ * the same vertical treatment as a phone — "thin", not "mobile". */
 .main {
   display: flex;
   flex-direction: column;
@@ -190,9 +196,10 @@
   overflow-x: hidden;
   padding: 0.4rem 0.25rem 0.25rem;
   border-radius: 16px;
+  /* E8 polish: calmer table glow (was 0.08) */
   background: radial-gradient(
     120% 90% at 50% 0%,
-    rgba(112, 64, 168, 0.08),
+    rgba(112, 64, 168, 0.05),
     transparent 62%
   );
 }
@@ -200,7 +207,10 @@
   border-collapse: collapse;
   table-layout: fixed;
   width: 100%;
-  max-width: 40rem; /* keep seat columns tight on wide desktop, centered */
+  /* E8 polish: grow with the puzzle instead of a hard 40rem cap — tight (no
+     idle whitespace) on small daily grids, roomier on wide ones, never past
+     46rem so seat columns stay dense on desktop. */
+  max-width: clamp(28rem, 92%, 46rem);
   margin: 0 auto;
 }
 /* seat columns share the space that's left after the fixed label columns; the
@@ -231,7 +241,9 @@
   white-space: nowrap;
 }
 
-/* horizontal value labels on the left of each row — fully shown, wraps if long */
+/* horizontal value labels on the left of each row — wraps, but never past 2
+ * lines (E8 polish acceptance: axis labels never wrap >2 lines); the full
+ * value is still readable via the `title` attribute on hover/focus. */
 .valHead {
   width: clamp(4.5rem, 22vw, 7rem);
   padding: 0.2rem 0.5rem 0.2rem 0.35rem;
@@ -242,6 +254,10 @@
   vertical-align: middle;
   white-space: normal;
   overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 /* seat numbers — the column headers, ascending left→right */

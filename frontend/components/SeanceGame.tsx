@@ -142,8 +142,10 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
     return () => clearInterval(id);
   }, [won]);
 
-  // atmospheric pressure: vignette deepens with time (frozen if reduced-motion)
-  const pressure = reduce ? 0.25 : Math.min(0.85, 0.18 + total / 900);
+  // atmospheric pressure: vignette deepens with time (frozen if reduced-motion).
+  // E8 polish: softened cap + growth rate — a calmer, less-distracting table
+  // (design-intake seance.md: "very subtle" on both idle + reactive signals).
+  const pressure = reduce ? 0.16 : Math.min(0.48, 0.12 + total / 1600);
 
   // columns highlighted in the matrix: those named by the traced clue AND by the
   // clue(s) a hint points at, as "cat:val" keys.
@@ -503,7 +505,17 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
                               className={styles.cell}
                               style={{
                                 borderColor: m === 2 ? catHex(c) : undefined,
-                                background: m === 2 ? `${catHex(c)}26` : "transparent",
+                                // E8 polish: every cell carries a faint wash of its
+                                // category hue — not just confirmed ones — so
+                                // colour is legible across the whole row even
+                                // before a binding (triple-encode floor: colour +
+                                // the row's shared glyph + label, never colour alone).
+                                background:
+                                  m === 2
+                                    ? `${catHex(c)}26`
+                                    : m === 1
+                                      ? `${catHex(c)}0d`
+                                      : `${catHex(c)}08`,
                                 color: m === 2 ? catInk(c) : m === 1 ? "#7a6e8a" : "transparent",
                                 // a bound spirit glows — a soft spectral halo in
                                 // the cell's category hue (static, no loop)
