@@ -1,0 +1,87 @@
+/* ════════════════════════════════════════════════════════════════════════
+   skins.css — PER-GAME SKIN SEAM (f-design foundation).
+
+   PARLOR de-restricts look PER GAME while keeping the shared §Floors LOCKED.
+   A room declares its own palette / materials / layout-grid / motion / type /
+   bg / mood by opting into a `[data-skin="<game>"]` block below — NO edits to
+   globals.css or any global file. The room opts in via lib/theme.ts:
+       import { applySkin } from "@/lib/theme";
+       <main {...applySkin("clock")}>…</main>   // sets data-skin="clock"
+
+   SOURCE OF TRUTH: skin VALUES live here (CSS-var scope). theme.ts only types
+   the skin names + seam vocabulary and hands the room the attribute — there is
+   NO JS-runtime theming layer. This file is imported (as a side effect) by
+   theme.ts, so any room that uses the helper carries the stylesheet.
+
+   VISUAL-UNCHANGED GUARANTEE: every `--skin-*` default below resolves to the
+   active GLOBAL token, and no live route sets data-skin yet, so the app looks
+   byte-identical until a room opts in. The per-game blocks are intentionally
+   EMPTY scaffolds — each room fills its OWN taste in its W1 unit (this
+   foundation codifies the mechanism, it does NOT choose palettes).
+
+   LOCKED FLOORS (design/INDEX.md §Floors) — a skin MUST NOT break these, even
+   though it may repaint everything else: contrast AA both themes · ≥44px touch
+   targets · WebGL/renderer degrade · reduced-motion variant · exactly one <h1> ·
+   the one global focus ring (`--c-focus`; thicken, never recolor) · Q&A text
+   ≥1rem/lh≥1.5 never inside gilt/gradient · offline/seed/no-JS frame complete ·
+   category triple-encoded (color+glyph+label) · SSR safety (no Math.random in
+   render). Floors are enforced in globals.css + components, above the skin layer.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Seam defaults. Every seam falls back to the current global token, so a
+   component that consumes `var(--skin-*)` is visually identical to one that used
+   the global token directly — until a skin overrides it. Color seams are
+   RGB-channel triplets (Tailwind `bg-skin-*`/alpha works); the rest are full
+   CSS values. See lib/theme.ts SKIN_SEAMS for the typed catalog. ── */
+:root {
+  /* palette (RGB channels) */
+  --skin-bg: var(--c-bg);
+  --skin-surface: var(--c-surface);
+  --skin-accent: var(--c-brass);
+  --skin-ink: var(--c-ink);
+  --skin-muted: var(--c-muted);
+  /* materials / background */
+  --skin-bg-image: none;
+  --skin-radius: 4px; /* action-plate radius (round=switch, plate=action) */
+  /* type */
+  --skin-font-display: var(--font-display);
+  /* motion */
+  --skin-motion-duration: 300ms;
+  --skin-motion-ease: cubic-bezier(0.22, 1, 0.36, 1); /* the entrance curve */
+  /* layout grid */
+  --skin-gutter: var(--d-gutter);
+  --skin-maxw: var(--d-maxw);
+}
+
+/* ── TEMPLATE — how a game declares its skin (copy into the block below).
+   A skin may set any `--skin-*` seam AND may override any NON-FLOOR global var
+   inside its own scope to repaint the whole subtree (palette `--c-*`, category
+   `--cat-*`, density `--d-*`). The game is responsible for holding the §Floors
+   (e.g. AA contrast) for whatever values it picks.
+
+   [data-skin="board"] {
+     --skin-bg-image: url("/skins/board-felt.svg");
+     --skin-accent: 200 133 42;            | RGB channels (history brass)
+     --skin-radius: 2px;                   | crisper plate corners
+     --skin-motion-duration: 450ms;        | slower diegetic flip
+     --c-surface: 40 20 30;                | repaint this room's panels only
+     --d-col-gap: 0.75rem;                 | tighter board grid, this room only
+   }
+   ── */
+
+/* ── Per-game skin scaffolds — one per game route (see lib/games.ts / theme.ts
+   SKIN_NAMES). EMPTY by design: each room fills its own in its W1 unit. Leaving
+   them enumerated here documents the roster + reserves the selector so opting in
+   is a one-file edit. Do NOT invent per-game taste in this foundation unit. ── */
+
+/* [data-skin="mystery"]  { the Order — Sanctum Mysterii } */
+/* [data-skin="board"]    { the Host — Codex } */
+/* [data-skin="clock"]    { the Clockkeeper — Chronos } */
+/* [data-skin="wedges"]   { the Ghost — Fractures } */
+/* [data-skin="streak"]   { the Witch — Ignite } */
+/* [data-skin="map"]      { the Cartographer — Atlas Obscura } */
+/* [data-skin="gauntlet"] { the Adventurer — The Gauntlet } */
+/* [data-skin="thread"]   { the Weaver — Thread of Fate } */
+/* [data-skin="seance"]   { the Medium — The Séance } */
+/* [data-skin="ladder"]   { the Trickster — Climb of the Initiate } */
+/* [data-skin="overture"] { the Maestro — The Overture (Joker) } */

@@ -30,9 +30,28 @@ const config: Config = {
         screen: "rgb(var(--cat-screen) / <alpha-value>)",
         geography: "rgb(var(--cat-geography) / <alpha-value>)",
         wildcard: "rgb(var(--cat-wildcard) / <alpha-value>)",
+        // Per-game SKIN seam (f-design). RGB-channel --skin-* vars scoped by
+        // [data-skin] in app/skins.css; each defaults to a global token, so
+        // `bg-skin-*`/`text-skin-*`/`border-skin-*` are visually identical until
+        // a room opts into its skin. Values + docs: lib/theme.ts, app/skins.css.
+        skin: {
+          bg: "rgb(var(--skin-bg) / <alpha-value>)",
+          surface: "rgb(var(--skin-surface) / <alpha-value>)",
+          accent: "rgb(var(--skin-accent) / <alpha-value>)",
+          ink: "rgb(var(--skin-ink) / <alpha-value>)",
+          muted: "rgb(var(--skin-muted) / <alpha-value>)",
+        },
+      },
+      // Non-color skin seams as utilities (full CSS values, not alpha-composable).
+      borderRadius: {
+        skin: "var(--skin-radius)",
+      },
+      maxWidth: {
+        skin: "var(--skin-maxw)",
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
+        skin: ["var(--skin-font-display)", "var(--font-display)", "Georgia", "serif"],
       },
       animation: {
         marquee: "marquee 40s linear infinite",
@@ -61,6 +80,8 @@ const config: Config = {
   safelist: [
     // category colors are composed dynamically (text-/bg-/border-{category})
     { pattern: /(text|bg|border)-(history|music|sports|screen|geography|wildcard)/ },
+    // per-game skin seam utilities — composed dynamically by skinned rooms
+    { pattern: /(text|bg|border)-skin-(bg|surface|accent|ink|muted)/ },
   ],
   plugins: [],
 };
