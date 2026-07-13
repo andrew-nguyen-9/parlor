@@ -136,7 +136,9 @@ export default function ThreadGame({
   const [phase, setPhase] = useState<"chain" | "final" | "done">("chain");
   const [themeGuess, setThemeGuess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [shareError, setShareError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const gridRef = useRef<HTMLPreElement>(null);
   const shake = useAnimationControls(); // wrong-guess wobble on the input row
 
   // --- THE LOOM: measured SVG woven thread through the knots (see .module.css) --
@@ -603,7 +605,10 @@ export default function ThreadGame({
             <p className="display text-3xl" style={{ color: THREAD_HEX }}>
               {theme}
             </p>
-            <pre className="whitespace-pre text-center text-lg leading-none tracking-widest">
+            <pre
+              ref={gridRef}
+              className="whitespace-pre text-center text-lg leading-none tracking-widest"
+            >
               {threadCard().grid}
             </pre>
             <p className="text-sm text-muted">
@@ -616,6 +621,11 @@ export default function ThreadGame({
             >
               {copied ? "copied ✓" : "share the thread"}
             </button>
+            {shareError && (
+              <p className="microlabel text-music" role="status">
+                couldn&rsquo;t copy — the grid above is now selected, copy it by hand
+              </p>
+            )}
             <p className="microlabel text-smoke">
               ✦ parlor · the thread ·{" "}
               {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}

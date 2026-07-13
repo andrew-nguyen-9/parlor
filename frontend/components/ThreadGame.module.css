@@ -70,10 +70,69 @@
   animation: knotPulse 1.9s ease-in-out infinite;
 }
 
+/* a landed stitch blooms once — soft gold burst, then settles into .knotDone's
+   static halo (box-shadow already defined there). */
+@keyframes stitchBloom {
+  0% {
+    box-shadow: 0 0 0 0 var(--knot);
+    opacity: 0.6;
+  }
+  60% {
+    box-shadow: 0 0 18px 6px var(--knot);
+  }
+  100% {
+    box-shadow: 0 0 10px 0 var(--knot);
+    opacity: 1;
+  }
+}
+
+.knotBloom {
+  animation: stitchBloom 0.5s ease-out;
+}
+
+/* a missed/unraveled stitch frays briefly — the fabric resists, nothing
+   breaks — instead of a hard pop. */
+@keyframes knotFray {
+  0%,
+  100% {
+    transform: rotate(0deg);
+    filter: saturate(1);
+  }
+  25% {
+    transform: rotate(-5deg);
+    filter: saturate(0.5);
+  }
+  75% {
+    transform: rotate(5deg);
+    filter: saturate(0.5);
+  }
+}
+
+.knotFray {
+  animation: knotFray 0.4s ease-in-out;
+}
+
+/* knots fade/settle in one at a time as the thread is drawn down the rail
+   (design-intake §1) — plays once on mount, doesn't replay on later
+   re-renders since the class + element identity are stable. */
+@keyframes knotIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* reduced motion: hold the gold, drop every animation */
 @media (prefers-reduced-motion: reduce) {
   .sheen,
-  .knotActive {
+  .knotActive,
+  .knotBloom,
+  .knotFray,
+  .link {
     animation: none;
   }
 }
@@ -85,6 +144,7 @@
   align-items: start;
   column-gap: 0.75rem;
   padding: 0.5rem 0;
+  animation: knotIn 0.4s ease-out both;
 }
 
 .knot {
@@ -151,4 +211,19 @@
 
 .slotFilled {
   font-weight: 700;
+}
+
+/* the final-stitch + tapestry-reveal panels get an embroidered inset border —
+   material language: fabric panel with a stitched edge, not a plain card. */
+.tapestryPanel {
+  position: relative;
+}
+
+.tapestryPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0.4rem;
+  border: 1px dashed rgba(199, 154, 58, 0.35);
+  border-radius: 0.85rem;
+  pointer-events: none;
 }
