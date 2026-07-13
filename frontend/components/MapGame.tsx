@@ -18,6 +18,7 @@ import dynamic from "next/dynamic";
 import * as THREE from "three";
 import ThreeStage, { framePortrait, type ThreeStageContext } from "@/components/ThreeStage";
 import {
+  clueHolds,
   type AtlasPuzzle,
   type AtlasCandidate,
   type AtlasClue,
@@ -29,11 +30,87 @@ import CollapsiblePanel from "@/components/CollapsiblePanel";
 
 const Confetti = dynamic(() => import("@/components/Confetti"), { ssr: false });
 
-const ACCENT = "#178b99"; // geography — CATEGORY_HEX (single source, lib/types.ts)
-const ACCENT_HEX = 0x178b99;
+// Q37 (design-intake): the sky wears a cooler STAR-BLUE skin instead of the
+// geography teal — a per-game skin over the locked floors (E0 de-restriction,
+// f-design). The room's OUTER chrome (RoomShell accent="geography") is untouched;
+// only the in-scene UI (omen numbers, selection ring, confirm, auras) shifts.
+const ACCENT = "#5b8bf6";
+const ACCENT_HEX = 0x5b8bf6;
+
+// Q20 (design-intake): capped guesses — running out ends the round unsolved and
+// breaks the streak (soft fail: the answer is still revealed, Q20-B + Q20-C).
+const MAX_GUESSES = 3;
+
+// Q16 (design-intake): named sky tiers are the thing worth celebrating, not a bare
+// number. Clear Sky = a first-guess solve (🟩); a slip clouds it over; Overcast =
+// out of guesses.
+function skyTier(wrong: number, solved: boolean): { name: string; mark: string } {
+  if (!solved) return { name: "Overcast", mark: "⬛" };
+  if (wrong === 0) return { name: "Clear Sky", mark: "🟩" };
+  if (wrong <= 2) return { name: "Passing Cloud", mark: "🟨" };
+  return { name: "Hazy", mark: "🟨" };
+}
 
 function brightestId(c: AtlasCandidate): string {
   return c.stars.reduce((m, s) => (s.mag < m.mag ? s : m), c.stars[0]).id;
+}
+
+// Q43-B (design-intake) + CLAUDE.md THE MAP rule: a flat 2D SVG rendering of a
+// candidate's actual star-and-line figure. This is the OFFLINE / no-WebGL play
+// path — it draws from the same normalized 0..1 candidate geometry the 3D scene
+// uses, needs zero network and zero GL, and makes the whole deduction solvable in
+// pure DOM (the polygon-equivalent fallback for the star room). Always rendered
+// inside every chip, so the patterns are visible even when the canvas is blank.
+function FigureSVG({
+  cand,
+  tone,
+}: {
+  cand: AtlasCandidate;
+  tone: "normal" | "selected" | "ruled" | "answer" | "dim";
+}) {
+  const bId = brightestId(cand);
+  const pos = new Map(cand.stars.map((s) => [s.id, s]));
+  const starColor =
+    tone === "answer" || tone === "selected" ? "#eaf1ff" : tone === "ruled" || tone === "dim" ? "#5a6480" : "#cdd9ff";
+  const lineColor =
+    tone === "answer" || tone === "selected" ? ACCENT : tone === "ruled" || tone === "dim" ? "#3a4058" : "#7f93c8";
+  const op = tone === "ruled" ? 0.35 : tone === "dim" ? 0.3 : 1;
+  return (
+    <svg viewBox="0 0 100 100" className={styles.figSvg} style={{ opacity: op }} aria-hidden focusable="false">
+      {cand.lines.map(([a, b], i) => {
+        const pa = pos.get(a);
+        const pb = pos.get(b);
+        if (!pa || !pb) return null;
+        return (
+          <line
+            key={i}
+            x1={pa.x * 100}
+            y1={pa.y * 100}
+            x2={pb.x * 100}
+            y2={pb.y * 100}
+            stroke={lineColor}
+            strokeWidth={1.4}
+            strokeLinecap="round"
+          />
+        );
+      })}
+      {cand.stars.map((s) => {
+        const isBright = s.id === bId;
+        const r = isBright ? 3.4 : Math.max(1.4, 2.6 - s.mag * 0.28);
+        return (
+          <circle
+            key={s.id}
+            cx={s.x * 100}
+            cy={s.y * 100}
+            r={r}
+            fill={isBright && tone !== "ruled" && tone !== "dim" ? "#ffffff" : starColor}
+            stroke={isBright ? lineColor : "none"}
+            strokeWidth={isBright ? 0.9 : 0}
+          />
+        );
+      })}
+    </svg>
+  );
 }
 
 // ── 3D helpers (browser-only; all called inside ThreeStage.setup) ──
@@ -312,13 +389,13 @@ function Starfield({
   puzzle,
   selected,
   ruledOut,
-  won,
+  reveal,
   onPick,
 }: {
   puzzle: AtlasPuzzle;
   selected: string | null;
   ruledOut: Set<string>;
-  won: boolean;
+  reveal: boolean;
   onPick: (id: string) => void;
 }) {
   const apiRef = useRef<SceneApi | null>(null);
@@ -442,14 +519,14 @@ function Starfield({
     const api = apiRef.current;
     if (!api) return;
     for (const f of api.figures) {
-      applyMode(f, modeFor(f.id, puzzle.solution, won, ruledOut, selected));
+      applyMode(f, modeFor(f.id, puzzle.solution, reveal, ruledOut, selected));
     }
-  }, [puzzle.solution, won, ruledOut, selected]);
+  }, [puzzle.solution, reveal, ruledOut, selected]);
 
   function handlePointer(e: React.PointerEvent<HTMLDivElement>) {
     const api = apiRef.current;
     const box = stageBoxRef.current;
-    if (!api || !box || won) return;
+    if (!api || !box || reveal) return;
     const rect = box.getBoundingClientRect();
     const ndc = new THREE.Vector2(
       ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -468,7 +545,22 @@ function Starfield({
   );
 }
 
-type Phase = "playing" | "won";
+type Phase = "playing" | "won" | "lost";
+
+// Per-chip visual tone for the 2D SVG fallback + chip chrome, mirrored from the
+// same modeFor logic that drives the 3D materials.
+function chipTone(
+  id: string,
+  solution: string,
+  reveal: boolean,
+  ruledOut: Set<string>,
+  selected: string | null,
+): "normal" | "selected" | "ruled" | "answer" | "dim" {
+  if (reveal) return id === solution ? "answer" : "dim";
+  if (ruledOut.has(id)) return "ruled";
+  if (selected === id) return "selected";
+  return "normal";
+}
 
 export default function MapGame({
   puzzle,
@@ -508,10 +600,20 @@ function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
   const [shake, setShake] = useState(false);
   const [phase, setPhase] = useState<Phase>("playing");
   const [copied, setCopied] = useState(false);
+  // Q13-C: opt-in assist — when on, the omens show ✓/✗ for the focused figure so
+  // a player can SEE why a candidate does or doesn't fit, without auto-solving.
+  const [assist, setAssist] = useState(false);
 
   const solvedCand = puzzle.candidates.find((c) => c.id === puzzle.solution)!;
-  const score = Math.max(10, 100 - wrong.length * 25);
+  // Q14: gentler penalties (−15/wrong) so a slip isn't near-fatal.
+  const score = Math.max(10, 100 - wrong.length * 15);
   const selectedRuledOut = selected != null && ruledOut.has(selected);
+  const won = phase === "won";
+  const lost = phase === "lost";
+  const reveal = won || lost;
+  const guessesLeft = Math.max(0, MAX_GUESSES - wrong.length);
+  const selCand = selected ? (puzzle.candidates.find((c) => c.id === selected) ?? null) : null;
+  const allRuledOut = puzzle.candidates.every((c) => ruledOut.has(c.id));
 
   // Deep-space ambient bed (f1-audio) — starts on mount, torn down on unmount.
   // No-op under mute/reduced-motion/SSR; the manager owns that decision.
@@ -545,17 +647,27 @@ function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
       setPhase("won");
       return;
     }
+    // Wrong: costs points AND rules the figure out (Q15-A), and burns one of the
+    // capped attempts (Q20). Running out soft-fails the round (answer revealed).
+    const nextWrong = wrong.includes(selected) ? wrong : [...wrong, selected];
     audio.sfx("wrong");
-    setWrong((w) => (w.includes(selected) ? w : [...w, selected]));
+    setWrong(nextWrong);
     setRuledOut((prev) => new Set(prev).add(selected));
     setShake(true);
     setTimeout(() => setShake(false), 500);
     setSelected(null);
+    if (nextWrong.length >= MAX_GUESSES) {
+      audio.stinger();
+      setPhase("lost");
+    }
   }
 
   async function share() {
-    const mark = wrong.length === 0 ? "🟩" : wrong.length <= 2 ? "🟨" : "⬛";
-    const text = `PARLOR · Atlas ${puzzle.date}\n${mark} solved in ${wrong.length + 1} — ${score} pts\nthe pattern was ${solvedCand.name}`;
+    // Q23-B: share the mark/tier/score but NOT the pattern name — never spoil the
+    // day's answer for someone who hasn't played yet.
+    const { name: tierName, mark } = skyTier(wrong.length, won);
+    const outcome = won ? `solved in ${wrong.length + 1}` : "clouded over";
+    const text = `PARLOR · Atlas ${puzzle.date}\n${mark} ${tierName} — ${outcome} · ${score} pts`;
     try {
       if (typeof navigator !== "undefined" && navigator.share) {
         await navigator.share({ text }).catch(() => {});
@@ -568,8 +680,6 @@ function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
       /* share/clipboard blocked — no-op */
     }
   }
-
-  const won = phase === "won";
 
   return (
     <div className={`${styles.wrap} ${reduce ? styles.still : ""}`}>
@@ -593,18 +703,40 @@ function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
           storageKey="parlor:atlas-omens"
         >
           <ol className={styles.clues}>
-            {puzzle.clues.map((cl: AtlasClue, i) => (
-              <li key={cl.id} className={styles.clue}>
-                <span className={styles.clueNum} style={{ borderColor: ACCENT, color: ACCENT }}>
-                  {i + 1}
-                </span>
-                <span>{cl.text}</span>
-              </li>
-            ))}
+            {puzzle.clues.map((cl: AtlasClue, i) => {
+              // Q13-C assist: for the focused figure, does this omen hold? ✓/✗.
+              const mark = assist && selCand ? clueHolds(cl, selCand) : null;
+              return (
+                <li key={cl.id} className={styles.clue}>
+                  <span className={styles.clueNum} style={{ borderColor: ACCENT, color: ACCENT }}>
+                    {i + 1}
+                  </span>
+                  <span>{cl.text}</span>
+                  {mark !== null && (
+                    <span
+                      className={styles.clueMark}
+                      style={{ color: mark ? ACCENT : "#e0748c" }}
+                      aria-label={mark ? "the focused figure obeys this omen" : "the focused figure breaks this omen"}
+                    >
+                      {mark ? "✓" : "✗"}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ol>
+          <button
+            type="button"
+            className={styles.assistBtn}
+            aria-pressed={assist}
+            onClick={() => setAssist((a) => !a)}
+          >
+            {assist ? "assist on ✦" : "assist"}
+          </button>
           <p className="microlabel mt-3 text-smoke">
             tap a constellation (or its number below) to focus it, rule out the ones an omen
             forbids — one survives them all
+            {assist ? " · assist marks whether the focused figure obeys each omen" : ""}
           </p>
         </CollapsiblePanel>
 
@@ -614,23 +746,26 @@ function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
               puzzle={puzzle}
               selected={selected}
               ruledOut={ruledOut}
-              won={won}
+              reveal={reveal}
               onPick={pick}
             />
-            {won && (
+            {reveal && (
               <p className={styles.answerBanner} style={{ color: ACCENT }}>
                 {solvedCand.name}
               </p>
             )}
           </div>
 
-          {/* Numbered pattern chips — the accessible / reduced-motion control
-              surface that always mirrors + drives selection state. */}
+          {/* Pattern chips — each renders the constellation's actual figure as a
+              flat 2D SVG (Q43-B / THE MAP offline rule): the always-present,
+              zero-WebGL, zero-network control surface that mirrors + drives
+              selection. The 3D canvas is a progressive enhancement over this. */}
           <div className={styles.chips} role="group" aria-label="constellations">
             {puzzle.candidates.map((cand, idx) => {
               const isOut = ruledOut.has(cand.id);
               const isSel = selected === cand.id;
               const isAnswer = cand.id === puzzle.solution;
+              const tone = chipTone(cand.id, puzzle.solution, reveal, ruledOut, selected);
               return (
                 <button
                   key={cand.id}
@@ -638,17 +773,20 @@ function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
                   className={[
                     styles.chip,
                     isSel ? styles.chipSel : "",
-                    isOut && !won ? styles.chipOut : "",
-                    won && isAnswer ? styles.chipAnswer : "",
-                    won && !isAnswer ? styles.chipDim : "",
+                    isOut && !reveal ? styles.chipOut : "",
+                    reveal && isAnswer ? styles.chipAnswer : "",
+                    reveal && !isAnswer ? styles.chipDim : "",
                   ].join(" ")}
-                  style={isSel || (won && isAnswer) ? { borderColor: ACCENT, color: ACCENT } : undefined}
+                  style={isSel || (reveal && isAnswer) ? { borderColor: ACCENT } : undefined}
                   aria-pressed={isSel}
-                  aria-label={`Constellation ${idx + 1}${won && isAnswer ? ` — ${cand.name}` : isOut ? " (ruled out)" : ""}`}
-                  disabled={won}
+                  aria-label={`Constellation ${idx + 1}${reveal && isAnswer ? ` — ${cand.name}` : isOut ? " (ruled out)" : ""}`}
+                  disabled={reveal}
                   onClick={() => pick(cand.id)}
                 >
-                  {idx + 1}
+                  <FigureSVG cand={cand} tone={tone} />
+                  <span className={styles.chipNum} style={isSel || (reveal && isAnswer) ? { color: ACCENT } : undefined}>
+                    {idx + 1}
+                  </span>
                 </button>
               );
             })}
@@ -657,10 +795,14 @@ function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
       </div>
 
       <p className="sr-only" aria-live="polite">
-        {won ? `Solved. The pattern was ${solvedCand.name}.` : ""}
+        {won
+          ? `Solved. The pattern was ${solvedCand.name}.`
+          : lost
+            ? `Out of guesses. The pattern was ${solvedCand.name}.`
+            : ""}
       </p>
 
-      {!won ? (
+      {!reveal ? (
         <div className={styles.controls}>
           {selected && !selectedRuledOut && (
             <button type="button" className={styles.ruleBtn} onClick={toggleRuleOut}>
@@ -681,25 +823,39 @@ function StarAtlas({ puzzle }: { puzzle: AtlasPuzzle }) {
           >
             {selected && !selectedRuledOut ? "Name this pattern" : "Choose a pattern"}
           </button>
-          {wrong.length > 0 && (
-            <span className="microlabel text-smoke">
-              {wrong.length} wrong · {score} pts at stake
+          {/* Q20: capped guesses, shown as a calm budget. */}
+          <span className="microlabel text-smoke">
+            {guessesLeft} {guessesLeft === 1 ? "guess" : "guesses"} left · {score} pts at stake
+          </span>
+          {/* Q47: every figure ruled out — no valid guess remains; nudge a restore. */}
+          {allRuledOut && (
+            <span className="microlabel" style={{ color: "#e0748c" }}>
+              you&rsquo;ve ruled out every figure — restore one to name it
             </span>
           )}
         </div>
       ) : (
         <div className={styles.result}>
-          {!reduce && <Confetti active />}
-          <p className="microlabel" style={{ color: ACCENT }}>
-            the pattern was
-          </p>
-          <p className={styles.resultName}>{solvedCand.name}</p>
-          <p className="text-muted text-sm">
-            Solved in {wrong.length + 1} {wrong.length === 0 ? "guess" : "guesses"} · {score} points
-          </p>
-          <button type="button" className={styles.shareBtn} onClick={share}>
-            {copied ? "copied ✦" : "share result"}
-          </button>
+          {won && !reduce && <Confetti active />}
+          {(() => {
+            const tier = skyTier(wrong.length, won);
+            return (
+              <>
+                <p className="microlabel" style={{ color: won ? ACCENT : "#e0748c" }}>
+                  {won ? `${tier.mark} ${tier.name} — the pattern was` : `${tier.mark} Overcast — the pattern was`}
+                </p>
+                <p className={styles.resultName}>{solvedCand.name}</p>
+                <p className="text-muted text-sm">
+                  {won
+                    ? `Solved in ${wrong.length + 1} ${wrong.length === 0 ? "guess" : "guesses"} · ${score} points`
+                    : `Out of guesses · streak breaks · ${score} points`}
+                </p>
+                <button type="button" className={styles.shareBtn} onClick={share}>
+                  {copied ? "copied ✦" : "share result"}
+                </button>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>

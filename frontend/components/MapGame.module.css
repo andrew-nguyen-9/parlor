@@ -13,7 +13,7 @@
   padding: 1.25rem;
   /* Deep-space wash behind the canvas — reads on both themes. */
   background:
-    radial-gradient(120% 80% at 18% 8%, rgba(23, 139, 153, 0.16), transparent 60%),
+    radial-gradient(120% 80% at 18% 8%, rgba(91, 139, 246, 0.16), transparent 60%),
     radial-gradient(90% 70% at 88% 96%, rgba(110, 60, 160, 0.18), transparent 62%),
     radial-gradient(140% 120% at 50% 50%, rgba(6, 9, 24, 0.9), rgba(4, 6, 18, 0.98));
 }
@@ -70,6 +70,31 @@
   font-size: 0.75rem;
   font-weight: 700;
 }
+/* Q13-C assist: the ✓/✗ badge showing whether the focused figure obeys an omen. */
+.clueMark {
+  flex: none;
+  margin-left: auto;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.assistBtn {
+  margin-top: 0.75rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(180, 200, 255, 0.28);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(200, 214, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.62rem;
+  cursor: pointer;
+}
+.assistBtn[aria-pressed="true"] {
+  border-color: rgba(91, 139, 246, 0.6);
+  color: #b7c9ff;
+  background: rgba(91, 139, 246, 0.14);
+}
 
 /* Stage column: the WebGL viewport + the numbered chip strip beneath it. */
 .stageCol {
@@ -111,24 +136,28 @@
   text-align: center;
   font-family: var(--font-display, inherit);
   font-size: clamp(1.4rem, 5vw, 2.1rem);
-  text-shadow: 0 0 12px rgba(23, 139, 153, 0.7);
+  text-shadow: 0 0 12px rgba(91, 139, 246, 0.7);
   pointer-events: none;
 }
 
 /* Numbered chips — always-present, accessible control surface. */
 .chips {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(4.75rem, 1fr));
   gap: 0.5rem;
 }
 .chip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
   min-height: 44px;
+  padding: 0.4rem 0.3rem 0.3rem;
   border: 1px solid rgba(180, 200, 255, 0.22);
   border-radius: 0.75rem;
   background: rgba(8, 12, 30, 0.6);
   color: rgba(210, 222, 255, 0.85);
-  font-size: 0.95rem;
-  font-weight: 700;
   cursor: pointer;
   transition:
     border-color 0.2s ease,
@@ -139,20 +168,48 @@
 .chip:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.06);
 }
+/* The flat 2D SVG figure inside each chip — the offline / no-WebGL play surface
+   (Q43-B, THE MAP rule): the real star pattern, drawn with zero GL or network. */
+.figSvg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  display: block;
+  overflow: visible;
+}
+.chipNum {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(210, 222, 255, 0.85);
+}
 .chipSel {
-  background: rgba(23, 139, 153, 0.16);
+  background: rgba(91, 139, 246, 0.18);
   transform: translateY(-2px);
 }
+/* Q9-B: a soft cross-out mark drawn over a ruled-out figure, beyond dimming. */
 .chipOut {
-  opacity: 0.4;
-  text-decoration: line-through;
+  opacity: 0.55;
+}
+.chipOut::after {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  background: linear-gradient(
+    to bottom right,
+    transparent calc(50% - 0.7px),
+    rgba(224, 116, 140, 0.7) calc(50% - 0.7px),
+    rgba(224, 116, 140, 0.7) calc(50% + 0.7px),
+    transparent calc(50% + 0.7px)
+  );
+  pointer-events: none;
 }
 .chipAnswer {
-  background: rgba(23, 139, 153, 0.22);
-  box-shadow: 0 0 0 1px rgba(23, 139, 153, 0.6);
+  background: rgba(91, 139, 246, 0.22);
+  box-shadow: 0 0 0 1px rgba(91, 139, 246, 0.6);
 }
 .chipDim {
-  opacity: 0.3;
+  opacity: 0.35;
 }
 
 @keyframes shake {
@@ -201,7 +258,7 @@
   min-height: 48px;
   padding: 0 1.75rem;
   border-radius: 999px;
-  border: 1px solid rgba(23, 139, 153, 0.55);
+  border: 1px solid rgba(91, 139, 246, 0.55);
   color: #f3f6ff;
   font-size: 0.72rem;
   letter-spacing: 0.14em;
@@ -237,15 +294,15 @@
   margin-top: 0.5rem;
   padding: 0 1.5rem;
   border-radius: 999px;
-  border: 1px solid rgba(23, 139, 153, 0.55);
-  color: #7fd3dd;
+  border: 1px solid rgba(91, 139, 246, 0.55);
+  color: #9fb8ff;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 0.66rem;
   cursor: pointer;
 }
 .shareBtn:hover {
-  background: rgba(23, 139, 153, 0.15);
+  background: rgba(91, 139, 246, 0.15);
 }
 
 /* Reduced motion: freeze the chip transitions + shake (ThreeStage renders its
