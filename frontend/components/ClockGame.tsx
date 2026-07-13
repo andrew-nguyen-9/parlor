@@ -142,6 +142,39 @@ function Mechanism({ puzzle }: { puzzle: ChronosPuzzle }) {
     return () => audio.stopAmbient();
   }, []);
 
+  // Resume-in-progress (intake: "auto-saves per placement · resume exactly where
+  // left off"). Keyed per date so archive plays never collide. Load runs AFTER mount
+  // — first render stays the all-empty server tree so hydration matches; a stale save
+  // from a changed puzzle is ignored (every current gear key must be present).
+  const progressKey = `parlor:chronos:${puzzle.date}:wheels`;
+  const hydrated = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(progressKey);
+      if (raw) {
+        const saved = JSON.parse(raw) as Record<string, number | null>;
+        if (gears.every((g) => g.key in saved)) {
+          setAssign(
+            Object.fromEntries(gears.map((g) => [g.key, saved[g.key] ?? null])),
+          );
+        }
+      }
+    } catch {
+      /* corrupt/blocked storage — start fresh, never block play */
+    }
+    hydrated.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [progressKey]);
+  useEffect(() => {
+    if (!hydrated.current || typeof window === "undefined") return;
+    try {
+      localStorage.setItem(progressKey, JSON.stringify(assign));
+    } catch {
+      /* private mode — persistence is a convenience, never a blocker */
+    }
+  }, [assign, progressKey]);
+
   const gearOf = (k: string) => gears.find((g) => g.key === k)!;
 
   // teeth seated at each shaft (index-1), null where empty
