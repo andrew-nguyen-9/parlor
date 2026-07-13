@@ -26,7 +26,13 @@ import {
 } from "@/lib/seance";
 import { recordBanishing, loadGrimoire, spiritsBanished } from "@/lib/grimoire";
 import { buildShare, type GameResult, type Tier } from "@/lib/share";
-import { sfxGlassClink, sfxWrong, sfxDoorLatch, audio } from "@/lib/sound";
+import { sfxDoorLatch, audio } from "@/lib/sound";
+import { registerSeanceAudio } from "@/lib/sound/seanceCues";
+
+// Declare the séance cue voices into the shared engine once (idempotent). Pure
+// data registration — no window/AudioContext access, SSR-safe. Playback still
+// waits for a first user gesture + unmute via the engine's own gating.
+registerSeanceAudio();
 import { CATEGORIES, CATEGORY_HEX, CATEGORY_INK, CATEGORY_GLYPH } from "@/lib/types";
 import CollapsiblePanel from "./CollapsiblePanel";
 import FluidStage from "./FluidStage";
@@ -198,8 +204,11 @@ function SeanceTable({
       } else {
         setHist((h) => histCommit(h, setCell(histState(h), c, seat, val, nv)));
         setHint(null);
-        if (nv === 2) {
-          sfxGlassClink(); // glass clink when a cell is bound
+        if (nv === 1) {
+          audio.event("seance", "snuff"); // soft dry puff when a candle is snuffed
+        } else if (nv === 2) {
+          audio.event("seance", "bind"); // glass resonance when a cell is bound
+          audio.event("seance", "cascade"); // one soft whisper for the auto-elim sweep
           setPulse((p) => p + 1); // planchette leans toward the binding
         }
       }
@@ -272,6 +281,7 @@ function SeanceTable({
   const showHint = useCallback(() => {
     const h = nextHint(board, puzzle);
     setHint(h);
+    audio.event("seance", "planchette"); // soft wood slide as it glides to the hint
     if (h?.wrong) setActiveClue(null); // no clue to trace — a mark is bad
     else if (h && h.clues.length) setActiveClue(h.clues[0]);
   }, [board, puzzle]);
@@ -326,7 +336,10 @@ function SeanceTable({
     }
     if (ok) {
       setWon(true);
-      audio.stinger(); // reverent completion stinger (f1-audio)
+      // Ceremony: the room falls silent (stop the bed), then the reverent swell
+      // rises — the séance stinger (committed stinger.mp3 + a soft piano chord).
+      audio.stopAmbient();
+      audio.stinger("seance");
       recordBanishing({
         spirit: puzzle.spirit,
         date: puzzle.date,
@@ -337,7 +350,7 @@ function SeanceTable({
     } else {
       // Poltergeist Strike: +60s, shake the table
       setStrikes((s) => s + 1);
-      sfxWrong();
+      audio.event("seance", "strike"); // heavy dark wood thud — a felt Poltergeist Strike
       if (!reduce) {
         setShake(true);
         setTimeout(() => setShake(false), 500);
