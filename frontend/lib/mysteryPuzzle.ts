@@ -201,6 +201,111 @@ export function liveValues(
   return { suspects, locations, times };
 }
 
+// ── clue reliability (design-intake Q2.5 — Truth & Deception layer) ──────────
+// Every clue is a TRUE elimination fact — the room deliberately ships NO lying
+// witnesses, because the case must stay "rock solid" (Q4.2 note) and uniquely
+// solvable with no guessing (Q6.4). Reliability is therefore a *presentation*
+// axis only: forensic facts (coroner / forensics / a sealed room) read as
+// certain; witness accounts (an alibi, a sighting, an arrival) read as attested
+// testimony that still holds. Pure derive-from-kind so it works for archived
+// puzzles too (no stored field).
+export type ClueReliability = "forensic" | "witness";
+
+const RELIABILITY: Record<ClueKind, ClueReliability> = {
+  "clear-room": "forensic",
+  "clear-time": "forensic",
+  before: "forensic",
+  "room-sealed": "forensic",
+  "clear-suspect": "witness",
+  after: "witness",
+  arrived: "witness",
+  "never-in": "witness",
+};
+
+/** Forensic (certain) vs witness (attested) — the credibility badge source. */
+export function clueReliability(kind: ClueKind): ClueReliability {
+  return RELIABILITY[kind];
+}
+
+// ── minimality / solvability proof (Q3.5 + Q4.2 + Q6.4) ──────────────────────
+// The generator ships the *minimal* clue set (Subtraction Method drops every
+// redundant fact), so `clues.length` IS the calculated minimum number of clues
+// the case can be solved from — the player is never told this up front. A clue
+// is "load-bearing" when removing it re-admits ≥2 triples; a minimal set is one
+// where EVERY clue is load-bearing.
+
+/** Removing this clue leaves the case ambiguous (≥2 consistent triples). */
+export function isLoadBearing(clues: MysteryClue[], clue: MysteryClue, n: number): boolean {
+  return solutionCount(clues.filter((c) => c !== clue), n) > 1;
+}
+
+/** True when no clue is redundant — the set cannot be shrunk (Q6.4 A / Q3.5). */
+export function isMinimal(clues: MysteryClue[], n: number): boolean {
+  return clues.every((c) => isLoadBearing(clues, c, n));
+}
+
+/** The calculated minimum number of clues the case is solvable from. */
+export function minimumClueCount(p: MysteryPuzzle): number {
+  return p.clues.length;
+}
+
+/**
+ * A spoiler-safe-after-the-fact explanation of WHY the minimum clue set had
+ * enough information to solve — surfaced on the verdict (Q4.2 note). It states
+ * the guarantee (every clue load-bearing → the set is irreducible) and names the
+ * unique triple the clues pin.
+ */
+export function solvabilityProof(p: MysteryPuzzle): string[] {
+  const min = p.clues.length;
+  const s = p.suspects[p.solution.suspect];
+  const r = p.locations[p.solution.location];
+  const h = p.times[p.solution.time];
+  return [
+    `All ${min} clues on the table were load-bearing: drop any one and two or more triples fit again.`,
+    `Together they eliminate every value on each axis but one — leaving ${s}, in ${r}, at ${h}.`,
+    `No smaller set of these facts pins a single culprit, so ${min} clues were exactly enough.`,
+  ];
+}
+
+// ── deterministic scene-setter (Q1.3 — a 2–3 sentence framing) ───────────────
+const MANORS = [
+  "Ravenscar Hall",
+  "Blackwood Manor",
+  "Thornfield House",
+  "Greymoor Abbey",
+  "Ashford Grange",
+  "Wexley Court",
+  "Marlowe Keep",
+  "Duskvale Estate",
+];
+const WEATHER = [
+  "as a storm hammered the leaded windows",
+  "under a fog so thick the drive had vanished",
+  "while the first snow of the season fell in silence",
+  "as the last of the autumn rain drummed the slate",
+  "beneath a moon the colour of old brass",
+  "as candles guttered in a draught no one could place",
+];
+const FINDERS = [
+  "It was the footman who found the body, at the foot of the stair.",
+  "A chambermaid's scream brought the household running.",
+  "The butler discovered the guest slumped and cold.",
+  "The victim was found by a fellow guest gone looking for a nightcap.",
+  "The Order's steward raised the alarm before the clocks struck.",
+];
+
+/**
+ * A deterministic 2–3 sentence scene-setter for the case (manor, weather, who
+ * found the body). Pure over the puzzle seed → SSR-safe, byte-identical daily.
+ */
+export function caseIntro(p: MysteryPuzzle): string {
+  const rand = mulberry32((p.seed ^ 0x5ce7e) >>> 0);
+  const manor = pick(MANORS, rand);
+  const weather = pick(WEATHER, rand);
+  const finder = pick(FINDERS, rand);
+  return `The Order convenes at ${manor} over ${p.caseName}, ${weather}. A guest lies dead, and no one may leave until the truth is named. ${finder}`;
+}
+
 // ── clue search/filter (E6 · Case File panel) ───────────────────────────────
 export type ClueFilter = "all" | "suspects" | "locations" | "times";
 
