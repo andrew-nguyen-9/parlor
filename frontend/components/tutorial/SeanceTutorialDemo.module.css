@@ -1,0 +1,152 @@
+/* SeanceTutorialDemo (E3) — reuses the shipped séance skin tokens (scoped by the
+ * board's own [data-skin="seance"], so the demo looks like the real board even
+ * when mounted outside the /seance route). Brass structure, spectral-violet bind,
+ * theme-safe channel tokens. No infinite keyframes — the only motion is finite
+ * cell reveals + the reused Planchette. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  padding: 0.6rem;
+  border-radius: var(--skin-radius, 6px);
+  /* faint candlelit table under the mock board */
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgb(112 64 168 / 0.06), transparent 60%),
+    color-mix(in srgb, rgb(var(--c-surface)) 55%, transparent);
+  border: 1px solid rgb(var(--c-line));
+}
+
+/* one mock cell — mirrors the live board cell (engraved plate, brass hairline) */
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  aspect-ratio: 1;
+  border: 1px solid rgb(var(--c-line));
+  border-radius: var(--skin-radius, 6px);
+  background: color-mix(in srgb, rgb(var(--c-bg)) 40%, transparent);
+  font-size: 1.05rem;
+  line-height: 1;
+  /* soft, snappy state transitions on the skin ease */
+  transition:
+    background 0.24s var(--skin-motion-ease, ease),
+    box-shadow 0.24s var(--skin-motion-ease, ease),
+    border-color 0.24s var(--skin-motion-ease, ease);
+}
+
+/* snuffed (✕) — dimmed, still legible (glyph + colour, never colour alone) */
+.cell[data-state="1"] {
+  color: #7a6e8a;
+  background: color-mix(in srgb, rgb(var(--cat-wildcard)) 6%, transparent);
+}
+
+/* bound (◯) — a soft spectral halo in the séance's violet, matching the board */
+.cell[data-state="2"] {
+  color: rgb(var(--cat-wildcard));
+  background: color-mix(in srgb, rgb(var(--cat-wildcard)) 16%, transparent);
+  border-color: rgb(var(--cat-wildcard));
+  box-shadow: 0 0 12px -1px color-mix(in srgb, rgb(var(--cat-wildcard)) 55%, transparent);
+}
+
+/* the glyph fades + scales in as the cell changes state (finite, ≤240ms) */
+.mark {
+  display: inline-block;
+  transition:
+    opacity 0.24s var(--skin-motion-ease, ease),
+    transform 0.24s var(--skin-motion-ease, ease);
+}
+.cell[data-state="0"] .mark {
+  opacity: 0;
+  transform: scale(0.6);
+}
+.cell[data-state="1"] .mark,
+.cell[data-state="2"] .mark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* the reused planchette, hovering the center-bound seat */
+.planchette {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -58%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.caption {
+  min-height: 1.4rem;
+  max-width: 22rem;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: rgb(var(--c-muted, 176 150 118));
+}
+
+/* progress dots — how far through the played-once clip we are */
+.dots {
+  display: flex;
+  gap: 0.35rem;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, rgb(var(--c-line)) 80%, transparent);
+  transition: background 0.24s ease;
+}
+.dot[data-on="true"] {
+  background: rgb(var(--cat-wildcard));
+}
+
+.replay {
+  min-height: 44px;
+  padding: 0.35rem 1rem;
+  border: 1px solid rgb(var(--c-brass));
+  border-radius: 999px;
+  background: color-mix(in srgb, rgb(var(--c-surface)) 60%, transparent);
+  color: rgb(var(--c-ink, 242 232 212));
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background 0.2s ease;
+}
+.replay:hover {
+  background: color-mix(in srgb, rgb(var(--c-brass)) 14%, transparent);
+}
+
+/* ── reduced-motion static fallback: blank → solved ── */
+.stills {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.still {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+.stillLabel {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted, 176 150 118));
+}
+.arrow {
+  font-size: 1.4rem;
+  color: rgb(var(--c-brass));
+}
