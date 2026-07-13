@@ -136,7 +136,9 @@ export default function ThreadGame({
   const [phase, setPhase] = useState<"chain" | "final" | "done">("chain");
   const [themeGuess, setThemeGuess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [shareError, setShareError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const gridRef = useRef<HTMLPreElement>(null);
   const shake = useAnimationControls(); // wrong-guess wobble on the input row
 
   // --- THE LOOM: measured SVG woven thread through the knots (see .module.css) --
@@ -316,9 +318,20 @@ export default function ThreadGame({
     try {
       await navigator.clipboard.writeText(threadCard().text);
       setCopied(true);
+      setShareError(false);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* clipboard unavailable — the grid is on screen anyway */
+      // clipboard unavailable (design-intake §8: select-to-copy fallback + a
+      // toast) — select the on-screen grid so the player can copy by hand.
+      setShareError(true);
+      const el = gridRef.current;
+      const sel = el && typeof window !== "undefined" ? window.getSelection() : null;
+      if (el && sel) {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
     }
   }
 
@@ -421,7 +434,13 @@ export default function ThreadGame({
                   knotRefs.current[i] = el;
                 }}
                 className={`${styles.knot} ${
-                  done ? styles.knotDone : isActive ? styles.knotActive : ""
+                  done
+                    ? `${styles.knotDone} ${
+                        n.state === "miss" ? styles.knotFray : styles.knotBloom
+                      }`
+                    : isActive
+                      ? styles.knotActive
+                      : ""
                 }`}
               >
                 {n.state === "hit" ? "✓" : n.state === "near" ? "◆" : n.state === "miss" ? "✕" : i + 1}
@@ -556,7 +575,7 @@ export default function ThreadGame({
             key="final"
             initial={reduced ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-5 rounded-2xl border border-line bg-surface p-5 text-center"
+            className={`mt-5 rounded-2xl border border-line bg-surface p-5 text-center ${styles.tapestryPanel}`}
             style={{ boxShadow: `0 0 50px ${THREAD_HEX}22` }}
           >
             <p className="microlabel tracking-widest" style={{ color: THREAD_HEX }}>
@@ -582,7 +601,7 @@ export default function ThreadGame({
             key="done"
             initial={reduced ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative mt-5 flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-5 text-center"
+            className={`relative mt-5 flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-5 text-center ${styles.tapestryPanel}`}
             style={{ boxShadow: `0 0 50px ${THREAD_HEX}22` }}
           >
             {/* the tapestry reveal — static gold corners frame the finished weave */}
@@ -603,7 +622,10 @@ export default function ThreadGame({
             <p className="display text-3xl" style={{ color: THREAD_HEX }}>
               {theme}
             </p>
-            <pre className="whitespace-pre text-center text-lg leading-none tracking-widest">
+            <pre
+              ref={gridRef}
+              className="whitespace-pre text-center text-lg leading-none tracking-widest"
+            >
               {threadCard().grid}
             </pre>
             <p className="text-sm text-muted">
@@ -616,6 +638,11 @@ export default function ThreadGame({
             >
               {copied ? "copied ✓" : "share the thread"}
             </button>
+            {shareError && (
+              <p className="microlabel text-music" role="status">
+                couldn&rsquo;t copy — the grid above is now selected, copy it by hand
+              </p>
+            )}
             <p className="microlabel text-smoke">
               ✦ parlor · the thread ·{" "}
               {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}
