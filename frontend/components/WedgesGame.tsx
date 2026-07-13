@@ -33,6 +33,7 @@ const Confetti = dynamic(() => import("@/components/Confetti"), { ssr: false });
 import AchievementToast from "@/components/AchievementToast";
 import LeaderboardPanel from "@/components/LeaderboardPanel";
 import { ParticleField, AmbientGlow, GrainFog, Ornament } from "@/components/atmosphere";
+import { applySkin } from "@/lib/theme";
 
 const QUESTION_SECONDS = 15;
 // Speed bonus: a correct wedge is worth a flat base plus the seconds left on the
@@ -59,7 +60,7 @@ function FractureStage({
   glow?: number;
 }) {
   return (
-    <div className={styles.stage}>
+    <div className={styles.stage} {...applySkin("wedges")}>
       <GrainFog opacity={0.1} className={styles.stageLayer} />
       <AmbientGlow intensity={glow} className={styles.stageLayer} />
       <ParticleField kind="mote" density={0.5} opacity={0.5} className={styles.stageLayer} />

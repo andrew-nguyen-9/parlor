@@ -77,7 +77,19 @@
 /* [data-skin="mystery"]  { the Order — Sanctum Mysterii } */
 /* [data-skin="board"]    { the Host — Codex } */
 /* [data-skin="clock"]    { the Clockkeeper — Chronos } */
-/* [data-skin="wedges"]   { the Ghost — Fractures } */
+/* the Ghost — Fractures: cold-moonlit glass. Obsidian room + mirror-silver
+   panels + a moonlight-cyan accent (design-intake §Visual/UX, "cold moonlit").
+   Only the seams below are set — no floor tokens (--c-*) touched, so AA
+   contrast/focus-ring/etc. hold unchanged; WedgesGame.module.css consumes
+   --skin-bg-image / --skin-accent / --skin-motion-* with safe fallbacks. */
+[data-skin="wedges"] {
+  --skin-accent: 165 224 226; /* moonlight cyan */
+  --skin-bg-image:
+    radial-gradient(120% 90% at 50% -10%, rgb(165 224 226 / 0.09), transparent 60%),
+    radial-gradient(90% 70% at 100% 100%, rgb(150 165 185 / 0.07), transparent 65%);
+  --skin-motion-duration: 450ms; /* unhurried, cinematic reassembly beat */
+  --skin-motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
 /* [data-skin="streak"]   { the Witch — Ignite } */
 /* [data-skin="map"]      { the Cartographer — Atlas Obscura } */
 /* [data-skin="gauntlet"] { the Adventurer — The Gauntlet } */
