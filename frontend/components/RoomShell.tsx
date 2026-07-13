@@ -61,10 +61,18 @@ export default function RoomShell({
         aria-hidden
       />
 
-      {/* FluidStage owns the adaptive L/R gutter (clamp) + the room max-width, so
-          header and content share one column that widens smallest→largest with no
-          dead gutters and never x-overflows. --d-maxw (§3.0 desktop density) = 80rem. */}
-      <FluidStage as="div" maxWidth="80rem" className="relative z-10">
+      {/* FluidStage owns the adaptive L/R gutter (clamp), so header and content
+          share ONE fluid column that fills the viewport smallest→largest at any
+          zoom with no dead side gutters and never x-overflows. No fixed max-width
+          cap here (that left empty margins when zoomed out / on ultra-wide) — the
+          padding is proportional (grows with vw) so utilization stays full while
+          readability floors hold; rooms that want a tighter measure set their own
+          cap inside `children` (e.g. Séance's inner FluidStage maxWidth="74rem"). */}
+      <FluidStage
+        as="div"
+        padding="clamp(1rem, 4vw, 4rem)"
+        className="relative z-10"
+      >
       {/* One page heading for the outline/SEO/SR; only rooms lacking their own. */}
       {title && <h1 className="sr-only">{title}</h1>}
 

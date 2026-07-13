@@ -136,10 +136,28 @@ export default function ThreeStage({ setup, onFrame, className, style }: ThreeSt
     canvas.style.display = "block";
     container.appendChild(canvas);
 
-    const { scene, camera, radius, center, dispose } = setupRef.current({ renderer, width, height });
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    if (radius != null) framePortrait(camera, radius, center);
+    // `setup()` (shader/geometry build), portrait framing, and the FIRST draw can
+    // also throw on a broken/soft GL stack — guard them alongside renderer creation
+    // so ANY init failure degrades to the DOM HUD instead of white-screening the
+    // route after the canvas was already mounted. The first render lives here so a
+    // shader-compile error surfaces at init (and doubles as the reduced-motion still).
+    let scene: THREE.Scene;
+    let camera: THREE.PerspectiveCamera;
+    let radius: number | undefined;
+    let center: THREE.Vector3 | undefined;
+    let dispose: (() => void) | undefined;
+    try {
+      ({ scene, camera, radius, center, dispose } = setupRef.current({ renderer, width, height }));
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      if (radius != null) framePortrait(camera, radius, center);
+      renderer.render(scene, camera);
+    } catch {
+      renderer.dispose();
+      canvas.remove();
+      setGlUnavailable(true);
+      return;
+    }
 
     const ctx: ThreeStageContext = { scene, camera, renderer, width, height };
 
@@ -161,11 +179,11 @@ export default function ThreeStage({ setup, onFrame, className, style }: ThreeSt
     });
     ro.observe(container);
 
+    // Reduced motion: the guarded first render above IS the designed static frame
+    // (the ResizeObserver keeps it crisp) — no RAF loop, no onFrame ticks.
     let raf = 0;
     let last = performance.now();
-    if (reducedMotion) {
-      renderer.render(scene, camera);
-    } else {
+    if (!reducedMotion) {
       const loop = (now: number) => {
         const dt = (now - last) / 1000;
         last = now;
