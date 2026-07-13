@@ -417,13 +417,43 @@ def _clue_distractors(
 # "another"/"nothing" don't false-positive on "not".
 _TEXT_ANSWER_REJECT = re.compile(r"\bwhich\b|\bnot\b|\bbelow\b|of the following", re.IGNORECASE)
 
+# E12: language-purity gate. A source-language leak (a Spanish-language
+# Wikidata/DBpedia label or abstract fragment slipping through the "en"-only
+# SPARQL filters, or a stray non-English opentdb/jservice item) surfaces as
+# whole stray non-English words inside an otherwise-English prompt — the
+# reported leak ("CONSTRUIDA", "LETRA", "aún" in English prompts). Word-
+# boundary + case-insensitive over a curated set of unambiguous Spanish
+# function/marker words that never occur inside genuine English prose OR
+# inside the accented proper nouns the bank legitimately carries (Béla Fleck,
+# Chișinău, San José, Bạch Mã, …) — none of those match this list.
+_NON_ENGLISH_LEAK = re.compile(
+    r"\b("
+    r"a[uú]n|as[ií]|adem[aá]s|aqu[ií]|aunque|c[oó]mo|cu[aá]l(?:es)?|cu[aá]ndo|"
+    r"d[oó]nde|d[eé]cada|[eé]poca|est[aá](?:bamos|ban|s|ba)?|fueron|fue el|"
+    r"fue la|hab[ií]a|hubo|letra|mientras|ni[nñ]o|ni[nñ]a|pa[ií]s(?:es)?|"
+    r"construid[oa]s?|seg[uú]n|siempre|sino|tambi[eé]n|todav[ií]a|[uú]nic[oa]|"
+    r"se[nñ]or(?:a)?"
+    r")\b",
+    re.IGNORECASE,
+)
+
+
+def _has_language_leak(text: str | None) -> bool:
+    """True if `text` carries a stray non-English (Spanish) word — the E12
+    mixed-language leak class. Source-of-truth check, reused by the forge
+    filters below and by selftest.py's live seed-bank gate."""
+    return bool(_NON_ENGLISH_LEAK.search(text or ""))
+
 
 def _clean_text_answer(q: dict) -> bool:
     """True if a text-answer question (clue/thread) is fit for a typed-answer
-    room: no MC-style prompt phrasing, and a short (≤2 word) answer."""
+    room: no MC-style prompt phrasing, a short (≤2 word) answer, and no
+    mixed-language leak in the prompt or answer."""
     if _TEXT_ANSWER_REJECT.search(q.get("prompt", "")):
         return False
     if len(q.get("correct", "").split()) > 2:
+        return False
+    if _has_language_leak(q.get("prompt")) or _has_language_leak(q.get("correct")):
         return False
     return True
 
@@ -1154,6 +1184,11 @@ def forge_all(facts: list[dict], seed: int = 0) -> list[dict]:
         + forge_ladder(facts, rng)
         + forge_thread(clues, rng)  # chains masked clues by theme (THE THREAD)
     )
+    # E12: language-purity gate, applied across every qtype (not just the
+    # text-answer clue/thread rooms _clean_text_answer already covers) — a
+    # source-language leak can surface in any prompt (multiple_choice, where,
+    # year_guess, …), not only free-text ones.
+    questions = [q for q in questions if not _has_language_leak(q.get("prompt"))]
     # §3.18: tag each question with a quality/ambiguity score the board sorts on.
     # Lives in meta (forge-only, not a DB column) — board selection happens here
     # at forge time, so the score never needs to round-trip through Postgres.

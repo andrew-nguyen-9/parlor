@@ -525,6 +525,15 @@ def main() -> None:
     check("no thread chain link has a >2-word answer",
           not bad_link_answers, f"{len(bad_link_answers)} bad")
 
+    # ── E12 language-purity gate (live forge, regression tripwire) ────────────
+    # forge_all drops any question whose prompt carries a stray non-English word
+    # (the mixed-language leak). Assert the live forge output is clean, over
+    # every qtype (not just clue/thread) since a leak can surface anywhere.
+    from question_forge import _has_language_leak
+    leaked = [q for q in qs if _has_language_leak(q.get("prompt"))]
+    check("no forged question has a mixed-language prompt leak",
+          not leaked, f"{len(leaked)} bad e.g. {[q['prompt'] for q in leaked[:2]]}")
+
     d = date(2026, 6, 12)
     b1, b2 = build_daily_board(qs, d), build_daily_board(qs, d)
     check("daily board is deterministic", b1 == b2)
@@ -754,6 +763,22 @@ def main() -> None:
               not bank_bad_link_prompts, f"{len(bank_bad_link_prompts)} bad")
         check("seed bank: no thread chain link has a >2-word answer",
               not bank_bad_link_answers, f"{len(bank_bad_link_answers)} bad")
+
+        # ── E12 language-purity gate (served seed bank, live regression tripwire) ─
+        # The SERVED bank is what players see; a mixed-language leak here is the
+        # reported bug. Scan every question's prompt AND correct answer, plus
+        # thread chain link prompts/answers, using the forge's source-of-truth
+        # check. Idempotent: pure read over the committed bank, no mutation.
+        from question_forge import _has_language_leak as _lang_leak
+        bank_lang_leaks = [
+            q for q in bank
+            if _lang_leak(q.get("prompt")) or _lang_leak(q.get("correct"))
+            or any(_lang_leak(lk.get("prompt")) or _lang_leak(lk.get("answer"))
+                   for lk in (q.get("chain") or []))
+        ]
+        check("seed bank: no question has a mixed-language leak",
+              not bank_lang_leaks,
+              f"{len(bank_lang_leaks)} bad e.g. {[q.get('prompt') for q in bank_lang_leaks[:2]]}")
 
         # ── difficulty calibration gate ──────────────────────────────────────
         # New/sourced questions must spread across tiers, not pile onto one
