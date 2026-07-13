@@ -5,8 +5,7 @@ Ten trivia rooms over one question bank, forged nightly from **Wikipedia**,
 [fantasy-football-tool](https://github.com/andrew-nguyen-9/fantasy-football-tool)
 and [music-festival-analyzer](https://github.com/andrew-nguyen-9/music-festival-analyzer),
 sharing their architecture: Python ETL on GitHub Actions → Supabase → read-only
-Next.js — plus a new **dbt Core + DuckDB** transform layer (see
-`docs/RESEARCH_DATA_PLATFORM.md` for the why).
+Next.js — plus a new **dbt Core + DuckDB** transform layer.
 
 Every room shares a dynamic layer: synthesized Web-Audio sound effects (no asset
 files — stays offline), confetti, haptics, an XP/achievements **profile** at
@@ -92,19 +91,18 @@ dbt build --profiles-dir .         # staging views + marts + tests on DuckDB
 
 ## Docs
 
-Start at [`docs/README.md`](docs/README.md). The **v2 framework** is canonical; v1
-docs are archived.
+Start at [`docs/README.md`](docs/README.md). The active framework is the current
+`3.x` segments; superseded versions live in git history.
 
 | Doc | Contents |
 |---|---|
-| `docs/v2/ROADMAP.md` | v2 spine: every phase, deps, traceability, the Secret Order canon |
-| `docs/v2/DESIGN_SYSTEM.md` | logo-derived language, card deck, light/dark, reference sites, Claude Design |
-| `docs/v2/GAMES.md` | per-game refurbishment specs + legacy folding |
-| `docs/v2/PLATFORM.md` | pipeline fix, SEO, a11y, perf, mobile, cross-browser, site pages |
-| `docs/v2/PHASE_PROMPTS.md` | copy-paste initiation prompt per phase |
-| `docs/FILE_INDEX.md` | annotated map of every dir/file |
-| `CHANGELOG.md` | version policy (1.0.0 frozen, 2.x.x per phase) |
-| `docs/archive/` | v1.0.0 docs (architecture, game modes, UI spec, research) |
+| `docs/ROADMAP.md` | The spine: every `§3.x` segment, deps, versioning, conflict firewall |
+| `docs/GAMES.md` | Per-game segment specs |
+| `docs/PLATFORM.md` | SEO, a11y, perf, share, db seam |
+| `docs/PIPELINE.md` | Data/pipeline segments (`question_forge`) |
+| `docs/PHASE_PROMPTS.md` / `docs/RUN_PROMPTS.md` | Copy-paste initiation prompts |
+| `design/` | Canonical design system (North Star): tokens, foundations, UI kit, voice |
+| `CHANGELOG.md` | Version policy (1.0.0 frozen → 2.x.x → 3.x.x) + history |
 | `databricks/README.md` | Phase-2 lab: mirror the medallion onto Databricks Free Edition |
 
 Data credits: Wikipedia (CC BY-SA), Deezer API, Sleeper API, ESPN, TMDB

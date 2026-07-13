@@ -1,4 +1,4 @@
-# Databricks Mirror — Phase 2 lab (RESEARCH_DATA_PLATFORM.md §1.3)
+# Databricks Mirror — Phase 2 lab
 
 This folder mirrors the production medallion (bronze JSONL → dbt silver/gold) onto
 **Databricks Free Edition** with Delta Lake + PySpark. It is a *learning artifact*,

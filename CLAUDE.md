@@ -4,9 +4,10 @@ This file instructs Claude Code on how to work in this repository.
 
 ## Project Overview
 
-PARLOR is a pipeline-driven trivia web app: six game rooms (Board/Jeopardy,
-Clock/WhenTaken, Wedges/Trivial-Pursuit, Streak/higher-lower, Map/GeoGuessr,
-Daily/Wordle-loop) rendered over one question bank forged nightly from
+PARLOR is a pipeline-driven trivia web app. Game rooms — Board/Jeopardy,
+Clock/Chronos (watch-assembly sim), Wedges/Trivial-Pursuit, Streak/Ignite (rune
+cipher), Map/Atlas (constellation deduction), Mystery, Séance, Thread, Gauntlet,
+Ladder, Daily/Wordle-loop — render over one question bank forged nightly from
 Wikipedia, Deezer, Sleeper/ESPN, TMDB, and restcountries. `databricks/` holds
 the Phase-2 Delta Lake mirror lab (never the serving path).
 
@@ -29,10 +30,8 @@ the Phase-2 Delta Lake mirror lab (never the serving path).
 | `transform/` | dbt project (`dbt build --profiles-dir .` from inside it) |
 | `frontend/lib/queries.ts` | ALL data access; Neon (`lib/db.ts`) with seed-bank fallback |
 | `frontend/lib/types.ts` | Question shape + category palette (single source) |
-| `docs/v3/` | active framework (§3.x segments): ROADMAP, GAMES, PIPELINE, PLATFORM, PHASE_PROMPTS |
-| `docs/v2/DESIGN_SYSTEM.md` | canonical visual language (tokens, light/dark, jewel-ink) — still live; rest of `docs/v2/` = shipped baseline |
-| `docs/FILE_INDEX.md` | annotated map of every dir/file |
-| `docs/archive/` | v1 docs + finished-run records (e.g. `orchestrator-2026-07-ux/` — proposals, QA reports, backlog) |
+| `docs/` | active framework (§3.x segments): ROADMAP, GAMES, PIPELINE, PLATFORM, PHASE_PROMPTS/RUN_PROMPTS; `decisions/`, `research/`, `planning/design-intake/`, `v4/` game bibles |
+| `design/` | canonical visual language (North Star: tokens, light/dark, jewel-ink, UI kit, voice) — codified from shipped code; run `design/validate.sh` |
 
 ## Conventions
 
@@ -73,7 +72,7 @@ the Phase-2 Delta Lake mirror lab (never the serving path).
 ### Add a new game room
 1. `frontend/app/{room}/page.tsx` (server: fetch + arrange) + `components/{Room}Game.tsx` (client)
 2. wrap in `RoomShell`, add a `RoomCard` on the home page
-3. document in `docs/v2/GAMES.md`
+3. document in `docs/GAMES.md`
 
 ### Debugging the pipeline offline (no keys)
 ```bash

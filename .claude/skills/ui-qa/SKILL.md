@@ -39,7 +39,7 @@ report-only mode) for the critique pass.
    rubric below to both snapshots.
 6. **Report** — write `.orchestrator/qa/<route-slug>.md` (`mkdir -p` the dir —
    it's gitignored scratch, recreated per run; promote reports worth keeping to
-   `docs/archive/`). Slug: strip leading `/`, replace remaining `/` with `-`;
+   `docs/qa/`). Slug: strip leading `/`, replace remaining `/` with `-`;
    `/` itself → `home`. Format below.
 
 ## Report format
@@ -61,7 +61,7 @@ File:line guesses: route page lives at `frontend/app/<route>/page.tsx`, client
 game at `frontend/components/<Room>Game.tsx`, tokens at
 `frontend/tailwind.config.ts` + `frontend/lib/types.ts`.
 
-## Rubric (PARLOR brand — read `docs/v2/DESIGN_SYSTEM.md` when in doubt)
+## Rubric (PARLOR brand — read `design/INDEX.md` + `design/UI-KIT.md` when in doubt)
 
 **Brand = haunted, wealthy, well-travelled Victorian mansion.** Brass, velvet,
 parchment, candle-glow, engraving line-work. Mysterious, never "nightlife".

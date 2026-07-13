@@ -8,7 +8,7 @@ the segment block, paste, go. Each block has a branch, an explicit
 ## Shared preamble (prepend to every segment)
 
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + this PHASE_PROMPTS.md. Read the relevant doc section first.
 Git: branch this segment off the latest `v3` as phase/3.N-<slug>; PR into `v3`
 only — never touch `main`. Keep caveman + ponytail on; use rtk for git/file ops.

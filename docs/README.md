@@ -1,38 +1,29 @@
 # PARLOR documentation
 
-Start here. **v3 is the active framework** (`3.x.x` segments, code comments cite
-its `§3.x` numbers). v2 is the shipped baseline whose `DESIGN_SYSTEM.md` remains
-the live design canon. v1 docs and finished-run artifacts live in `archive/`.
+The active framework (`3.x.x` segments; code comments cite its `§3.x` numbers).
+Superseded versions (v1, v2) live in git history — `git log` the file. The
+canonical **design system** is the root [`design/`](../design/) North Star
+(`INDEX.md`, `FOUNDATIONS.md`, `UI-KIT.md`, …), codified from shipped code.
 
-## Active (v3)
-
-| Doc | Read it for |
-|---|---|
-| [`v3/ROADMAP.md`](v3/ROADMAP.md) | The spine: every `§3.x` segment, versioning (`3.x.x`, one minor per segment), conflict firewall, schedule |
-| [`v3/GAMES.md`](v3/GAMES.md) | Per-game segment specs |
-| [`v3/PIPELINE.md`](v3/PIPELINE.md) | Data/pipeline segments |
-| [`v3/PLATFORM.md`](v3/PLATFORM.md) | Platform segments (SEO, perf, a11y, share) |
-| [`v3/PHASE_PROMPTS.md`](v3/PHASE_PROMPTS.md) / [`v3/RUN_PROMPTS.md`](v3/RUN_PROMPTS.md) | Copy-paste initiation prompts to start a segment |
-| [`v3/IDEAS.md`](v3/IDEAS.md) | The idea menu the roadmap was cut from (superseded for what ships) |
-| [`v3/qa/`](v3/qa/) | Reusable preview-QA harness (`gates.mjs`) + run records |
-
-## Design canon (v2, still live)
+## Framework
 
 | Doc | Read it for |
 |---|---|
-| [`v2/DESIGN_SYSTEM.md`](v2/DESIGN_SYSTEM.md) | **Canonical visual language** — tokens (light+dark, WCAG-AA, jewel-ink tier), card-deck system, reference-site learnings. E3 (2026-07) merged here |
-| [`v2/ROADMAP.md`](v2/ROADMAP.md), [`v2/GAMES.md`](v2/GAMES.md), [`v2/PLATFORM.md`](v2/PLATFORM.md) | The shipped v2 baseline (frozen at v2.0.0) |
-| [`v2/CANON.md`](v2/CANON.md) | Secret Order world-building canon |
+| [`ROADMAP.md`](ROADMAP.md) | The spine: every `§3.x` segment, versioning (one minor per segment), conflict firewall, schedule |
+| [`GAMES.md`](GAMES.md) | Per-game segment specs |
+| [`PIPELINE.md`](PIPELINE.md) | Data/pipeline segments (`question_forge` etc.) |
+| [`PLATFORM.md`](PLATFORM.md) | Platform segments (SEO, perf, a11y, share, db seam) |
+| [`PHASE_PROMPTS.md`](PHASE_PROMPTS.md) / [`RUN_PROMPTS.md`](RUN_PROMPTS.md) | Copy-paste initiation prompts to start a segment |
 
-## Repo map
+## Folders
 
-[`FILE_INDEX.md`](FILE_INDEX.md) — annotated map of every directory and file.
-
-## History
-
-| | |
+| Path | Contents |
 |---|---|
-| [`../CHANGELOG.md`](../CHANGELOG.md) | Version policy (1.0.0 frozen → 2.x.x → 3.x.x) + history |
-| [`archive/`](archive/) | v1.0.0 docs (`UI_SPEC.md`, `ARCHITECTURE.md`, …) |
-| [`archive/orchestrator-2026-07-ux/`](archive/orchestrator-2026-07-ux/) | 2026-07 six-epic UX overhaul: spec, proposals (design rationale), per-room QA reports, deferred-findings backlog |
-| [`archive/superpowers/`](archive/superpowers/) | 2026-06 brainstorm plans + design specs (mystery rework/redesign, music depth §3.13) — all shipped |
+| [`decisions/`](decisions/) | Dated decision logs (`YYYY-MM-DD-topic.md`), incl. harvested cycle records |
+| [`design/`](design/) | Cycle design working notes + engine contracts (root `design/` is the canonical system) |
+| [`research/`](research/) | Spikes — animations, free-audio sources |
+| [`planning/design-intake/`](planning/design-intake/) | Per-game + per-tech design-intake specs (authoritative engine design source) |
+| [`v4/`](v4/) | Long-form game "bibles" — the design canon the intake specs are grounded in |
+| [`qa/`](qa/) | Reusable preview-QA harness (`gates.mjs`) + run records |
+
+Version policy + history: [`../CHANGELOG.md`](../CHANGELOG.md).

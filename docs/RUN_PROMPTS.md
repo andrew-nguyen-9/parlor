@@ -14,7 +14,7 @@ Each session branches off the latest `v3` and PRs back into `v3`. Bump
 
 ### v3.0 — Foundation Freeze
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.0-foundation-freeze; PR into `v3` only — never
 touch `main`. Keep caveman + ponytail on; use rtk for git/file ops. Locate code
@@ -46,7 +46,7 @@ STOP: foundation only. Do NOT improve any individual game.
 
 ### v3.11 — Transform Fix
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.11-transform-fix; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
@@ -68,7 +68,7 @@ dbt/DuckDB. STOP: transform + its upstream contract only. No frontend, no game w
 
 ### v3.1 — Board
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.1-board; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -89,7 +89,7 @@ STOP: Board only.
 
 ### v3.2 — Clock
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.2-clock; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -112,7 +112,7 @@ TOOLING: frontend-design; chrome-devtools resize_page; playwright. STOP: Clock o
 
 ### v3.12 — Distractor Overhaul
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.12-distractors; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
@@ -135,7 +135,7 @@ logic + its test only.
 
 ### v3.3 — Wedges
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.3-wedges; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -154,7 +154,7 @@ STOP: Wedges only.
 
 ### v3.24 — Preview deploy + QA gates
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.24-preview-qa; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
@@ -175,7 +175,7 @@ vercel:env; chrome-devtools lighthouse_audit; playwright. STOP: deploy + gates o
 
 ### v3.13 — Deezer + Music Depth
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.13-music; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -197,7 +197,7 @@ Deezer API; ponytail. STOP: music ingest + music recipes + their tests only.
 
 ### v3.4 — Streak
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.4-streak; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -217,7 +217,7 @@ STOP: Streak only.
 
 ### v3.5 — Map
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.5-map; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -240,7 +240,7 @@ TOOLING: frontend-design; chrome-devtools resize_page; playwright. STOP: Map onl
 
 ### v3.16 — Screen starvation fix
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.16-screen; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -257,7 +257,7 @@ screen ingest only.
 
 ### v3.6 — Thread
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.6-thread; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -275,7 +275,7 @@ chrome-devtools resize_page; playwright. STOP: Thread only.
 
 ### v3.9 — Mystery
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.9-mystery; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -300,7 +300,7 @@ playwright; vitest. STOP: Mystery only.
 
 ### v3.15 — Wikidata source
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.15-wikidata; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -317,7 +317,7 @@ END STATE: wikidata facts in bronze + forged; selftest green. TOOLING: context7
 
 ### v3.7 — Séance  (data depends on 3.11)
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.7-seance; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -337,7 +337,7 @@ chrome-devtools resize_page; playwright. STOP: Séance only.
 
 ### v3.8 — Ladder (The Climb of the Initiate)  (data depends on 3.11)
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.8-ladder; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -360,7 +360,7 @@ chrome-devtools resize_page; playwright. STOP: Ladder only.
 
 ### v3.17 — Per-source health floor
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.17-health-floor; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
@@ -377,7 +377,7 @@ ponytail. STOP: health gate only.
 
 ### v3.10 — Gauntlet
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.10-gauntlet; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -396,7 +396,7 @@ resize_page; playwright. STOP: Gauntlet only.
 
 ### v3.14 — Share-card polish
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.14-share-cards; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
@@ -418,7 +418,7 @@ STOP: share UI only.
 
 ### v3.18 — Quality scoring
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.18-quality; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -435,7 +435,7 @@ sort on; selftest green. TOOLING: brainstorming; ponytail. STOP: scoring only.
 
 ### v3.19 — Weak-spot practice
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.19-practice; PR into `v3` only — never touch `main`.
 Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT FIREWALL: edit
@@ -452,7 +452,7 @@ STOP: practice routing only.
 
 ### v3.20 — Return loop
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.20-return-loop; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
@@ -476,7 +476,7 @@ visible on the profile. TOOLING: frontend-design. STOP: return loop only.
 
 ### v3.21 — Themed daily sets
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.21-themed-days; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
@@ -492,7 +492,7 @@ STOP: themed days only.
 
 ### v3.22 — Audio room
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.22-audio-room; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
@@ -511,7 +511,7 @@ chrome-devtools; playwright. STOP: audio room only.
 
 ### v3.23 — Hard-mode Mystery
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.23-hard-mystery; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
@@ -532,7 +532,7 @@ case only.
 
 ### v3.25 — Edge-cache daily reads
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.25-edge-cache; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
@@ -550,7 +550,7 @@ context7 (Next caching); vercel:runtime-cache. STOP: caching only.
 
 ### v3.26 — Lighthouse CI gate
 ```
-PARLOR (trivia-generator). Source of truth: docs/v3/ (ROADMAP, GAMES, PIPELINE,
+PARLOR (trivia-generator). Source of truth: docs/ (ROADMAP, GAMES, PIPELINE,
 PLATFORM) + PHASE_PROMPTS.md. Read the relevant doc section first. Git: branch
 off the latest `v3` as phase/3.26-lighthouse-ci; PR into `v3` only — never touch
 `main`. Keep caveman + ponytail on; use rtk for git/file ops. THE CONFLICT
