@@ -94,6 +94,68 @@
 /* [data-skin="map"]      { the Cartographer — Atlas Obscura } */
 /* [data-skin="gauntlet"] { the Adventurer — The Gauntlet } */
 /* [data-skin="thread"]   { the Weaver — Thread of Fate } */
-/* [data-skin="seance"]   { the Medium — The Séance } */
+/* the Medium — The Séance: an authentic Victorian séance table. Deep
+   ebony-walnut room lit by ONE warm candle bloom, worn-brass structural accent
+   (violet #7040a8 stays a scoped SPECTRAL token, set in the module), warm-ivory
+   ink on aged-parchment muted. Seams carry the palette/material/type/layout; the
+   scoped `--c-*`/`--cat-*`/`--d-*` overrides actually repaint this room's
+   surfaces + strengthen category ink (issue #3) + tighten the engraved plate
+   (issue #2) — all AA-held both themes, no floor token flipped. Light mode
+   ("daylit tour") remaps to a parchment/umber falloff below — no black, no
+   hardcoded white. E2 owns holding the §Floors for every value here. */
+[data-skin="seance"] {
+  /* ── seams (materials / motion / type / layout) ── */
+  --skin-bg: 22 15 12; /* deep ebony-walnut */
+  --skin-surface: 38 26 20; /* raised velvet-walnut */
+  --skin-accent: 182 138 66; /* worn brass — the structural accent */
+  --skin-ink: 242 232 212; /* warm ivory */
+  --skin-muted: 176 150 118; /* aged parchment */
+  --skin-radius: 6px; /* carved-wood plate, a touch rounder than house 4px */
+  --skin-motion-duration: 500ms; /* slow & deliberate (v4: nothing animates fast) */
+  --skin-motion-ease: cubic-bezier(0.16, 1, 0.3, 1); /* soft cinematic ease */
+  --skin-gutter: clamp(1.25rem, 4vw, 3rem);
+  --skin-maxw: 86rem; /* reclaim the wasted L/R margins (issue #1) */
+  --skin-bg-image:
+    radial-gradient(120% 85% at 50% -8%, rgb(245 197 66 / 0.1), transparent 58%),
+    linear-gradient(180deg, rgb(38 26 20 / 0.6), rgb(16 11 9 / 0.9));
+
+  /* ── scoped repaint (this subtree only; non-floor globals) ── */
+  --c-bg: 22 15 12;
+  --c-surface: 38 26 20;
+  --c-line: 84 58 30; /* warmer brass hairline */
+  --c-brass: 182 138 66;
+  --c-goldlite: 236 206 132;
+  /* stronger category INK (issue #3) — bolder tones, CATEGORY_HEX untouched */
+  --cat-history: 216 152 58;
+  --cat-music: 226 112 152;
+  --cat-sports: 78 180 112;
+  --cat-screen: 110 160 226;
+  --cat-geography: 60 178 192;
+  --cat-wildcard: 178 132 226;
+  /* tighter engraved plate (issue #2) */
+  --d-col-gap: 0.7rem;
+}
+/* light mode: same architecture, roles remapped to parchment + umber falloff —
+   no black shadows, no hardcoded white overlays (channel tokens flip for free) */
+[data-theme="light"] [data-skin="seance"] {
+  --skin-bg: 226 214 184;
+  --skin-surface: 244 236 214;
+  --skin-ink: 58 34 24;
+  --skin-muted: 120 92 72;
+  --skin-bg-image:
+    radial-gradient(120% 85% at 50% -8%, rgb(180 130 50 / 0.14), transparent 60%),
+    linear-gradient(180deg, rgb(244 236 214 / 0.6), rgb(214 198 164 / 0.85));
+  --c-bg: 226 214 184;
+  --c-surface: 244 236 214;
+  --c-line: 198 172 128;
+  --c-brass: 125 92 32; /* AA-safe house light brass (4.84:1 on parchment) */
+  --c-goldlite: 184 144 60;
+  --cat-history: 150 92 18;
+  --cat-music: 178 44 96;
+  --cat-sports: 26 118 66;
+  --cat-screen: 32 84 156;
+  --cat-geography: 12 116 128;
+  --cat-wildcard: 112 64 168;
+}
 /* [data-skin="ladder"]   { the Trickster — Climb of the Initiate } */
 /* [data-skin="overture"] { the Maestro — The Overture (Joker) } */

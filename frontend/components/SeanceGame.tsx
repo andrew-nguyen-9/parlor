@@ -1,7 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+// E2 honors the E0 settings hub: `reduce` = EFFECTIVE reduced motion (calm-mode
+// OR OS prefers-reduced-motion) and `quality` gates the atmosphere richness. We
+// read E0's API rather than framer's raw OS flag so "calm the room" also kills
+// the ambient sim. (data-calm / data-quality / data-contrast / --text-scale are
+// applied to <html> by the hub; --text-scale + contrast flow through the CSS.)
+import { useReducedMotion, useQuality, type Quality } from "@/lib/settings";
+import { applySkin } from "@/lib/theme";
 import {
   emptyBoard,
   nextHint,
@@ -60,6 +67,7 @@ export default function SeanceGame({
   requestedDate?: string | null;
 }) {
   const reduce = useReducedMotion();
+  const [quality] = useQuality();
   const active = puzzle;
 
   // ── Dark state: archive-play of a date that was never generated (DB
@@ -83,10 +91,18 @@ export default function SeanceGame({
     );
   }
 
-  return <SeanceTable puzzle={active} reduce={!!reduce} />;
+  return <SeanceTable puzzle={active} reduce={!!reduce} quality={quality} />;
 }
 
-function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean }) {
+function SeanceTable({
+  puzzle,
+  reduce,
+  quality,
+}: {
+  puzzle: SeancePuzzle;
+  reduce: boolean;
+  quality: Quality;
+}) {
   // The real marks live in an undo/redo history; `board` is the current frame.
   const [hist, setHist] = useState<History<Board>>(() => ({
     stack: [emptyBoard(puzzle)],
@@ -346,8 +362,13 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
     // FluidStage (F1): max-width cap + centering + overflow-x-clip, composed
     // instead of re-derived — padding stays on .shell (inside the card, as
     // before) so FluidStage contributes width math only, no doubled gutters.
-    <FluidStage maxWidth="74rem" padding="0">
+    // E2 issue #1: the reading column widens to ~86rem (the reclaimed L/R
+    // margins) while the atmospheric room fills full-bleed inside .shell.
+    // `applySkin("seance")` opts the whole subtree into the Séance skin block
+    // (issue #12): palette / material / type / layout seams + scoped repaint.
+    <FluidStage maxWidth="86rem" padding="0">
       <motion.div
+        {...applySkin("seance")}
         className={styles.shell}
         initial={reduce ? false : { opacity: 0, y: 14 }}
         animate={shake ? { x: [0, -8, 8, -6, 6, 0], opacity: 1, y: 0 } : { x: 0, opacity: 1, y: 0 }}
@@ -359,18 +380,22 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
       >
       {/* Premium séance atmosphere: candle/dust/smoke sim + gilt frame + the
           one living planchette. A background layer (zIndex 0) behind content. */}
-      <SeanceAtmosphere reduce={reduce} pulse={pulse} />
+      <SeanceAtmosphere reduce={reduce} pulse={pulse} quality={quality} />
 
       {/* HUD */}
       <div className={styles.hud}>
         <div>
           <p className="microlabel" style={{ color: ACCENT }}>
-            {puzzle.rite} · {puzzle.spirit}
+            {puzzle.rite}
           </p>
+          <p className={styles.spiritName}>{puzzle.spirit}</p>
           <p className="text-xs text-muted mt-0.5 max-w-md">{puzzle.backstory}</p>
         </div>
         <div className="flex items-center gap-4 text-right">
-          <span className="font-mono text-lg tabular-nums text-ink" aria-live="off">
+          <span
+            className={`${styles.decayClock} font-mono tabular-nums text-ink`}
+            aria-live="off"
+          >
             ⏱ {fmt(total)}
           </span>
           {strikes > 0 && (
@@ -410,7 +435,7 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
                       type="button"
                       onClick={() => setActiveClue(on ? null : i)}
                       aria-pressed={on}
-                      className={`${styles.clue} ${on ? styles.clueActive : ""} text-sm text-ink`}
+                      className={`${styles.clue} ${on ? styles.clueActive : ""} text-ink`}
                       style={on ? { color: ACCENT } : undefined}
                     >
                       <span className="text-smoke select-none" aria-hidden>
@@ -538,9 +563,10 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
         </div>
       </div>
 
-      {/* Controls */}
+      {/* Controls — integrated table lower ledge (issues #6/#7): a robust flex
+          row, secondary actions clustered, the hero Submit anchored at the end. */}
       <div className={styles.nav}>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className={styles.navActions}>
           <button
             onClick={showHint}
             className="microlabel inline-flex items-center justify-center min-h-11 rounded-full border px-4 py-2 transition hover:brightness-110"
@@ -608,8 +634,8 @@ function SeanceTable({ puzzle, reduce }: { puzzle: SeancePuzzle; reduce: boolean
         </div>
         <button
           onClick={submit}
-          className="rounded-full px-6 py-3 text-sm font-medium text-white transition hover:brightness-110"
-          style={{ background: ACCENT }}
+          className={styles.submit}
+          title="conduct the séance — bind every seat and speak"
         >
           ✦ Stabilise the Séance
         </button>
@@ -694,7 +720,8 @@ function Banished({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      {...applySkin("seance")}
+      initial={reduce ? false : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-5 text-center"
     >

@@ -16,62 +16,91 @@
 
 .shell {
   /* width/max-width/centering come from the FluidStage wrapper (E1 composes
-     F1's primitive) — this card supplies its own padding only. */
+     F1's primitive) — this card supplies its own padding only. E2 issue #8:
+     the immersive room fills the viewport height so the candlelit atmosphere
+     runs top-to-bottom; the board + rail vertically center within it. */
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 1.2rem;
   width: 100%;
-  min-height: min(62vh, 580px);
-  padding: clamp(1rem, 2.6vw, 2rem);
-  border-radius: 24px;
+  min-height: min(84vh, 780px);
+  justify-content: center;
+  padding: clamp(1.15rem, 3vw, 2.75rem);
+  border-radius: 28px;
   overflow: hidden;
-  /* the scrying table itself: a raised velvet surface lifted off the room bg,
-     framed by a brass hairline. Built from channel tokens so light mode remaps
-     for free (parchment surface + brass line). This is what makes the empty
-     space read as an intentional table, not a void. */
-  border: 1px solid rgb(var(--c-line));
-  /* E8 polish: a calmer table — the violet bloom is a whisper, not a wash
-     (design-intake seance.md: "calmer / less-distracting background"). */
+  /* E2 issue #5/#9: NO hard 1px card border — the table melts into the room
+     via a soft vignette/gradient falloff. The material comes from the skin seam
+     (--skin-bg-image: layered candle-glow + walnut/velvet), so light mode remaps
+     for free (parchment/umber). Built from channel tokens; no hardcoded white/
+     black. Issue #4: layered candlelit depth over the room ground. */
+  border: 1px solid transparent;
   background:
-    radial-gradient(130% 100% at 50% -10%, rgba(112, 64, 168, 0.06), transparent 55%),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, rgb(var(--c-surface)) 92%, transparent),
-      color-mix(in srgb, rgb(var(--c-bg)) 88%, transparent)
+    var(--skin-bg-image, none),
+    radial-gradient(
+      130% 105% at 50% -8%,
+      color-mix(in srgb, rgb(var(--c-surface)) 94%, transparent),
+      color-mix(in srgb, rgb(var(--c-bg)) 82%, transparent) 62%,
+      color-mix(in srgb, rgb(var(--c-bg)) 40%, transparent) 100%
     );
   box-shadow:
-    0 1px 0 color-mix(in srgb, rgb(var(--c-goldlite)) 22%, transparent) inset,
-    0 24px 60px -30px rgba(8, 4, 14, 0.7);
+    0 1px 0 color-mix(in srgb, rgb(var(--c-goldlite)) 20%, transparent) inset,
+    /* pronounced-but-elegant vignette: corners fall to near-black, one light
+       pool at top-center — a soft inset falloff, no hard edge (issue #5/#9) */
+    inset 0 0 120px 40px color-mix(in srgb, rgb(var(--c-bg)) 55%, transparent),
+    0 30px 80px -36px rgba(8, 4, 14, 0.75);
 }
-/* Static brass inner frame at the table's edge — the "carved" gilt border of
-   the scrying table. No loop (the sole per-viewport loop is the planchette in
-   SeanceAtmosphere); the candle bloom + dust + smoke are the STATIC atmosphere
-   composed there. Decorative, behind content, never tints text. */
+/* Static engraved brass inner frieze at the table's edge — the "carved" gilt
+   border of the scrying table, faded (issue #11: engraved-frame Ouija motif).
+   No loop; decorative, behind content, never tints text. Softer than a hard
+   border so the edge still reads as blending into the room (issue #5). */
 .shell::before {
   content: "";
   position: absolute;
-  inset: 6px;
+  inset: 7px;
   z-index: 0;
   pointer-events: none;
-  border-radius: 18px;
-  border: 1px solid color-mix(in srgb, rgb(var(--c-brass)) 55%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, rgb(var(--c-goldlite)) 14%, transparent);
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, rgb(var(--c-brass)) 42%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, rgb(var(--c-goldlite)) 12%, transparent);
+  -webkit-mask: radial-gradient(120% 120% at 50% 0%, #000 62%, transparent 100%);
+  mask: radial-gradient(120% 120% at 50% 0%, #000 62%, transparent 100%);
 }
 .shell > * {
   position: relative;
   z-index: 1;
 }
 
-/* HUD: identity + timer, one compact row */
+/* HUD: identity + timer on an engraved brass nameplate (issue #8) — the
+   spirit name in the display face, the Ectoplasmic-Decay timer as a carved
+   counter, sitting on the table's upper ledge (mirrors the integrated footer).
+   Shared table material, a brass divider under it. */
 .hud {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 0.5rem 1.5rem;
-  border-bottom: 1px solid rgb(var(--c-line));
-  padding-bottom: 0.7rem;
+  padding: 0.7rem 0.95rem 0.85rem;
+  border-radius: calc(var(--skin-radius, 6px) + 4px);
+  border-bottom: 1px solid color-mix(in srgb, rgb(var(--c-brass)) 55%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, rgb(var(--c-surface)) 55%, transparent),
+      transparent
+    );
+  box-shadow: 0 1px 0 color-mix(in srgb, rgb(var(--c-goldlite)) 16%, transparent) inset;
+}
+.spiritName {
+  font-family: var(--skin-font-display, var(--font-display));
+  font-size: clamp(1.05rem, 2.4vw, 1.5rem);
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  color: rgb(var(--c-ink));
+}
+.decayClock {
+  font-size: clamp(1.1rem, 2.6vw, 1.5rem);
 }
 
 /* main: clue rail (left 1/3) + full board (right 2/3).
@@ -135,19 +164,30 @@
 .clue {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
   flex: 1 1 auto;
   min-width: 0;
   min-height: 2.75rem; /* ≥44px tap target */
   text-align: left;
+  /* issue #8 + legibility floor: clue (puzzle) text ≥1rem / lh ≥1.5, on flat
+     ink tokens — never gilt/gradient. A torn-parchment ledger slip that fills
+     its column (larger, generously spaced, reads as a page in the journal). */
+  font-size: 1rem;
+  line-height: 1.5;
   border: 1px solid transparent;
-  border-radius: 0.5rem;
-  padding: 0.4rem 0.55rem;
+  border-radius: var(--skin-radius, 0.5rem);
+  padding: 0.55rem 0.7rem;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.16s var(--skin-motion-ease, ease),
+    background 0.16s var(--skin-motion-ease, ease),
+    box-shadow 0.16s var(--skin-motion-ease, ease);
 }
-.clue:hover {
-  background: color-mix(in srgb, rgb(var(--c-ink)) 5%, transparent);
+@media (hover: hover) {
+  .clue:hover {
+    background: color-mix(in srgb, rgb(var(--c-ink)) 5%, transparent);
+    transform: translateX(1px); /* subtle parchment-lift on fine pointers */
+  }
 }
 .clueActive {
   border-color: currentColor;
@@ -223,13 +263,27 @@
 
 /* left category axis — a vertical label spanning its N value rows */
 .catAxis {
-  width: 1.75rem;
+  width: 1.9rem;
   padding: 0.15rem 0.1rem;
-  font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: 0.06em;
+  font-size: 0.82rem; /* issue #8: category axis label steps up a notch */
+  font-weight: 600; /* issue #3: bolder category ink reads stronger */
+  letter-spacing: 0.08em;
   text-align: center;
   vertical-align: middle;
+}
+/* issue #3: a subtle category-tinted left-edge band per category group, so the
+   color coding reads on the whole group (color + glyph + label, never alone). */
+.catAxis::before {
+  content: "";
+  position: absolute;
+  inset: 0.35rem auto 0.35rem 0;
+  width: 3px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.7;
+}
+.catAxis {
+  position: relative;
 }
 .catAxisInner {
   display: inline-flex;
@@ -245,11 +299,11 @@
  * lines (E8 polish acceptance: axis labels never wrap >2 lines); the full
  * value is still readable via the `title` attribute on hover/focus. */
 .valHead {
-  width: clamp(4.5rem, 22vw, 7rem);
-  padding: 0.2rem 0.5rem 0.2rem 0.35rem;
-  font-size: 0.72rem;
-  font-weight: 400;
-  line-height: 1.15;
+  width: clamp(5rem, 22vw, 7.75rem);
+  padding: 0.24rem 0.55rem 0.24rem 0.4rem;
+  font-size: 0.82rem; /* issue #8: value labels step up a notch */
+  font-weight: 500;
+  line-height: 1.18;
   text-align: right;
   vertical-align: middle;
   white-space: normal;
@@ -262,10 +316,10 @@
 
 /* seat numbers — the column headers, ascending left→right */
 .seatHead {
-  font-size: 0.72rem;
-  font-weight: 400;
+  font-size: 0.82rem; /* issue #8 */
+  font-weight: 500;
   white-space: nowrap;
-  padding: 0 0.2rem 0.3rem;
+  padding: 0 0.2rem 0.35rem;
   text-align: center;
   vertical-align: bottom;
 }
@@ -278,13 +332,15 @@
   color: rgb(var(--c-smoke));
 }
 
-/* separator above each category group (skipped on the first) */
+/* engraved gold divider above each category group (issue #11) — reads as an
+   inlaid brass rule on carved wood, not a plain hairline. Skipped on the first. */
 .groupStart {
-  border-top: 1px solid rgb(var(--c-line));
+  border-top: 1px solid color-mix(in srgb, rgb(var(--c-brass)) 70%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, rgb(var(--c-goldlite)) 22%, transparent);
 }
 
 .cellTd {
-  padding: 0.12rem;
+  padding: 0.09rem; /* issue #2: tighter — the board reads as one dense plate */
   text-align: center;
 }
 /* ≥44px tap target (design floor) where width allows; on the tightest phones
@@ -300,11 +356,17 @@
   margin: 0 auto;
   aspect-ratio: 1;
   border: 1px solid rgb(var(--c-line));
-  border-radius: 0.35rem;
-  font-size: 1rem;
+  border-radius: var(--skin-radius, 0.35rem);
+  font-size: 1.05rem; /* issue #8 */
   line-height: 1;
   background: color-mix(in srgb, rgb(var(--c-bg)) 40%, transparent);
-  transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+  /* issue #9: soft state transitions on the signature ease — kept SNAPPY (the
+     cell tap is a sub-100ms wood-press, not the 500ms signature beat) so
+     marking stays responsive. */
+  transition:
+    border-color 0.16s var(--skin-motion-ease, ease),
+    background 0.16s var(--skin-motion-ease, ease),
+    box-shadow 0.16s var(--skin-motion-ease, ease);
 }
 /* faint scratch-mark overlay (whisper mode): explicit colour so it stays
    VISIBLE — the cell button sets color:transparent on blank cells, which the
@@ -314,9 +376,14 @@
   opacity: 0.55;
   font-style: italic;
 }
-.cell:hover {
-  border-color: rgb(var(--c-brass));
-  background: color-mix(in srgb, rgba(112, 64, 168, 1) 10%, transparent);
+/* structural accent is worn brass (violet stays spectral); hover only on fine
+   pointers so touch never gets a stuck hover state (S2 pointer pick). */
+@media (hover: hover) {
+  .cell:hover {
+    border-color: rgb(var(--c-brass));
+    background: color-mix(in srgb, rgb(var(--c-brass)) 12%, transparent);
+    box-shadow: 0 0 10px -2px color-mix(in srgb, rgb(var(--c-brass)) 50%, transparent);
+  }
 }
 .cell:focus-visible {
   outline: none;
@@ -378,13 +445,66 @@
   color: #7a5c2c;
 }
 
-/* pinned controls footer */
+/* Controls footer — integrated into the table as an engraved lower ledge
+   (issue #7): shared material, a brass divider on top, sitting inside the
+   scrying-table surface (not a detached strip). Rebuilt as a robust flex row
+   with guaranteed spacing + consistent wrap (issue #6): the secondary-action
+   cluster and the hero Submit never collide with the "← Lobby" pill at any
+   width. `env(safe-area-inset-bottom)` keeps the row clear of the home bar on
+   phones (E5-mobile). */
 .nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem 1rem;
-  border-top: 1px solid rgb(var(--c-line));
-  padding-top: 0.8rem;
+  gap: 0.7rem 1rem;
+  margin-top: auto;
+  padding: 0.9rem 0.95rem;
+  padding-bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid color-mix(in srgb, rgb(var(--c-brass)) 55%, transparent);
+  border-radius: calc(var(--skin-radius, 6px) + 4px);
+  background:
+    linear-gradient(
+      0deg,
+      color-mix(in srgb, rgb(var(--c-surface)) 55%, transparent),
+      transparent
+    );
+  box-shadow: 0 -1px 0 color-mix(in srgb, rgb(var(--c-goldlite)) 14%, transparent) inset;
+}
+/* the secondary-action cluster grows/wraps as one unit, keeping the hero
+   Submit anchored at the row end (never overlapping) */
+.navActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* the hero "conduct the séance" control — one prominent engraved brass plate */
+.submit {
+  flex: 0 0 auto;
+  border-radius: var(--skin-radius, 6px);
+  padding: 0.7rem 1.4rem;
+  min-height: 2.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgb(var(--c-bg));
+  border: 1px solid color-mix(in srgb, rgb(var(--c-goldlite)) 60%, transparent);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--c-goldlite)),
+    rgb(var(--c-brass))
+  );
+  box-shadow:
+    0 1px 0 color-mix(in srgb, rgb(var(--c-goldlite)) 45%, transparent) inset,
+    0 8px 20px -12px rgba(8, 4, 14, 0.7);
+  transition: filter 0.16s var(--skin-motion-ease, ease), transform 0.12s var(--skin-motion-ease, ease);
+  cursor: pointer;
+}
+.submit:hover {
+  filter: brightness(1.06);
+}
+.submit:active {
+  transform: translateY(1px); /* wood-depress on press (≤200ms) */
 }
