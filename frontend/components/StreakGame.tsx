@@ -392,8 +392,10 @@ function RuneBoard({
       <header className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <h1 className="display text-4xl sm:text-5xl">Ignite</h1>
+          {/* Rune set rotates SILENTLY by date (design-intake A) — not named
+              pre-solve; its identity is revealed only in the win/share lore. */}
           <p className="microlabel mt-1 text-history">
-            {puzzle.runeSet} · the Witch&apos;s cipher
+            the Witch&apos;s cipher
           </p>
         </div>
         <div className="flex items-center gap-5 text-right">
