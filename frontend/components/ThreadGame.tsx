@@ -318,9 +318,20 @@ export default function ThreadGame({
     try {
       await navigator.clipboard.writeText(threadCard().text);
       setCopied(true);
+      setShareError(false);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* clipboard unavailable — the grid is on screen anyway */
+      // clipboard unavailable (design-intake §8: select-to-copy fallback + a
+      // toast) — select the on-screen grid so the player can copy by hand.
+      setShareError(true);
+      const el = gridRef.current;
+      const sel = el && typeof window !== "undefined" ? window.getSelection() : null;
+      if (el && sel) {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
     }
   }
 
@@ -423,7 +434,13 @@ export default function ThreadGame({
                   knotRefs.current[i] = el;
                 }}
                 className={`${styles.knot} ${
-                  done ? styles.knotDone : isActive ? styles.knotActive : ""
+                  done
+                    ? `${styles.knotDone} ${
+                        n.state === "miss" ? styles.knotFray : styles.knotBloom
+                      }`
+                    : isActive
+                      ? styles.knotActive
+                      : ""
                 }`}
               >
                 {n.state === "hit" ? "✓" : n.state === "near" ? "◆" : n.state === "miss" ? "✕" : i + 1}
@@ -558,7 +575,7 @@ export default function ThreadGame({
             key="final"
             initial={reduced ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-5 rounded-2xl border border-line bg-surface p-5 text-center"
+            className={`mt-5 rounded-2xl border border-line bg-surface p-5 text-center ${styles.tapestryPanel}`}
             style={{ boxShadow: `0 0 50px ${THREAD_HEX}22` }}
           >
             <p className="microlabel tracking-widest" style={{ color: THREAD_HEX }}>
@@ -584,7 +601,7 @@ export default function ThreadGame({
             key="done"
             initial={reduced ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative mt-5 flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-5 text-center"
+            className={`relative mt-5 flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-5 text-center ${styles.tapestryPanel}`}
             style={{ boxShadow: `0 0 50px ${THREAD_HEX}22` }}
           >
             {/* the tapestry reveal — static gold corners frame the finished weave */}
