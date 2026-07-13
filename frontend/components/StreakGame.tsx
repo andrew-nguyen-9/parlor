@@ -95,6 +95,7 @@ interface SolvedRecord {
   misreads: number;
   hints: number;
   gaveUp: boolean;
+  lost: boolean; // candles spent — soft loss (distinct from gaveUp for restored end-state)
 }
 
 function RuneBoard({
@@ -159,7 +160,8 @@ function RuneBoard({
       setAssign(puzzle.solution.slice());
       setMisreads(solved.misreads);
       setHints(solved.hints);
-      if (solved.gaveUp) setGaveUp(true);
+      if (solved.lost) setLost(true);
+      else if (solved.gaveUp) setGaveUp(true);
       else setWon(true);
     }
     setStreak(rec?.count ?? 0);
@@ -262,7 +264,7 @@ function RuneBoard({
       setWrongGlyphs(new Set());
       audio.sfx("correct");
       bumpStreak();
-      persistSolve({ misreads, hints, gaveUp: false });
+      persistSolve({ misreads, hints, gaveUp: false, lost: false });
       return;
     }
     // Wrong read — the runes resist.
@@ -275,7 +277,7 @@ function RuneBoard({
       if (n === 0) {
         setLost(true);
         voidStreak();
-        persistSolve({ misreads: misreads + 1, hints, gaveUp: true });
+        persistSolve({ misreads: misreads + 1, hints, gaveUp: false, lost: true });
       }
       return n;
     });
@@ -339,7 +341,7 @@ function RuneBoard({
     setWrongGlyphs(new Set());
     setGaveUp(true);
     voidStreak();
-    persistSolve({ misreads, hints, gaveUp: true });
+    persistSolve({ misreads, hints, gaveUp: true, lost: false });
   }, [over, puzzle.solution, voidStreak, persistSolve, misreads, hints]);
 
   function reset() {
