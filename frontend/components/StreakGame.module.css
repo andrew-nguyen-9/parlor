@@ -19,6 +19,21 @@
   touch-action: manipulation; /* no double-tap zoom while tapping runes */
 }
 
+/* Accessible DOM board — the guaranteed degrade floor (no-WebGL / Phaser-throw /
+   reduced-motion). Same ember-tinted frame as the Phaser stage, but auto-height
+   so real focusable buttons flow without a fixed canvas box. */
+.domBoard {
+  border-radius: 1rem;
+  border: 1px solid var(--c-line, #3a332c);
+  background: radial-gradient(
+    120% 90% at 50% 8%,
+    rgba(224, 135, 31, 0.1) 0%,
+    var(--c-surface, #1b1712) 60%
+  );
+  padding: clamp(0.75rem, 3vw, 1.5rem);
+  touch-action: manipulation;
+}
+
 /* Win reveal — the deciphered incantation pulses like a fresh ember. */
 .blaze {
   text-shadow: 0 0 12px rgba(245, 197, 66, 0.55);
