@@ -5,7 +5,9 @@ import { daySeed, pickRotating } from "@/lib/rng";
 import { roomMetadata } from "@/lib/rooms";
 import type { Question } from "@/lib/types";
 
-export const revalidate = 3600;
+// Seed-bank-only room; the gauntlet number/content rolls once per UTC day. 24h
+// matches that cadence and caps ISR reads to ~1/room/day (spec §C4 ISR).
+export const revalidate = 86400;
 
 export const metadata = roomMetadata("/gauntlet");
 

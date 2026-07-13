@@ -4,7 +4,10 @@ import WedgesGame from "@/components/WedgesGame";
 import { getQuestionsByType } from "@/lib/queries";
 import { daySeed } from "@/lib/rng";
 
-export const revalidate = 3600;
+// Seed-bank-only room; the shared daily order rolls once per UTC day via
+// `daySeed`. 24h matches that cadence and caps ISR reads to ~1/room/day
+// (spec §C4 ISR: sub-hour windows only multiply reads for zero content change).
+export const revalidate = 86400;
 
 export const metadata = roomMetadata("/wedges");
 

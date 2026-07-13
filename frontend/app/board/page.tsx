@@ -6,7 +6,10 @@ import { biasCluesByTheme, buildBoardColumns, themedPick } from "@/lib/board";
 import { daySeed, mulberry32 } from "@/lib/rng";
 import { pickTheme } from "@/lib/themes";
 
-export const revalidate = 3600;
+// Seed-bank-only room; content rolls once per UTC day via `daySeed`. A 24h
+// window matches that cadence and caps ISR reads to ~1/room/day (spec §C4 ISR:
+// sub-hour windows only multiply reads for zero content change).
+export const revalidate = 86400;
 
 export const metadata = roomMetadata("/board");
 
