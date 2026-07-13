@@ -6,6 +6,7 @@ import { gameByHref } from "@/lib/games";
 import { tutorialByHref } from "@/lib/tutorials";
 import TutorialOverlay from "./TutorialOverlay";
 import FluidStage from "./FluidStage";
+import SettingsHub from "./SettingsHub";
 
 const SUIT = CATEGORY_GLYPH; // single source (a11y non-color channel)
 
@@ -98,8 +99,11 @@ export default function RoomShell({
           </span>
           <span className="microlabel">{label}</span>
         </div>
-        {/* Rank badge, top-right — the card this room is in the home deck */}
-        {game && <RankBadge game={game} />}
+        {/* Rank badge + the global settings gear, top-right */}
+        <div className="flex items-center gap-2">
+          {game && <RankBadge game={game} />}
+          <SettingsHub />
+        </div>
       </header>
 
       {/* Thin brass accent rule under header */}

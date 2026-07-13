@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Cinzel } from "next/font/google";
 import SiteFooter from "@/components/SiteFooter";
-import TextSizeControl from "@/components/TextSizeControl";
-import ThemeToggle from "@/components/ThemeToggle";
 import { GAME_ROOMS, SITE_URL } from "@/lib/rooms";
 import "./globals.css";
 
@@ -107,8 +105,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         {children}
         <SiteFooter />
-        <ThemeToggle />
-        <TextSizeControl />
+        {/* Global preferences now live in the SettingsHub gear mounted by
+            RoomShell (folds in the old ThemeToggle / TextSizeControl / SoundToggle
+            pills). The pre-paint theme + text-size scripts above still apply the
+            stored values flash-free before React hydrates. */}
       </body>
     </html>
   );
