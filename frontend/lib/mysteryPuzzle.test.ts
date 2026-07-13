@@ -6,6 +6,12 @@ import {
   solutionCount,
   uniqueSolution,
   liveValues,
+  clueReliability,
+  isMinimal,
+  isLoadBearing,
+  minimumClueCount,
+  solvabilityProof,
+  caseIntro,
   type MysteryPuzzle,
 } from "./mysteryPuzzle";
 
@@ -100,6 +106,55 @@ describe("generateMystery (G1 engine)", () => {
         expect(solutionCount([c], n)).toBeGreaterThan(1);
       }
     });
+  });
+});
+
+describe("minimality + solvability proof (Q3.5 / Q4.2 / Q6.4)", () => {
+  it("the shipped clue set is MINIMAL — every clue is load-bearing", () => {
+    eachDay((p) => {
+      const n = p.suspects.length;
+      expect(isMinimal(p.clues, n)).toBe(true);
+      // and concretely: removing any single clue re-admits ≥2 triples
+      for (const c of p.clues) expect(isLoadBearing(p.clues, c, n)).toBe(true);
+    });
+  });
+
+  it("minimumClueCount is the shipped clue count (the calculated minimum)", () => {
+    eachDay((p) => {
+      expect(minimumClueCount(p)).toBe(p.clues.length);
+    });
+  });
+
+  it("solvabilityProof names the true triple and the minimum, spoiler-safe post-solve", () => {
+    eachDay((p) => {
+      const proof = solvabilityProof(p);
+      expect(proof.length).toBe(3);
+      const joined = proof.join(" ");
+      expect(joined).toContain(String(p.clues.length));
+      expect(joined).toContain(p.suspects[p.solution.suspect]);
+      expect(joined).toContain(p.locations[p.solution.location]);
+      expect(joined).toContain(p.times[p.solution.time]);
+    });
+  });
+});
+
+describe("clueReliability (Q2.5 credibility badge)", () => {
+  it("classifies every clue kind as forensic or witness", () => {
+    eachDay((p) => {
+      for (const c of p.clues) {
+        expect(["forensic", "witness"]).toContain(clueReliability(c.kind));
+      }
+    });
+  });
+});
+
+describe("caseIntro (Q1.3 scene-setter)", () => {
+  it("is deterministic per puzzle and reads as a multi-sentence framing", () => {
+    const p = generateMystery(20000, "2026-07-06");
+    const a = caseIntro(p);
+    expect(a).toBe(caseIntro(p)); // pure over the seed
+    expect(a).toContain(p.caseName);
+    expect(a.split(". ").length).toBeGreaterThanOrEqual(3); // 2–3+ sentences
   });
 });
 
