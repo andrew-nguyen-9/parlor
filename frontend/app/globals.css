@@ -85,6 +85,18 @@
     radial-gradient(80% 60% at 50% 110%, rgba(110, 31, 43, 0.05) 0%, transparent 60%);
 }
 
+/* ── High-contrast (SettingsHub `data-contrast`): minimal global reinforcement,
+   not a full theme. Promote the hairline + muted tokens to full ink strength
+   (per-theme via var(--c-ink)) and bump body text weight — only ever increases
+   contrast, so AA holds in both light and dark. ── */
+html[data-contrast="on"] {
+  --c-line: var(--c-ink); /* full-strength borders/rules */
+  --c-muted: var(--c-ink); /* muted copy reads at ink weight */
+}
+html[data-contrast="on"] body {
+  font-weight: 500;
+}
+
 /* ── Shared desktop-density tokens (§3.0). PARLOR is mobile-first; these give
    every room one consistent desktop rhythm — page gutter, content width, grid
    gap, and a denser card minimum — without each component re-inventing them.

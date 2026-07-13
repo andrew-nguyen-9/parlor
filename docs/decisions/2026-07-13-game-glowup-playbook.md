@@ -173,16 +173,15 @@ Room-craft traps observed this cycle (carry the discipline, not the specifics):
 ## 5. CORE game-agnostic status — a flag, not a pass
 
 The DoD requires `_core.md` to be game-agnostic. Verified by grep for
-`seance|séance|ouija|planchette`:
+`seance|ouija|planchette` (`grep -icE` on `_core.md`):
 
-- **Result: 14 matches (NOT zero) — this is a FLAG per the DoD gate.**
+- **Result: 4 matches (NOT zero) — this is a FLAG per the DoD gate.**
 - **Characterization (honest):** the CORE *structure* is game-agnostic — every
-  question applies to any room. The 14 hits are: **3 shipped code-symbol
-  references** (`cachedSeance`/`generateSeance` — legitimately reusable API
-  citations) and **~11 illustrative mentions** where Séance appears as one
-  example in a list of games or in a `> WHY:` rationale (e.g. "Séance/Ladder/
-  Mystery…", "matches shipped Séance mobile"). None are game-LOCKED design
-  decisions; the questions/picks themselves are portable.
+  question applies to any room. The 4 hits are: **3 shipped code-symbol
+  references** (`cachedSeance` ×2 + `generateSeance` — legitimately reusable API
+  citations) and **1 illustrative mention** (`planchette` cited as an example of
+  a gesture-driven leave). None are game-LOCKED design decisions; the
+  questions/picks themselves are portable.
 - **Action for the next game:** either (a) treat the Séance mentions as examples
   and read past them, or (b) do a light scrub pass replacing the running example
   before copying CORE verbatim. Recommended: a one-time scrub so "reuse CORE

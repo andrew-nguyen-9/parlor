@@ -2,6 +2,7 @@ import Link from "next/link";
 import Marquee from "@/components/Marquee";
 import Deck from "@/components/Deck";
 import FluidStage from "@/components/FluidStage";
+import SettingsHub from "@/components/SettingsHub";
 import { GAMES } from "@/lib/games";
 import { CATEGORY_HEX } from "@/lib/types";
 import { isDbConfigured } from "@/lib/db";
@@ -26,6 +27,11 @@ export default function Home() {
       {/* The threshold — invitation, not nightlife */}
       <section className="relative z-10 flex min-h-[82vh] flex-col justify-end px-4 pb-10 pt-12 sm:px-8">
         <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-brass/40 to-transparent" aria-hidden />
+
+        {/* The lobby's only settings surface — the same global gear RoomShell mounts. */}
+        <div className="absolute right-4 top-4 z-20 sm:right-8">
+          <SettingsHub />
+        </div>
 
         <div className="flex items-center justify-between">
           <span className="microlabel">the secret order · by invitation</span>

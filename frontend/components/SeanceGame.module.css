@@ -489,7 +489,10 @@
   min-height: 2.75rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: rgb(var(--c-bg));
+  /* Fixed deep-walnut ink: the gold plate is always warm/light in both themes,
+     so a constant dark ink reads ≥4.5:1 on the goldlite stop (theme-flipping
+     rgb(var(--c-bg)) failed AA on the light-theme light stop, ~2.05:1). */
+  color: rgb(38, 24, 12);
   border: 1px solid color-mix(in srgb, rgb(var(--c-goldlite)) 60%, transparent);
   background: linear-gradient(
     180deg,

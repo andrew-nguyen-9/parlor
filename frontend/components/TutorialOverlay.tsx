@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Tutorial } from "@/lib/tutorials";
+import SeanceTutorialDemo from "@/components/tutorial/SeanceTutorialDemo";
 
 const SEEN_PREFIX = "parlor:tutorial-seen:";
 
@@ -117,6 +118,14 @@ export default function TutorialOverlay({ tutorial }: { tutorial: Tutorial }) {
 
             {tutorial.tagline && (
               <p className="mt-3 text-base leading-relaxed text-muted">{tutorial.tagline}</p>
+            )}
+
+            {/* Séance ships an animated board-fill demo above its steps; gated by
+                href so the overlay stays generic and no other room renders it. */}
+            {tutorial.href === "/seance" && (
+              <div className="mt-5">
+                <SeanceTutorialDemo />
+              </div>
             )}
 
             {tutorial.steps ? (
