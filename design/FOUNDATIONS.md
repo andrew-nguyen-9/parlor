@@ -116,3 +116,29 @@ global chrome). Rules every 3D/animated room inherits:
 Mobile-first single set: base = phone; `sm:` 640px (tap-target pill floor);
 `lg:` 1024px (the `--d-*` density block — gutter/maxw/gap/track/stack all step up).
 Nothing is desktop-only *content* — only desktop-only *garnish*.
+
+## Skins — per-game token override (E0 de-restriction)
+The tokens above are the DEFAULT house look, not a global lock. A game declares its
+own look via a `[data-skin="<game>"]` scope (mechanism: INDEX §Design model, PATTERNS
+§Skins). Two override layers, both CSS-only (no JS-runtime theming):
+1. **`--skin-*` seams** (`frontend/app/skins.css`; typed in `frontend/lib/theme.ts`
+   `SKIN_SEAMS`). Each defaults to a global token, so unset = house look.
+
+| seam | default | kind · use |
+|------|---------|------------|
+| `--skin-bg` / `--skin-surface` | `--c-bg` / `--c-surface` | RGB channels · room ground / panel |
+| `--skin-accent` | `--c-brass` | RGB channels · interactive border / highlight |
+| `--skin-ink` / `--skin-muted` | `--c-ink` / `--c-muted` | RGB channels · text tones |
+| `--skin-bg-image` | `none` | value · room material / gradient |
+| `--skin-radius` | `4px` | value · action-plate radius |
+| `--skin-font-display` | `var(--font-display)` | value · nameplate face |
+| `--skin-motion-duration` / `--skin-motion-ease` | `300ms` / entrance curve | value · signature motion |
+| `--skin-gutter` / `--skin-maxw` | `--d-gutter` / `--d-maxw` | value · layout grid |
+
+- Tailwind exposes the color seams as `text-/bg-/border-skin-{bg,surface,accent,ink,muted}`
+  (safelisted) + `rounded-skin` / `max-w-skin` / `font-skin`.
+2. **Scoped global override:** inside its `[data-skin]` block a game may also redefine
+   any NON-floor global var (`--c-*`, `--cat-*`, `--d-*`) to repaint its whole subtree.
+   `CATEGORY_HEX` fills stay single-source (`lib/types.ts`) — override the `--cat-*` INK vars,
+   not the fill constant. The game OWNS holding the §Floors (AA, focus ring, etc.) for
+   whatever it picks; the floors are not overridable.

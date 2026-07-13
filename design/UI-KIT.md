@@ -18,6 +18,7 @@ relative to `frontend/`.
 | Rank badge | live | `components/CardFace.tsx` (`RankBadge`) |
 | Toast | live | `components/AchievementToast.tsx` |
 | Theme toggle | live | `components/ThemeToggle.tsx` |
+| Skin seam (`applySkin`) | live | `lib/theme.ts` + `app/skins.css` (FOUNDATIONS §Skins) |
 | Sound toggle | live | `components/SoundToggle.tsx` |
 | ThreeStage (3D canvas primitive) | live | `components/ThreeStage.tsx` |
 | FluidStage (full-width container) | live | `components/FluidStage.tsx` |

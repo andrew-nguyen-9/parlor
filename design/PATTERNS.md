@@ -22,7 +22,8 @@ always one tap away. Suit = category; the deck runs Ace(1)→11 plus one Joker
 ## Room signatures — the 11 retained rooms (after cold-case retirement)
 Each room = one card (suit=accent category, one character, one emblem) + ONE
 diegetic signature motion (the room's single allowed looping animation). Colors
-via category tokens; never invent a per-room palette.
+via category tokens by default; a room MAY declare its own palette/material/motion
+through its skin (§Skins) — the §Floors still hold.
 
 | room · route | card name | suit / accent | character | emblem | signature motion (the 1 loop) |
 |--------------|-----------|---------------|-----------|--------|-------------------------------|
@@ -62,7 +63,22 @@ via category tokens; never invent a per-room palette.
 - Hover is garnish, never information: anything on hover is also reachable by
   tap/focus. Tilt/lift = `@media (hover:hover)`; touch gets a pressed state instead.
 - Horizontal scroll only INSIDE a component with a visible affordance — never the page.
-- Rooms consume `--d-gutter`/`--d-maxw`/`--d-col-gap`; a room never sets its own gutter or max-width.
+- Rooms consume `--d-gutter`/`--d-maxw`/`--d-col-gap` by default; a room sets its own
+  gutter/max-width ONLY through its declared skin (§Skins), never ad hoc inline.
+
+## Skins — a room declaring its own look (E0 de-restriction)
+Default = the house look; a game opts into its OWN palette/materials/layout/motion/
+type/bg/mood without touching globals. One mechanism (do not invent another):
+1. `import { applySkin } from "@/lib/theme"` (this also loads `app/skins.css`).
+2. Spread it on the room root: `<main {...applySkin("clock")}>…` → sets `data-skin="clock"`.
+3. Fill that room's look in the `[data-skin="clock"]` block of `app/skins.css` — set
+   `--skin-*` seams (FOUNDATIONS §Skins) and/or override any non-floor global var in scope.
+- Skin ids = the 11 routes (`lib/theme.ts` `SKIN_NAMES`). Values live in CSS, never JS.
+- A room with no `applySkin` call is byte-identical to today — opting in is additive.
+- The §Floors are NOT part of a skin: contrast AA, ≥44px targets, WebGL degrade,
+  reduced-motion, one `<h1>`, the one focus ring, Q&A legibility, offline/seed
+  completeness, category triple-encode, SSR safety hold for every skin. The room owns
+  keeping them for its chosen values (e.g. re-check AA when it repaints `--c-*`).
 
 ## Motion
 budget: **≤1 infinite/looping animation per viewport** (the room's signature above

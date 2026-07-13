@@ -24,6 +24,21 @@ sliders: serious 3/5 · calm 3/5 · dense 3/5 · classic 4/5
 density: comfortable→dense (phone base; `lg:`/1024px adds density)   motion: purposeful
 ambition: 4   sacred: Q&A legibility over any effect · the zero-JS/seed-bank/reduced-motion render IS the design · ≤1 looping animation per viewport · one light source · category never color-alone
 
+## Design model — per-game skins over locked floors (E0, 2026-07-12)
+The North Star is NOT a global lock. A game declares its OWN palette / materials /
+layout-grid / motion / type / bg / mood via a documented per-route mechanism —
+without editing globals — while the §Floors below stay enforced for every game.
+- **How a game opts in** (the ONE mechanism — see FOUNDATIONS §Skins, PATTERNS §Skins):
+  `import { applySkin } from "@/lib/theme"` then spread `{...applySkin("<game>")}`
+  on the room root. That sets `data-skin="<game>"`; the matching `[data-skin]` block
+  in `frontend/app/skins.css` supplies the overrides. Skin ids = the 11 routes.
+- **What a skin may change:** anything NON-floor — the `--skin-*` seams
+  (bg/surface/accent/ink/muted/bg-image/radius/font-display/motion/gutter/maxw) AND,
+  scoped to its subtree, any global var (`--c-*`, `--cat-*`, `--d-*`). Values live in
+  CSS (skins.css), never a JS-runtime theming layer. `CATEGORY_HEX` stays single-source.
+- **What a skin may NOT change:** the §Floors. They sit above the skin layer
+  (globals.css + components). Unskinned rooms look identical to today.
+
 ## Floors — never regress, any mode, any challenge
 - contrast: body ≥4.5:1, large(≥24px)/bold(≥18.7px) ≥3:1, UI parts ≥3:1 — every text token computed AA both themes (FOUNDATIONS); decorative pairs (goldlite/candle/line-shine, disabled smoke) exempt
 - targets: ≥44×44px touch (deck buttons + `.microlabel` pills are the bar) — the floor covers
