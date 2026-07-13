@@ -1,18 +1,66 @@
 // Web Audio sound engine — every sound is synthesized at runtime, so PARLOR
 // ships zero audio assets and stays playable from a clone. A single shared
 // AudioContext is lazily created on first user gesture (browser autoplay rules).
-// Mute state persists to localStorage and is mirrored to a module-level flag so
-// non-React callers (game loops) can check it cheaply.
+//
+// ── THE audio authority (single source of truth) ──────────────────────────────
+// Two module-level gates, ONE multiply each, applied on ONE master GainNode every
+// source routes through (no source connects to `destination` directly):
+//   • `muted`  — the binary panic-off, persisted to `parlor:muted` (legacy key).
+//   • `volume` — the C1 SettingsHub master level 0..1, READ from `parlor.volume`
+//                (e0-settings owns the WRITE; we never fork it — one authority).
+// Effective master gain = muted ? 0 : volume, so `volume === 0` subsumes mute and
+// there is exactly one place that silences everything. Beds route through an extra
+// `bedGain` sub-bus so a stinger can briefly duck the atmosphere without touching
+// the one-shots. Every path bails SSR / no-context / inaudible (never throws).
 
 import type { Note } from "./types";
 
 const MUTE_KEY = "parlor:muted";
+const VOLUME_KEY = "parlor.volume"; // e0 SETTINGS_KEYS.volume — same key, read-only here
+const DEFAULT_VOLUME = 0.7; // mirrors e0 DEFAULT_VOLUME (no divergence)
+const BREATH_MS = 140; // silence between room beds — a deliberate scene change
 
 let ctx: AudioContext | null = null;
+let masterGain: GainNode | null = null; // the ONE volume/mute multiply
+let bedGain: GainNode | null = null; // duckable sub-bus for the ambient bed
 let muted = false;
+let volume = DEFAULT_VOLUME;
+
+/** Read the master volume from storage (same key e0 writes). SSR/absent → default. */
+function readVolume(): number {
+  if (typeof window === "undefined") return DEFAULT_VOLUME;
+  try {
+    const s = localStorage.getItem(VOLUME_KEY);
+    if (s === null) return DEFAULT_VOLUME;
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : DEFAULT_VOLUME;
+  } catch {
+    return DEFAULT_VOLUME;
+  }
+}
 
 if (typeof window !== "undefined") {
   muted = localStorage.getItem(MUTE_KEY) === "1";
+  volume = readVolume();
+  // Cross-tab sync: another tab's slider/mute write live-updates this tab's bus.
+  window.addEventListener("storage", (e) => {
+    if (e.key !== VOLUME_KEY && e.key !== MUTE_KEY && e.key !== null) return;
+    volume = readVolume();
+    muted = localStorage.getItem(MUTE_KEY) === "1";
+    applyMasterGain(true);
+    if (!audible()) teardownAmbient();
+    else if (ambientDesiredRoom) startAmbient(ambientDesiredRoom);
+  });
+}
+
+/** The master multiply: 0 when muted, else the stored volume. */
+function effectiveVolume(): number {
+  return muted ? 0 : volume;
+}
+
+/** True when audio should actually make sound (single cheap gate for callers). */
+function audible(): boolean {
+  return !muted && volume > 0;
 }
 
 function ac(): AudioContext | null {
@@ -29,6 +77,70 @@ function ac(): AudioContext | null {
   return ctx;
 }
 
+/** The master bus every one-shot connects through. Re-reads volume each access so
+ *  same-tab slider writes reach the next cue (and any live bed) without a listener. */
+function master(a: AudioContext): GainNode {
+  volume = readVolume();
+  if (!masterGain) {
+    masterGain = a.createGain();
+    masterGain.connect(a.destination);
+  }
+  masterGain.gain.value = effectiveVolume();
+  return masterGain;
+}
+
+/** The duckable bed sub-bus (bed → bedGain → master → destination). */
+function bedOut(a: AudioContext): GainNode {
+  const m = master(a);
+  if (!bedGain) {
+    bedGain = a.createGain();
+    bedGain.gain.value = 1;
+    bedGain.connect(m);
+  }
+  return bedGain;
+}
+
+/** Push the current effective volume onto the live master gain (smooth = ramp). */
+function applyMasterGain(smooth = false): void {
+  if (!ctx || !masterGain) return;
+  const target = effectiveVolume();
+  const t = ctx.currentTime;
+  masterGain.gain.cancelScheduledValues(t);
+  if (smooth) {
+    masterGain.gain.setValueAtTime(Math.max(masterGain.gain.value, 0.0001), t);
+    masterGain.gain.linearRampToValueAtTime(Math.max(target, 0.0001), t + 0.08);
+  } else {
+    masterGain.gain.setValueAtTime(target, t);
+  }
+}
+
+/** Set the master volume live (0..1). e0's slider persists via `parlor.volume`; call
+ *  this too for an immediate bed response. Crossing 0 tears down / resumes the bed. */
+export function setMasterVolume(v: number): void {
+  const prev = volume;
+  volume = Math.min(1, Math.max(0, Number.isFinite(v) ? v : DEFAULT_VOLUME));
+  applyMasterGain(true);
+  if (volume <= 0 && prev > 0) teardownAmbient();
+  else if (volume > 0 && prev <= 0 && !muted && ambientDesiredRoom) {
+    startAmbient(ambientDesiredRoom);
+  }
+}
+
+/** Current master volume 0..1 (module state; reflects the last read/set). */
+export function getMasterVolume(): number {
+  return volume;
+}
+
+/** Briefly duck the ambient bed under a milestone cue, then restore it. */
+export function duck(depth = 0.35, ms = 450): void {
+  if (!ctx || !bedGain) return;
+  const t = ctx.currentTime;
+  bedGain.gain.cancelScheduledValues(t);
+  bedGain.gain.setValueAtTime(bedGain.gain.value, t);
+  bedGain.gain.linearRampToValueAtTime(depth, t + 0.06);
+  bedGain.gain.linearRampToValueAtTime(1, t + ms / 1000);
+}
+
 export function isMuted(): boolean {
   return muted;
 }
@@ -38,8 +150,10 @@ export function setMuted(v: boolean): void {
   if (typeof window !== "undefined") {
     localStorage.setItem(MUTE_KEY, v ? "1" : "0");
   }
-  // Mute is the single audio authority: muting silences the ambient bed at once;
-  // unmuting resumes whichever room bed the last mounted room asked for.
+  // Mute is the single audio authority: muting drops the master multiply to 0 at
+  // once (silencing in-flight sound too) and tears down the bed; unmuting resumes
+  // whichever room bed the last mounted room asked for.
+  applyMasterGain(true);
   if (v) teardownAmbient();
   else if (ambientDesiredRoom) startAmbient(ambientDesiredRoom);
 }
@@ -73,7 +187,7 @@ function blip(
   when = 0,
 ): void {
   const a = ac();
-  if (!a || muted || freq <= 0) return;
+  if (!a || !audible() || freq <= 0) return;
   const t0 = a.currentTime + when;
   const osc = a.createOscillator();
   const g = a.createGain();
@@ -82,7 +196,7 @@ function blip(
   g.gain.setValueAtTime(0.0001, t0);
   g.gain.exponentialRampToValueAtTime(gain, t0 + 0.012);
   g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  osc.connect(g).connect(a.destination);
+  osc.connect(g).connect(master(a));
   osc.start(t0);
   osc.stop(t0 + dur + 0.02);
 }
@@ -120,7 +234,7 @@ export function playMelody(
   bpm = 120,
 ): { stop: () => void } {
   const a = ac();
-  if (!a || muted) return { stop: () => {} };
+  if (!a || !audible()) return { stop: () => {} };
   const spb = 60 / bpm; // seconds per beat
   const start = a.currentTime + 0.05;
   let cursor = start;
@@ -137,7 +251,7 @@ export function playMelody(
       g.gain.setValueAtTime(0.0001, cursor);
       g.gain.exponentialRampToValueAtTime(0.3, cursor + 0.02);
       g.gain.exponentialRampToValueAtTime(0.0001, cursor + dur * 0.95);
-      osc.connect(g).connect(a.destination);
+      osc.connect(g).connect(master(a));
       osc.start(cursor);
       osc.stop(cursor + dur);
       stops.push(osc);
@@ -157,10 +271,10 @@ export function playMelody(
 /** Door latch/creak: sawtooth frequency sweep down with a metallic tail. */
 export function sfxDoorLatch(): void {
   const a = ac();
-  if (!a || muted) return;
+  if (!a || !audible()) return;
   const osc = a.createOscillator();
   const g = a.createGain();
-  osc.connect(g).connect(a.destination);
+  osc.connect(g).connect(master(a));
   osc.type = "sawtooth";
   osc.frequency.setValueAtTime(600, a.currentTime);
   osc.frequency.exponentialRampToValueAtTime(80, a.currentTime + 0.18);
@@ -173,10 +287,10 @@ export function sfxDoorLatch(): void {
 /** Glass clink: high sine ping with quick decay. */
 export function sfxGlassClink(): void {
   const a = ac();
-  if (!a || muted) return;
+  if (!a || !audible()) return;
   const osc = a.createOscillator();
   const g = a.createGain();
-  osc.connect(g).connect(a.destination);
+  osc.connect(g).connect(master(a));
   osc.type = "sine";
   osc.frequency.setValueAtTime(1400, a.currentTime);
   osc.frequency.exponentialRampToValueAtTime(900, a.currentTime + 0.04);
@@ -189,11 +303,11 @@ export function sfxGlassClink(): void {
 /** Soft piano chord (C–E–G): three stacked sine oscillators, gentle attack. */
 export function sfxPianoChord(): void {
   const a = ac();
-  if (!a || muted) return;
+  if (!a || !audible()) return;
   for (const freq of [261.63, 329.63, 392.0]) {
     const osc = a.createOscillator();
     const g = a.createGain();
-    osc.connect(g).connect(a.destination);
+    osc.connect(g).connect(master(a));
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, a.currentTime);
     g.gain.setValueAtTime(0, a.currentTime);
@@ -207,14 +321,14 @@ export function sfxPianoChord(): void {
 /** Correct answer: ascending two-note chime. */
 export function sfxCorrect(): void {
   const a = ac();
-  if (!a || muted) return;
+  if (!a || !audible()) return;
   for (const { freq, t } of [
     { freq: 523.25, t: 0 },
     { freq: 783.99, t: 0.12 },
   ]) {
     const osc = a.createOscillator();
     const g = a.createGain();
-    osc.connect(g).connect(a.destination);
+    osc.connect(g).connect(master(a));
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, a.currentTime + t);
     g.gain.setValueAtTime(0.14, a.currentTime + t);
@@ -227,10 +341,10 @@ export function sfxCorrect(): void {
 /** Wrong answer: descending minor-second buzz. */
 export function sfxWrong(): void {
   const a = ac();
-  if (!a || muted) return;
+  if (!a || !audible()) return;
   const osc = a.createOscillator();
   const g = a.createGain();
-  osc.connect(g).connect(a.destination);
+  osc.connect(g).connect(master(a));
   osc.type = "square";
   osc.frequency.setValueAtTime(220, a.currentTime);
   osc.frequency.exponentialRampToValueAtTime(180, a.currentTime + 0.15);
@@ -277,15 +391,20 @@ async function loadBuffer(url: string): Promise<AudioBuffer | null> {
   }
 }
 
-function playBuffer(buf: AudioBuffer, gain: number, loop = false): AudioBufferSourceNode | null {
+function playBuffer(
+  buf: AudioBuffer,
+  gain: number,
+  loop = false,
+  dest?: AudioNode,
+): AudioBufferSourceNode | null {
   const a = ac();
-  if (!a || muted) return null;
+  if (!a || !audible()) return null;
   const src = a.createBufferSource();
   const g = a.createGain();
   src.buffer = buf;
   src.loop = loop;
   g.gain.value = gain;
-  src.connect(g).connect(a.destination);
+  src.connect(g).connect(dest ?? master(a));
   src.start();
   return src;
 }
@@ -305,19 +424,85 @@ let ambientDesiredRoom: string | null = null; // intent, survives a mute
 let ambientRoom: string | null = null;        // what is actually sounding
 let ambientHandle: { stop: () => void } | null = null;
 
+// ── per-room cue registry ─────────────────────────────────────────────────────
+// Cues are DECLARED DATA resolved by room key (extends AMBIENT_ROOTS/CUE). A game
+// unit (e.g. e4-audio-content for the Séance) registers its bed pitch/asset, any
+// per-room interaction overrides, named milestone/event cues, and a custom stinger
+// ONCE (module import time), then drives them through the `audio` singleton. Every
+// registered cue is a plain `() => void`; write asset-backed ones with `playSfx`
+// so they inherit the master-bus gating + upgrade-or-synth fallback for free.
+export interface RoomAudioConfig {
+  /** Procedural drone pitch (Hz) for the room's ambient bed. */
+  ambientRoot?: number;
+  /** Committed `/audio/*.mp3` bed that upgrades the drone when present. */
+  ambientAsset?: string;
+  /** Per-room overrides for the shared interaction cues. */
+  cues?: Partial<Record<SfxCue, () => void>>;
+  /** Named milestone/event cues, played via `audio.event(room, name)`. */
+  events?: Record<string, () => void>;
+  /** Room-specific completion stinger (falls back to the default arpeggio). */
+  stinger?: () => void;
+}
+
+const roomAudio = new Map<string, RoomAudioConfig>();
+
+/** Register (or merge into) a room's audio config. Idempotent-friendly: later
+ *  calls shallow-merge, so `cues`/`events` accumulate rather than clobber. */
+export function registerRoomAudio(room: string, config: RoomAudioConfig): void {
+  const prev = roomAudio.get(room) ?? {};
+  roomAudio.set(room, {
+    ...prev,
+    ...config,
+    cues: { ...prev.cues, ...config.cues },
+    events: { ...prev.events, ...config.events },
+  });
+}
+
+/** The registered config for a room (undefined if none registered). */
+export function getRoomAudio(room: string): RoomAudioConfig | undefined {
+  return roomAudio.get(room);
+}
+
+// ── per-cue throttle ──────────────────────────────────────────────────────────
+// A min-gap per cue key so a rapid burst (combo climb, tick storm) never piles
+// into a harsh wall of overlapping voices.
+const CUE_MIN_GAP_MS = 45;
+const lastCueAt = new Map<string, number>();
+function throttled(key: string): boolean {
+  const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+  const last = lastCueAt.get(key) ?? -Infinity;
+  if (now - last < CUE_MIN_GAP_MS) return true;
+  lastCueAt.set(key, now);
+  return false;
+}
+
+/** Play a committed one-shot asset, falling back to `fallback` (or silence) when
+ *  the asset is absent/undecodable. Gated by the master authority; use this for
+ *  asset-backed registered cues so they never bypass volume/mute. */
+export function playSfx(url: string, gain = 0.4, fallback?: () => void): void {
+  if (!audible()) return;
+  const cached = bufferCache.get(url);
+  if (cached) {
+    playBuffer(cached, gain);
+  } else if (cached === null) {
+    fallback?.(); // known-absent → instant, no refetch
+  } else {
+    void loadBuffer(url).then((buf) => (buf ? playBuffer(buf, gain) : fallback?.()));
+  }
+}
+
 /** Warm procedural pad: two detuned voices + a fifth, low-passed with a slow LFO
  *  drift. Continuous ⇒ seamless loop. Returns a fade-out stop handle. */
-function startDrone(a: AudioContext, room: string): { stop: () => void } {
-  const root = AMBIENT_ROOTS[room] ?? 110.0;
+function startDrone(a: AudioContext, root: number): { stop: () => void } {
   const t0 = a.currentTime;
-  const master = a.createGain();
-  master.gain.setValueAtTime(0.0001, t0);
-  master.gain.exponentialRampToValueAtTime(0.06, t0 + 1.5); // slow fade-in
-  master.connect(a.destination);
+  const bedMaster = a.createGain();
+  bedMaster.gain.setValueAtTime(0.0001, t0);
+  bedMaster.gain.exponentialRampToValueAtTime(0.06, t0 + 1.5); // slow fade-in
+  bedMaster.connect(bedOut(a)); // → bedGain (duckable) → master (volume/mute)
   const filter = a.createBiquadFilter();
   filter.type = "lowpass";
   filter.frequency.value = 650;
-  filter.connect(master);
+  filter.connect(bedMaster);
 
   const oscs: OscillatorNode[] = [];
   for (const [mult, detune, level] of [
@@ -346,9 +531,9 @@ function startDrone(a: AudioContext, room: string): { stop: () => void } {
   return {
     stop: () => {
       const t = a.currentTime;
-      master.gain.cancelScheduledValues(t);
-      master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), t);
-      master.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      bedMaster.gain.cancelScheduledValues(t);
+      bedMaster.gain.setValueAtTime(Math.max(bedMaster.gain.value, 0.0001), t);
+      bedMaster.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
       [...oscs, lfo].forEach((o) => {
         try {
           o.stop(t + 0.7);
@@ -370,23 +555,37 @@ function teardownAmbient(): void {
  *  Silent under mute or reduced-motion; remembers intent so unmute can resume. */
 export function startAmbient(room: string): void {
   ambientDesiredRoom = room;
-  if (muted || prefersReducedMotion()) {
+  if (!audible() || prefersReducedMotion()) {
     teardownAmbient();
     return;
   }
   const a = ac();
   if (!a) return; // SSR / no Web Audio
   if (ambientRoom === room && ambientHandle) return;
+  const switching = ambientRoom !== null && ambientRoom !== room;
   teardownAmbient();
   ambientRoom = room;
-  // Synth immediately (zero latency); upgrade to a bundled loop if one exists.
-  ambientHandle = startDrone(a, room);
-  void loadBuffer(`/audio/ambient-${room}.mp3`).then((buf) => {
-    if (!buf || ambientRoom !== room) return; // no asset, or room changed
-    ambientHandle?.stop();
-    const src = playBuffer(buf, 0.25, true);
-    if (src) ambientHandle = { stop: () => { try { src.stop(); } catch { /* stopped */ } } };
-  });
+
+  const cfg = roomAudio.get(room);
+  const root = cfg?.ambientRoot ?? AMBIENT_ROOTS[room] ?? 110.0;
+  const asset = cfg?.ambientAsset ?? `/audio/ambient-${room}.mp3`;
+
+  const rise = () => {
+    if (ambientRoom !== room) return; // room changed during the breath
+    // Synth immediately (zero latency); upgrade to a bundled loop if one exists.
+    ambientHandle = startDrone(a, root);
+    void loadBuffer(asset).then((buf) => {
+      if (!buf || ambientRoom !== room) return; // no asset, or room changed
+      ambientHandle?.stop();
+      const src = playBuffer(buf, 0.25, true, bedOut(a));
+      if (src) ambientHandle = { stop: () => { try { src.stop(); } catch { /* stopped */ } } };
+    });
+  };
+
+  // Cross-room handoff is a breath of silence, then the new bed rises; a first
+  // bed (no prior room) starts at once.
+  if (switching) window.setTimeout(rise, BREATH_MS);
+  else rise();
 }
 
 /** Stop the ambient bed and clear intent (call on room unmount). */
@@ -412,17 +611,39 @@ const CUE: Record<SfxCue, () => void> = {
   hover: sfx.tick,
 };
 
-/** The one manager rooms import. Every method is a no-op when muted or off-DOM. */
+/** Decorative cues trimmed under reduced-motion (result cues stay audible). */
+const DECORATIVE_CUES: ReadonlySet<SfxCue> = new Set(["hover"]);
+
+/** The one manager rooms import. Every method is a no-op when inaudible/off-DOM. */
 export const audio = {
   startAmbient,
   stopAmbient,
-  /** Fire a one-shot interaction cue (no stacking beyond the shared context). */
-  sfx(cue: SfxCue): void {
-    (CUE[cue] ?? (() => {}))();
+  /** Fire a one-shot interaction cue. `room` selects a registered per-room voice
+   *  (falls back to the shared cue). Decorative cues drop under reduced-motion;
+   *  repeats of the same cue are throttled so bursts never pile up. */
+  sfx(cue: SfxCue, room?: string): void {
+    if (prefersReducedMotion() && DECORATIVE_CUES.has(cue)) return;
+    if (throttled(`sfx:${room ?? ""}:${cue}`)) return;
+    const override = room ? roomAudio.get(room)?.cues?.[cue] : undefined;
+    (override ?? CUE[cue] ?? (() => {}))();
   },
-  /** Room-completion stinger — bundled asset if present, else procedural synth. */
-  stinger(): void {
-    if (muted) return;
+  /** Play a registered named milestone/event cue for a room (no-op if unknown). */
+  event(room: string, name: string): void {
+    const fn = roomAudio.get(room)?.events?.[name];
+    if (!fn) return;
+    if (throttled(`evt:${room}:${name}`)) return;
+    fn();
+  },
+  /** Room-completion stinger — briefly ducks the bed, then plays the room's custom
+   *  stinger, else the bundled asset, else the procedural synth. */
+  stinger(room?: string): void {
+    if (!audible()) return;
+    duck();
+    const custom = room ? roomAudio.get(room)?.stinger : undefined;
+    if (custom) {
+      custom();
+      return;
+    }
     const url = "/audio/stinger.mp3";
     const cached = bufferCache.get(url);
     if (cached) {
@@ -433,5 +654,9 @@ export const audio = {
       void loadBuffer(url).then((buf) => (buf ? playBuffer(buf, 0.5) : stingerSynth()));
     }
   },
+  duck,
+  setMasterVolume,
+  getMasterVolume,
+  registerRoomAudio,
   prefersReducedMotion,
 };
