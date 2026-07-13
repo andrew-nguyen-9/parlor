@@ -49,14 +49,16 @@
     color-mix(in srgb, var(--accent, transparent) 16%, transparent),
     transparent 72%
   );
-  transition: background 0.5s ease;
+  transition: background var(--skin-motion-duration, 0.5s) var(--skin-motion-ease, ease);
 }
 
 /* The mirror glows in the active wedge's colour (theme-invariant glass, coloured
-   halo) instead of a fixed black drop-shadow that vanished in light mode. */
+   halo) instead of a fixed black drop-shadow that vanished in light mode.
+   Duration/ease pull the E0 skin seam so the wedges room gets its own
+   unhurried, cinematic settle (see app/skins.css [data-skin="wedges"]). */
 .mirror {
   filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent, #000) 55%, transparent));
-  transition: filter 0.5s ease;
+  transition: filter var(--skin-motion-duration, 0.5s) var(--skin-motion-ease, ease);
 }
 
 /* Six category chips, two columns — the per-wedge lockout legend. */
@@ -80,9 +82,13 @@
    actual particle/glow/fog rendering — this file only positions them and
    adds the CSS-only glass/crack treatment). */
 
-/* Shared room backdrop: fog/glow/dust sit absolute behind the real content. */
+/* Shared room backdrop: fog/glow/dust sit absolute behind the real content.
+   `--skin-bg-image` is the E0 skin seam (see lib/theme.ts + app/skins.css
+   [data-skin="wedges"]) — a cold-moonlit obsidian/silver wash under the F1
+   atmosphere layers; defaults to `none` on any unskinned room. */
 .stage {
   position: relative;
+  background-image: var(--skin-bg-image, none);
 }
 .stageLayer {
   position: absolute;
@@ -135,9 +141,11 @@
 }
 
 /* Frosted-glass ring column: smoked panel + hairline border, atop the
-   existing accent-tinted wash. */
+   existing accent-tinted wash. Border leans on the E0 skin accent (moonlight
+   cyan on wedges; falls back to the line token on any unskinned room) for a
+   faint mirror-silver edge. */
 .aside {
-  border: 1px solid color-mix(in srgb, rgb(var(--c-line)) 70%, transparent);
+  border: 1px solid color-mix(in srgb, rgb(var(--skin-accent, var(--c-line))) 40%, rgb(var(--c-line)) 60%);
   background-color: color-mix(in srgb, rgb(var(--c-surface)) 35%, transparent);
   backdrop-filter: blur(4px);
 }
