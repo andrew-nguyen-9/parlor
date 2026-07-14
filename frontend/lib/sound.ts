@@ -568,18 +568,23 @@ export function startAmbient(room: string): void {
 
   const cfg = roomAudio.get(room);
   const root = cfg?.ambientRoot ?? AMBIENT_ROOTS[room] ?? 110.0;
-  const asset = cfg?.ambientAsset ?? `/audio/ambient-${room}.mp3`;
+  // Opt-in only: a room upgrades to a bundled loop by setting `ambientAsset`. We
+  // do NOT speculatively probe `/audio/ambient-<room>.mp3` — no such file is
+  // committed, so the probe only ever 404'd (console noise) before falling back
+  // to the synth drone. Drop an asset in AND set `ambientAsset` to enable it.
+  const asset = cfg?.ambientAsset;
 
   const rise = () => {
     if (ambientRoom !== room) return; // room changed during the breath
-    // Synth immediately (zero latency); upgrade to a bundled loop if one exists.
+    // Synth immediately (zero latency); upgrade to a bundled loop if configured.
     ambientHandle = startDrone(a, root);
-    void loadBuffer(asset).then((buf) => {
-      if (!buf || ambientRoom !== room) return; // no asset, or room changed
-      ambientHandle?.stop();
-      const src = playBuffer(buf, 0.25, true, bedOut(a));
-      if (src) ambientHandle = { stop: () => { try { src.stop(); } catch { /* stopped */ } } };
-    });
+    if (asset)
+      void loadBuffer(asset).then((buf) => {
+        if (!buf || ambientRoom !== room) return; // no asset, or room changed
+        ambientHandle?.stop();
+        const src = playBuffer(buf, 0.25, true, bedOut(a));
+        if (src) ambientHandle = { stop: () => { try { src.stop(); } catch { /* stopped */ } } };
+      });
   };
 
   // Cross-room handoff is a breath of silence, then the new bed rises; a first

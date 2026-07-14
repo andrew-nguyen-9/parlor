@@ -248,9 +248,16 @@ img {
   width: 55vw;
   height: 55vw;
   border-radius: 9999px;
-  filter: blur(120px);
+  /* A 55vw blob is huge; blur past ~64px is imperceptible at 0.11 opacity but the
+     paint cost scales with radius, and `drift` SCALES the element — without a
+     promoted layer the browser re-rasterizes the blur every frame, saturating the
+     compositor and making the whole page feel clunky (mouse/hover included).
+     `will-change: transform` promotes it once so the drift is a pure GPU
+     composite instead of a per-frame blur re-raster. */
+  filter: blur(64px);
   opacity: 0.11;
   pointer-events: none;
+  will-change: transform;
   animation: drift 18s ease-in-out infinite alternate;
 }
 

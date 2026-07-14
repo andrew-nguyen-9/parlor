@@ -110,9 +110,9 @@
 
 ### Q: How many text-size steps, and what range?
 - [x] A) Keep the existing three S/M/L (0.9 / 1.0 / 1.15 `--text-scale`) — reuse `useTextSize` verbatim
-- [ ] B) Add an XL step (~1.3) for a four-way control
+- [x] B) Add an XL step (~1.3) for a four-way control
 - [ ] C) A continuous slider
-- [ ] Other: __________________________________________
+- [x] Other: Add an XS step as well
 > WHY: S/M/L already ships with a synced no-flash script and covers the practical legibility range; discrete steps are more predictable than a slider and avoid re-authoring the pre-paint mirror. XL can be added later without changing the hub's shape.
 > USER NOTES:
 
@@ -449,14 +449,14 @@
 ### Q: What is PARLOR's overall motion character?
 - [ ] A) Snappy/utilitarian everywhere — fast, minimal, gets out of the way
 - [x] B) Tiered: slow-deliberate-cinematic for spatial & ceremonial moments (deal, flip, reveal, results); snappy (≤150ms) for feedback (press/hover/state)
-- [ ] C) Cinematic everywhere — every transition is a slow, weighty moment
+- [x] C) Cinematic everywhere — every transition is a slow, weighty moment
 - [ ] Other: __________________________________________
 > WHY: v4's "slow deliberate cinematic" ceremony + Apple-fy restraint, but micro-feedback must feel instant — motion is purposeful, tiered by role, never uniformly slow.
 > USER NOTES:
 
 ### Q: Policy on purely decorative motion (neither diegetic nor feedback)?
-- [x] A) Cut it — every animation is either the room's diegetic signature or it's feedback; anything else is removed
-- [ ] B) Allow tasteful ambient decoration (drifting particles, breathing surfaces) as garnish
+- [ ] A) Cut it — every animation is either the room's diegetic signature or it's feedback; anything else is removed
+- [x] B) Allow tasteful ambient decoration (drifting particles, breathing surfaces) as garnish
 - [ ] C) Allow it only on the home/lobby, not inside rooms
 - [ ] Other: __________________________________________
 > WHY: PATTERNS §Motion — "decorative motion that is neither diegetic nor feedback is cut"; protects the ≤1-loop budget.
@@ -472,8 +472,8 @@
 
 ### Q: Which CSS properties may animate (GPU-cheap constraint)?
 - [x] A) `transform` / `opacity` / `filter` only — never `width`/`height`/`top`/`left`/`box-shadow`/layout properties
-- [ ] B) Add animated `box-shadow`/`background-position` for richer material glints
-- [ ] C) Allow layout animation (height/margin) for accordions and reflow
+- [x] B) Add animated `box-shadow`/`background-position` for richer material glints
+- [x] C) Allow layout animation (height/margin) for accordions and reflow
 - [ ] Other: __________________________________________
 > WHY: perf floor (PATTERNS §Motion) — compositor-only props avoid layout thrash; gilt glints come from the fixed `--gold-sheet`, not animated shadows.
 > USER NOTES:
@@ -488,7 +488,7 @@
 
 ### Q: The first-load "wow" moment vs restraint?
 - [x] A) One choreographed entrance per screen (deck deal-in / room settle), then calm — no repeated flourishes
-- [ ] B) A richer multi-beat opening sequence on every screen
+- [x] B) A richer multi-beat opening sequence on every screen
 - [ ] C) No entrance choreography — content just appears
 - [ ] Other: __________________________________________
 > WHY: Apple-fy = restraint + depth; the deck deal-in is the established single first-impression, and calm follows (no confetti-spam).
@@ -496,7 +496,7 @@
 
 ### Q: Motion consistency across rooms vs per-room character?
 - [x] A) Shared core vocabulary (durations, the two curves, reduced-motion path) is house-wide; each room adds exactly ONE signature within it
-- [ ] B) Fully per-room — each game invents its own timing/feel
+- [x] B) Fully per-room — each game invents its own timing/feel
 - [ ] C) Fully uniform — no per-room signature motion at all
 - [ ] Other: __________________________________________
 > WHY: skins may declare a signature motion, but the Floors and easing/duration vocabulary are shared (PATTERNS §Skins/§Motion) — one system, one flourish each.
@@ -506,8 +506,8 @@
 
 ### Q: The easing palette — how many curves?
 - [x] A) Exactly two: entrances/exits `cubic-bezier(0.22,1,0.36,1)`; flips/3D `cubic-bezier(0.2,0.8,0.2,1)` — no new curves
-- [ ] B) Add a bouncy/overshoot curve for playful celebrations
-- [ ] C) Per-room custom curves declared via `--skin-motion-ease`
+- [x] B) Add a bouncy/overshoot curve for playful celebrations
+- [x] C) Per-room custom curves declared via `--skin-motion-ease`
 - [ ] Other: __________________________________________
 > WHY: PATTERNS §Motion — "the only two, no new curves"; a shared curve pair is what makes rooms feel like one system.
 > USER NOTES:
@@ -538,7 +538,7 @@
 
 ### Q: Spring physics vs tokened ease for interactive motion?
 - [x] A) Tokened cubic-bezier ease for deterministic transitions; Framer spring ONLY for gesture-driven leaves (planchette/drag), always settling ≤600ms
-- [ ] B) Spring everywhere for a lively feel
+- [x] B) Spring everywhere for a lively feel
 - [ ] C) Ease everywhere, never spring
 - [ ] Other: __________________________________________
 > WHY: spring belongs to physical, pointer-weighted gesture; deterministic transitions use the shared curves; either way the finite-≤600ms floor holds.

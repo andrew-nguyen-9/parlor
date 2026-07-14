@@ -207,8 +207,11 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 2.75rem; /* ≥44px tap target */
-  height: 2.75rem;
+  /* max(): the root font is fluid (globals `html` clamp), so 2.75rem drops to
+     ~41.7px on mobile — floor at 44 physical px to hold the tap target, while
+     still growing with rem/text-scale zoom on larger/zoomed viewports. */
+  width: max(2.75rem, 44px);
+  height: max(2.75rem, 44px);
   border-radius: 999px;
   font-size: 0.8rem;
   line-height: 1;
@@ -351,8 +354,12 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 2.75rem;
-  min-height: 2.75rem;
+  /* max(): fluid root font (globals `html` clamp) drops 2.75rem to ~41.7px on
+     mobile. `max-width` only raises the CAP — the cell still fills its column and
+     never forces horizontal scroll — so cells reach 44px where the column allows
+     (the common case) and stay ≤column at the 320px/n=7 extreme above. */
+  max-width: max(2.75rem, 44px);
+  min-height: max(2.75rem, 44px);
   margin: 0 auto;
   aspect-ratio: 1;
   border: 1px solid rgb(var(--c-line));
@@ -362,11 +369,12 @@
   background: color-mix(in srgb, rgb(var(--c-bg)) 40%, transparent);
   /* issue #9: soft state transitions on the signature ease — kept SNAPPY (the
      cell tap is a sub-100ms wood-press, not the 500ms signature beat) so
-     marking stays responsive. */
+     marking stays responsive. box-shadow is intentionally NOT transitioned: the
+     hover glow snapping in is imperceptible, and animating box-shadow repaints
+     every cell the cursor sweeps (the grid felt clunky under mouse movement). */
   transition:
     border-color 0.16s var(--skin-motion-ease, ease),
-    background 0.16s var(--skin-motion-ease, ease),
-    box-shadow 0.16s var(--skin-motion-ease, ease);
+    background 0.16s var(--skin-motion-ease, ease);
 }
 /* faint scratch-mark overlay (whisper mode): explicit colour so it stays
    VISIBLE — the cell button sets color:transparent on blank cells, which the

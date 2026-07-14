@@ -164,7 +164,7 @@
 
 ### Q: How does the rite label read?
 - [x] A) Evocative Victorian rite names ("The Parlour Séance," "The Midnight Sitting") in small-caps microlabel
-- [ ] B) Functional labels ("Puzzle #142")
+- [x] B) Functional labels ("Puzzle #142")
 - [ ] C) Just the date
 - [ ] Other: __________________________________________
 > WHY: The rite is atmosphere-per-word; Victorian naming sustains the fiction that this is a sitting, not a puzzle number. Keeps the existing `rite · spirit` microlabel slot, just leans the copy more period-authentic (v4 voice: reverent, mysterious).
@@ -238,7 +238,7 @@
 
 ### Q: How is the core cell-cycle (blank → snuffed candle → glowing rune → blank) first taught?
 - [x] A) A short in-fiction line on the invitation / first board ("tap to snuff a candle, tap again to light the rune") plus the gift cell demonstrating a lit rune
-- [ ] B) A separate legend panel the player must read
+- [x] B) A separate legend panel the player must read
 - [ ] C) Not taught explicitly — discovered by tapping
 - [ ] Other: __________________________________________
 > WHY: The three-state tap is the one genuinely non-obvious control; a single fiction-flavored sentence paired with a live example (the gift) is the minimum that prevents confusion without a manual — the candle/rune vocabulary is already the shipped state names.
@@ -506,8 +506,8 @@
 
 #### Q: The traced-column glow must keep cell text ≥4.5:1 and out of any gradient/flame. Within that floor, what's the glow's character?
 - [x] A) A soft candle-wash bloom behind the cells (warm amber, low alpha)
-- [ ] B) A crisp engraved gold outline around the traced columns
-- [ ] C) A faint moonlight-blue tint
+- [x] B) A crisp engraved gold outline around the traced columns
+- [x] C) A faint moonlight-blue tint
 - [ ] Other: __________________________________________
 > WHY: a warm bloom matches "lit by candlelight" and pairs with the planchette lean; all three keep runes/labels legible, so it's an aesthetic call — amber reads warmest as "the spirit's attention."
 > USER NOTES:

@@ -33,9 +33,10 @@ export function registerSeanceAudio(): void {
   if (registered) return;
   registered = true;
   registerRoomAudio("seance", {
-    // A low, slow drone as the always-available bed baseline (C2). The engine
-    // auto-upgrades to a committed `/audio/ambient-seance.mp3` seamless loop if
-    // one is ever dropped in — no code change needed. Bed stays mute- AND
+    // A low, slow drone as the always-available bed baseline (C2). To upgrade to
+    // a committed seamless loop, drop `/audio/ambient-seance.mp3` in AND add
+    // `ambientAsset: "/audio/ambient-seance.mp3"` here (opt-in — the engine no
+    // longer speculatively probes for it, which used to 404). Bed stays mute- AND
     // reduced-motion-gated by the engine.
     ambientRoot: 65.41,
     events: {
