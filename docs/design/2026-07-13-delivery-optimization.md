@@ -38,11 +38,11 @@ Dynamic `ƒ` = server-rendered per request (a function invocation + Fluid CPU ea
 | `/mystery` | Neon `cachedMystery` (86400) | ○ ISR 1d | ○ ISR 1d (unchanged) |
 | `/overture` | seed bank | ○ ISR 1d | ○ ISR 1d (unchanged) |
 | `/thread` | seed bank | ○ ISR 1d | ○ ISR 1d (unchanged) |
-| `/seance` | Neon `cachedSeance` (86400) + `searchParams` | ƒ dynamic | ƒ dynamic (see Deferred) |
-| `/ladder` | Neon `cachedLadder` + `searchParams` | ƒ dynamic | ƒ dynamic (see Deferred) |
-| `/map` | Neon `cachedAtlas` + `searchParams` | ƒ dynamic | ƒ dynamic (see Deferred) |
-| `/clock` | Neon `cachedChronos` + `searchParams` | ƒ dynamic | ƒ dynamic (see Deferred) |
-| `/streak` | Neon `cachedIgnite` + `searchParams` | ƒ dynamic | ƒ dynamic (see Deferred) |
+| `/seance` | Neon `cachedSeance` (86400), date in `[[...date]]` segment | ƒ dynamic | ● SSG + ISR 1d (follow-up unit — see Deferred) |
+| `/ladder` | Neon `cachedLadder`, date in `[[...date]]` segment | ƒ dynamic | ● SSG + ISR 1d (follow-up unit — see Deferred) |
+| `/map` | Neon `cachedAtlas`, date in `[[...date]]` segment | ƒ dynamic | ● SSG + ISR 1d (follow-up unit — see Deferred) |
+| `/clock` | Neon `cachedChronos`, date in `[[...date]]` segment | ƒ dynamic | ● SSG + ISR 1d (follow-up unit — see Deferred) |
+| `/streak` | Neon `cachedIgnite`, date in `[[...date]]` segment | ƒ dynamic | ● SSG + ISR 1d (follow-up unit — see Deferred) |
 | `/api/og/[room]` | OG image gen | ƒ dynamic | ƒ dynamic (out of page scope) |
 
 First-load JS is unchanged for every route (no import touched); the shared 103 KB baseline
@@ -96,21 +96,29 @@ normalized rooms; fast-origin trends down via caching; no meter increases. Zero-
 stays green (seed-bank path intact — `unstable_cache` throws (not caches) on a real DB
 miss, so offline still generates puzzles inline).
 
-## Deferred (needs component/route surgery — recommend a later unit, NOT done here)
+## Deferred → SHIPPED as a follow-up unit (2026-07-13)
 
-The five puzzle rooms (`seance`, `ladder`, `map`, `clock`, `streak`) render **dynamic (ƒ)**
-because each page reads `searchParams` (`?date=YYYY-MM-DD` archive-play), which opts the
+The five puzzle rooms (`seance`, `ladder`, `map`, `clock`, `streak`) rendered **dynamic (ƒ)**
+because each page read `searchParams` (`?date=YYYY-MM-DD` archive-play), which opted the
 whole route into per-request SSR — a function invocation + Fluid CPU **per pageview**, even
-though the Neon read underneath is already collapsed to 1/day by `unstable_cache`. This is
-the single largest remaining function/CPU driver.
+though the Neon read underneath was already collapsed to 1/day by `unstable_cache`. This was
+the single largest remaining function/CPU driver. The e5 config unit deferred it as
+component/route surgery; it shipped in its own follow-up unit once e0/e2 had landed:
 
-- **Recommendation (spec §C4: on-demand ISR for archive dates):** move the date from a
-  query param to a route segment — `app/{room}/[[...date]]/page.tsx` — and drop
-  `searchParams`. Today (no param) then renders **static/ISR** (function cold, cache-served)
-  and each past date caches on first hit (one read per date ever, not per request). This
-  flips 5 routes from ƒ → ○/ISR — a large functions + Fluid-CPU reduction — but it is a
-  route-file restructure touching page signatures and the components' `date` prop plumbing,
-  which collides with e0/e2's ownership of those rooms. Ship as its own unit.
+- **Done (spec §C4: on-demand ISR for archive dates):** the date moved from a query param to
+  an optional-catch-all route segment — `app/{room}/[[...date]]/page.tsx`, `searchParams`
+  dropped for `params: { date?: string[] }`. Each page now exports `revalidate = 86400` +
+  `generateStaticParams() => [{ date: [] }]`, so bare `/{room}` **prerenders static and
+  daily-ISRs** (function cold, cache-served) and each past date caches on first hit
+  (`dynamicParams`, one render per date ever, not per request). Build route table confirms
+  all five flipped **ƒ → ●** (SSG, Revalidate 1d / Expire 1y). Correctness is preserved
+  because build-time inline generation is byte-identical to the DB archive row — both come
+  from the same pure `generate<Room>(dayIndex, date)` the nightly archiver
+  (`frontend/scripts/generate-*.ts`) calls — so there is no static-vs-runtime content flip in
+  either zero-env or DB mode. **Dropped:** the legacy `?date=` **query** (no internal link
+  ever emitted it; honoring it would require reading `searchParams`, which is what forced the
+  dynamic render — mutually exclusive with the static goal). A shared `/{room}?date=X` link
+  now renders today; add a redirect only if such links surface.
 - **`/api/og/[room]`** OG-image generation is dynamic by nature; low-traffic (crawler/share
   only) and out of the page-route scope of this unit. Consider caching its responses
   (`Cache-Control: immutable`, keyed by room) in a later API-owning unit if the functions
@@ -119,10 +127,14 @@ the single largest remaining function/CPU driver.
 ## Verification (re-runnable)
 
 - `cd frontend && npm run build` → route table shows `/board`, `/gauntlet`, `/wedges` at
-  Revalidate **1d** (were 1h); all other render modes unchanged; first-load JS unchanged.
-- `cd frontend && npm run test` → 150 passed (18 files).
+  Revalidate **1d** (were 1h) **and** `/seance`, `/ladder`, `/map`, `/clock`, `/streak` at
+  **● SSG** Revalidate 1d (were ƒ dynamic); first-load JS unchanged.
+- `cd frontend && npm run test` → 175 passed (21 files).
 - `cd frontend && npm run lint` → exit 0 (only pre-existing `no-img-element` /
   `exhaustive-deps` warnings, unchanged from baseline).
-- Zero-env: the build above runs with no `DATABASE_URL` (seed-bank fallback).
+- Zero-env: the build above runs with no `DATABASE_URL` (seed-bank fallback). Runtime smoke:
+  bare `/{room}` and `/{room}/YYYY-MM-DD` both 200; distinct puzzles per date confirmed
+  (seance today→"The Frostbound Captain", 2026-07-01→"The Hollow Tutor"); DB mode returns the
+  archive dark state for an un-archived date (correct archive contract).
 </content>
 </invoke>

@@ -161,12 +161,17 @@ Room-craft traps observed this cycle (carry the discipline, not the specifics):
   needs one follow-up line by the framework owner. **Lesson:** when a new
   component must mount in a shared-root file, plan the mount edit as an explicit
   E0/framework-owner task, not inside the leaf unit.
-- **Delivery — puzzle rooms stay dynamic:** `seance/ladder/map/clock/streak` are
-  `?date=`-driven → a function+CPU per pageview (the biggest remaining meter
-  driver). e5 did config-only safe reductions; the real fix (convert to
-  `[[...date]]` route segment → static/on-demand-ISR) is route surgery that
-  collides with the visual unit, so it was RECOMMENDED, not done. Schedule it as
-  its own unit next cycle.
+- **Delivery — puzzle rooms were dynamic, now static (SHIPPED):**
+  `seance/ladder/map/clock/streak` were `?date=`-driven → a function+CPU per
+  pageview (the biggest remaining meter driver). e5 did config-only safe
+  reductions and RECOMMENDED the route fix; it shipped as its own follow-up unit
+  once the visual units landed: the date moved from `?date=` to an
+  `app/{room}/[[...date]]/page.tsx` segment with `revalidate=86400` +
+  `generateStaticParams`, flipping all five **ƒ → ● SSG/ISR**. Safe because
+  build-time inline generation is byte-identical to the DB archive row (same pure
+  `generate<Room>` the nightly archiver calls) — no static-vs-runtime flip.
+  **Lesson:** route-surgery that collides with leaf-unit ownership sequences
+  *after* those units land, as its own unit — not folded into a config pass.
 
 ---
 
